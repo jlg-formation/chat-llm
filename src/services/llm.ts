@@ -102,7 +102,7 @@ function buildOpenAIResponsesBody(
   if (config.jsonSchema) {
     try {
       const schema = JSON.parse(config.jsonSchema)
-      body.text = { format: { type: 'json_schema', ...schema } }
+      body.text = { format: { type: 'json_schema', name: 'output', strict: false, schema } }
     } catch { /* ignoré */ }
   }
 
