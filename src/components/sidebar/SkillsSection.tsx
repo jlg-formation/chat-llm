@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { Zap, Upload, Trash2, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Zap, Upload, Trash2 } from 'lucide-react'
+import { Toggle } from './Toggle'
 import { Accordion } from './Accordion'
 import type { Skill } from '../../types'
 import { loadSkills, importSkillFromZip, updateSkill, deleteSkill } from '../../store/skillsStore'
@@ -67,16 +68,7 @@ export function SkillsSection() {
               }`}
             >
               <span className="flex-1 text-sm font-medium text-gray-700 truncate">{skill.name}</span>
-              <button
-                onClick={() => toggleSkill(skill)}
-                className="text-gray-400 hover:text-yellow-600 transition-colors"
-                title={skill.enabled ? 'Désactiver' : 'Activer'}
-              >
-                {skill.enabled
-                  ? <ToggleRight className="w-5 h-5 text-yellow-500" />
-                  : <ToggleLeft className="w-5 h-5" />
-                }
-              </button>
+              <Toggle checked={skill.enabled} onChange={() => toggleSkill(skill)} color="yellow" />
               <button
                 onClick={() => removeSkill(skill.id)}
                 className="text-gray-300 hover:text-red-500 transition-colors"

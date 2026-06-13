@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Network, RefreshCw, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Network, RefreshCw } from 'lucide-react'
+import { Toggle } from './Toggle'
 import { useConfig } from '../../store/configStore'
 import { Accordion } from './Accordion'
 import { fetchMcpTools } from '../../services/llm'
@@ -36,15 +37,7 @@ export function McpSection() {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-sm text-gray-700">MCP activé</span>
-          <button
-            onClick={() => update({ mcpEnabled: !config.mcpEnabled })}
-            className="text-gray-400"
-          >
-            {config.mcpEnabled
-              ? <ToggleRight className="w-5 h-5 text-teal-500" />
-              : <ToggleLeft className="w-5 h-5" />
-            }
-          </button>
+          <Toggle checked={config.mcpEnabled} onChange={() => update({ mcpEnabled: !config.mcpEnabled })} color="teal" />
         </div>
 
         <div>
@@ -75,12 +68,7 @@ export function McpSection() {
             <p className="text-xs text-gray-500 font-medium">Outils disponibles :</p>
             {config.mcpTools.map(tool => (
               <div key={tool.name} className="flex items-center gap-2 text-sm">
-                <button onClick={() => toggleTool(tool)} className="shrink-0">
-                  {tool.enabled
-                    ? <ToggleRight className="w-4 h-4 text-teal-500" />
-                    : <ToggleLeft className="w-4 h-4 text-gray-400" />
-                  }
-                </button>
+                <Toggle checked={tool.enabled} onChange={() => toggleTool(tool)} color="teal" size="sm" />
                 <span className={`font-mono text-xs ${tool.enabled ? 'text-gray-800' : 'text-gray-400'}`}>
                   {tool.name}
                 </span>
