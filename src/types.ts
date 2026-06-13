@@ -12,6 +12,7 @@ export interface AppConfig {
   streamEnabled: boolean
   systemPrompt: string
   jsonSchema: string
+  mcpName: string
   mcpUrl: string
   mcpEnabled: boolean
   mcpTools: McpTool[]
@@ -84,6 +85,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   streamEnabled: true,
   systemPrompt: '',
   jsonSchema: '',
+  mcpName: '',
   mcpUrl: '',
   mcpEnabled: false,
   mcpTools: [],

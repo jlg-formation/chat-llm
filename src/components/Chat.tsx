@@ -4,7 +4,7 @@ import { ChatMessageView } from './chat/ChatMessage'
 import { ChatInput } from './chat/ChatInput'
 import { useConfig } from '../store/configStore'
 import { loadSkills, getSkillContent, parseSkillFrontmatter } from '../store/skillsStore'
-import { sendMessage } from '../services/llm'
+import { sendMessage, callMcpTool } from '../services/llm'
 import type { SkillRef, LLMToolCall } from '../services/llm'
 import { Trash2 } from 'lucide-react'
 
@@ -48,6 +48,14 @@ export function Chat() {
   }
 
   async function resolveToolCall(call: LLMToolCall): Promise<string> {
+    // Outils MCP — déléguer au serveur MCP si l'outil n'est pas get_skill_details
+    if (call.name !== 'get_skill_details' && config.mcpEnabled && config.mcpUrl) {
+      const mcpTool = config.mcpTools.find(t => t.name === call.name && t.enabled)
+      if (mcpTool) {
+        return callMcpTool(config.mcpUrl, call.name, call.args as Record<string, unknown>)
+      }
+    }
+
     const skillName = (call.args.name as string) ?? ''
     const skills = await loadSkills()
     const skill = skills.find(s => s.name === skillName || parseSkillFrontmatter(s).name === skillName)
@@ -91,7 +99,8 @@ export function Chat() {
         updateAssistant(finalContent, true)
       }
 
-      let result = await sendMessage(config, apiMessages, systemPrompt, skillRefs, onToken)
+      const activeMcpTools = config.mcpEnabled ? config.mcpTools.filter(t => t.enabled) : []
+      let result = await sendMessage(config, apiMessages, systemPrompt, skillRefs, activeMcpTools, onToken)
 
       let iterations = 0
       while (result.type === 'tool_calls' && iterations < MAX_TOOL_ITERATIONS) {
@@ -134,7 +143,7 @@ export function Chat() {
 
         updateAssistant('', true)
 
-        result = await sendMessage(config, apiMessages, systemPrompt, skillRefs, onToken)
+        result = await sendMessage(config, apiMessages, systemPrompt, skillRefs, activeMcpTools, onToken)
       }
 
       if (!config.streamEnabled && result.type === 'text') {
