@@ -64,3 +64,18 @@ export function getSkillContent(skill: Skill): string {
   if (firstMd) return skill.files[firstMd]
   return ''
 }
+
+export function parseSkillFrontmatter(skill: Skill): { name: string; description: string } {
+  const content = getSkillContent(skill)
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/)
+  if (match) {
+    const fm = match[1]
+    const nameMatch = fm.match(/^name:\s*(.+)$/m)
+    const descMatch = fm.match(/^description:\s*(.+)$/m)
+    return {
+      name: nameMatch?.[1]?.trim() ?? skill.name,
+      description: descMatch?.[1]?.trim() ?? '',
+    }
+  }
+  return { name: skill.name, description: '' }
+}

@@ -3,9 +3,12 @@ import type { ChatMessage as ChatMessageType, MessageImage } from '../types'
 import { ChatMessageView } from './chat/ChatMessage'
 import { ChatInput } from './chat/ChatInput'
 import { useConfig } from '../store/configStore'
-import { loadSkills, getSkillContent } from '../store/skillsStore'
-import { sendMessage } from '../services/llm'
+import { loadSkills, getSkillContent, parseSkillFrontmatter } from '../store/skillsStore'
+import { sendMessage, sendToolResults } from '../services/llm'
+import type { SkillRef, LLMToolCall } from '../services/llm'
 import { Trash2 } from 'lucide-react'
+
+const MAX_TOOL_ITERATIONS = 5
 
 function genId() {
   return Math.random().toString(36).slice(2)
@@ -21,18 +24,35 @@ export function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  async function buildSystemWithSkills(): Promise<string> {
+  async function buildSystemAndSkills(): Promise<{ systemPrompt: string; skillRefs: SkillRef[] }> {
     const skills = await loadSkills()
     const active = skills.filter(s => s.enabled)
-    let system = config.systemPrompt ?? ''
-    if (active.length > 0) {
-      const skillsText = active.map(s => {
-        const content = getSkillContent(s)
-        return `\n\n---\n## Skill: ${s.name}\n\n${content}`
-      }).join('')
-      system += skillsText
+    let systemPrompt = config.systemPrompt ?? ''
+
+    if (active.length === 0) {
+      return { systemPrompt, skillRefs: [] }
     }
-    return system
+
+    const skillRefs: SkillRef[] = active.map(s => parseSkillFrontmatter(s))
+
+    const skillList = skillRefs
+      .map(r => `- **${r.name}**${r.description ? ` : ${r.description}` : ''}`)
+      .join('\n')
+
+    systemPrompt +=
+      `\n\n## Skills disponibles\n\n` +
+      `Utilise l'outil \`get_skill_details\` pour obtenir les instructions complètes d'un skill si tu en as besoin avant de répondre.\n\n` +
+      skillList
+
+    return { systemPrompt, skillRefs }
+  }
+
+  async function resolveToolCall(call: LLMToolCall): Promise<string> {
+    const skillName = (call.args.name as string) ?? ''
+    const skills = await loadSkills()
+    const skill = skills.find(s => s.name === skillName || parseSkillFrontmatter(s).name === skillName)
+    if (!skill) return `Skill "${skillName}" non trouvé.`
+    return getSkillContent(skill)
   }
 
   async function handleSend(text: string, images: MessageImage[]) {
@@ -55,42 +75,60 @@ export function Chat() {
     setMessages([...newMessages, assistantMsg])
     setSending(true)
 
+    const updateAssistant = (content: string, isStreaming: boolean, isJson = false) => {
+      setMessages(prev => prev.map(m =>
+        m.id === assistantId ? { ...m, content, isStreaming, isJson } : m
+      ))
+    }
+
     try {
-      const systemWithSkills = await buildSystemWithSkills()
+      const { systemPrompt, skillRefs } = await buildSystemAndSkills()
+
       let finalContent = ''
+      const onToken = (token: string) => {
+        finalContent += token
+        updateAssistant(finalContent, true)
+      }
 
-      const result = await sendMessage(
-        config,
-        newMessages,
-        systemWithSkills,
-        (token) => {
-          finalContent += token
-          setMessages(prev => prev.map(m =>
-            m.id === assistantId
-              ? { ...m, content: finalContent, isStreaming: true }
-              : m
-          ))
-        }
-      )
+      let result = await sendMessage(config, newMessages, systemPrompt, skillRefs, onToken)
 
-      if (!config.streamEnabled) finalContent = result
+      let iterations = 0
+      while (result.type === 'tool_calls' && iterations < MAX_TOOL_ITERATIONS) {
+        iterations++
+        finalContent = ''
+
+        // Indicateur visuel pendant l'exécution du/des tool(s)
+        const toolNames = result.calls.map(c => (c.args.name as string) ?? c.name).join(', ')
+        updateAssistant(`⏳ Récupération du skill « ${toolNames} »…`, true)
+
+        const toolResults = await Promise.all(
+          result.calls.map(async call => ({
+            callId: call.id,
+            content: await resolveToolCall(call),
+          }))
+        )
+
+        const prevCalls: LLMToolCall[] = result.calls
+        const prevResponseId = result.responseId
+
+        result = await sendToolResults(
+          config, newMessages, systemPrompt, skillRefs,
+          prevCalls, toolResults, prevResponseId,
+          onToken,
+        )
+      }
+
+      if (!config.streamEnabled && result.type === 'text') {
+        finalContent = result.content
+      }
 
       const isJson = !!config.jsonSchema && (() => {
         try { JSON.parse(finalContent); return true } catch { return false }
       })()
 
-      setMessages(prev => prev.map(m =>
-        m.id === assistantId
-          ? { ...m, content: finalContent, isStreaming: false, isJson }
-          : m
-      ))
+      updateAssistant(finalContent, false, isJson)
     } catch (err) {
-      const errMsg = (err as Error).message
-      setMessages(prev => prev.map(m =>
-        m.id === assistantId
-          ? { ...m, content: `Erreur : ${errMsg}`, isStreaming: false }
-          : m
-      ))
+      updateAssistant(`Erreur : ${(err as Error).message}`, false)
     } finally {
       setSending(false)
     }
