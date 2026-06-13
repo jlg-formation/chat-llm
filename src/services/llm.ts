@@ -260,7 +260,7 @@ async function streamOpenAIResponses(response: Response, onToken: (t: string) =>
           if (call) call.argsBuffer += json.delta as string
           break
         }
-        case 'response.done': {
+        case 'response.completed': {
           const resp = json.response as Record<string, unknown>
           responseId = (resp?.id as string) ?? ''
           break
