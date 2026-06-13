@@ -1,6 +1,7 @@
 import ReactMarkdown from 'react-markdown'
+import { useState } from 'react'
 import type { ChatMessage as ChatMessageType } from '../../types'
-import { User, Bot } from 'lucide-react'
+import { User, Bot, Wrench, ChevronDown, ChevronRight } from 'lucide-react'
 
 interface Props {
   message: ChatMessageType
@@ -19,7 +20,45 @@ function JsonDisplay({ content }: { content: string }) {
   }
 }
 
+function ToolMessageView({ message }: Props) {
+  const [open, setOpen] = useState(false)
+  const isCall = message.role === 'tool_call'
+
+  return (
+    <div className="flex justify-center">
+      <div className="text-xs rounded-lg border border-gray-200 bg-gray-50 overflow-hidden max-w-[90%]">
+        <button
+          onClick={() => setOpen(o => !o)}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-gray-500 hover:text-gray-700 w-full"
+        >
+          <Wrench className="w-3 h-3 shrink-0 text-amber-500" />
+          {isCall
+            ? <span>Appel outil : <span className="font-mono font-semibold text-amber-700">{message.toolName}</span></span>
+            : <span className="text-green-700 font-medium">Résultat outil</span>
+          }
+          {open
+            ? <ChevronDown className="w-3 h-3 ml-auto" />
+            : <ChevronRight className="w-3 h-3 ml-auto" />
+          }
+        </button>
+        {open && (
+          <pre className="px-3 pb-2 font-mono text-gray-600 whitespace-pre-wrap break-all border-t border-gray-200 bg-white max-h-48 overflow-y-auto">
+            {isCall
+              ? (() => { try { return JSON.stringify(JSON.parse(message.content), null, 2) } catch { return message.content } })()
+              : message.content
+            }
+          </pre>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function ChatMessageView({ message }: Props) {
+  if (message.role === 'tool_call' || message.role === 'tool_result') {
+    return <ToolMessageView message={message} />
+  }
+
   const isUser = message.role === 'user'
 
   return (

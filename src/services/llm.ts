@@ -100,7 +100,6 @@ function buildChatCompletionsBody(
   messages: ChatMessage[],
   systemPrompt: string,
   skillRefs: SkillRef[],
-  extraMessages: unknown[] = [],
 ) {
   const msgs: unknown[] = []
 
@@ -121,10 +120,16 @@ function buildChatCompletionsBody(
       } else {
         msgs.push({ role: 'user', content: m.content })
       }
+    } else if (m.role === 'tool_call') {
+      msgs.push({
+        role: 'assistant',
+        content: null,
+        tool_calls: [{ id: m.toolCallId, type: 'function', function: { name: m.toolName, arguments: m.toolArgs ?? '{}' } }],
+      })
+    } else if (m.role === 'tool_result') {
+      msgs.push({ role: 'tool', tool_call_id: m.toolCallResultId, content: m.content })
     }
   }
-
-  msgs.push(...extraMessages)
 
   const body: Record<string, unknown> = {
     model: config.llm.model,
@@ -152,53 +157,49 @@ function buildOpenAIResponsesBody(
   messages: ChatMessage[],
   systemPrompt: string,
   skillRefs: SkillRef[],
-  previousResponseId?: string,
-  toolResultInputs?: unknown[],
 ) {
-  const body: Record<string, unknown> = {
-    model: config.llm.model,
-    stream: config.streamEnabled,
+  const input: unknown[] = []
+
+  if (systemPrompt) {
+    input.push({ role: 'system', content: systemPrompt })
   }
 
-  if (previousResponseId) {
-    body.previous_response_id = previousResponseId
-    body.input = toolResultInputs ?? []
-  } else {
-    const input: unknown[] = []
-
-    if (systemPrompt) {
-      input.push({ role: 'system', content: systemPrompt })
-    }
-
-    for (const m of messages) {
-      if (m.role === 'assistant') {
-        input.push({ role: 'assistant', content: m.content })
-      } else if (m.role === 'user') {
-        if (m.images && m.images.length > 0) {
-          const contentParts: unknown[] = []
-          if (m.content) contentParts.push({ type: 'input_text', text: m.content })
-          for (const img of m.images) {
-            contentParts.push({ type: 'input_image', image_url: img.dataUrl })
-          }
-          input.push({ role: 'user', content: contentParts })
-        } else {
-          input.push({ role: 'user', content: m.content })
+  for (const m of messages) {
+    if (m.role === 'assistant') {
+      input.push({ role: 'assistant', content: m.content })
+    } else if (m.role === 'user') {
+      if (m.images && m.images.length > 0) {
+        const contentParts: unknown[] = []
+        if (m.content) contentParts.push({ type: 'input_text', text: m.content })
+        for (const img of m.images) {
+          contentParts.push({ type: 'input_image', image_url: img.dataUrl })
         }
+        input.push({ role: 'user', content: contentParts })
+      } else {
+        input.push({ role: 'user', content: m.content })
       }
+    } else if (m.role === 'tool_call') {
+      input.push({ type: 'function_call', call_id: m.toolCallId, name: m.toolName, arguments: m.toolArgs ?? '{}' })
+    } else if (m.role === 'tool_result') {
+      input.push({ type: 'function_call_output', call_id: m.toolCallResultId, output: m.content })
     }
+  }
 
-    body.input = input
-
-    if (config.jsonSchema) {
-      try {
-        const schema = JSON.parse(config.jsonSchema)
-        body.text = { format: { type: 'json_schema', name: 'output', strict: false, schema } }
-      } catch { /* ignoré */ }
-    }
+  const body: Record<string, unknown> = {
+    model: config.llm.model,
+    input,
+    stream: config.streamEnabled,
   }
 
   if (skillRefs.length > 0) {
     body.tools = [skillToolForResponsesAPI()]
+  }
+
+  if (config.jsonSchema) {
+    try {
+      const schema = JSON.parse(config.jsonSchema)
+      body.text = { format: { type: 'json_schema', name: 'output', strict: false, schema } }
+    } catch { /* ignoré */ }
   }
 
   return body
@@ -400,16 +401,13 @@ async function _send(
   systemPrompt: string,
   skillRefs: SkillRef[],
   onToken: (token: string) => void,
-  previousResponseId?: string,
-  toolResultInputs?: unknown[],
-  extraMessages?: unknown[],
 ): Promise<LLMResult> {
   const isOpenAI = config.llm.provider === 'openai'
   const isOllama = config.llm.provider === 'ollama'
 
   const body = isOpenAI
-    ? buildOpenAIResponsesBody(config, messages, systemPrompt, skillRefs, previousResponseId, toolResultInputs)
-    : buildChatCompletionsBody(config, messages, systemPrompt, skillRefs, extraMessages)
+    ? buildOpenAIResponsesBody(config, messages, systemPrompt, skillRefs)
+    : buildChatCompletionsBody(config, messages, systemPrompt, skillRefs)
 
   const endpoint = getEndpoint(config)
   const headers = getHeaders(config)
@@ -471,47 +469,6 @@ export async function sendMessage(
   onToken: (token: string) => void,
 ): Promise<LLMResult> {
   return _send(config, messages, systemPrompt, skillRefs, onToken)
-}
-
-export async function sendToolResults(
-  config: AppConfig,
-  messages: ChatMessage[],
-  systemPrompt: string,
-  skillRefs: SkillRef[],
-  toolCalls: LLMToolCall[],
-  results: Array<{ callId: string; content: string }>,
-  responseId: string | undefined,
-  onToken: (token: string) => void,
-): Promise<LLMResult> {
-  const isOpenAI = config.llm.provider === 'openai'
-
-  if (isOpenAI && responseId) {
-    const toolResultInputs = results.map(r => ({
-      type: 'function_call_output',
-      call_id: r.callId,
-      output: r.content,
-    }))
-    return _send(config, messages, systemPrompt, skillRefs, onToken, responseId, toolResultInputs)
-  }
-
-  // Chat Completions : ajouter message assistant + messages tool
-  const extraMessages: unknown[] = [
-    {
-      role: 'assistant',
-      content: null,
-      tool_calls: toolCalls.map(tc => ({
-        id: tc.id,
-        type: 'function',
-        function: { name: tc.name, arguments: tc.rawArgs },
-      })),
-    },
-    ...results.map(r => ({
-      role: 'tool',
-      tool_call_id: r.callId,
-      content: r.content,
-    })),
-  ]
-  return _send(config, messages, systemPrompt, skillRefs, onToken, undefined, undefined, extraMessages)
 }
 
 // ─── MCP ─────────────────────────────────────────────────────────────────────

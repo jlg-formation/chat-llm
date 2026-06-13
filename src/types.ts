@@ -31,7 +31,7 @@ export interface Skill {
   files: Record<string, string>
 }
 
-export type MessageRole = 'user' | 'assistant' | 'system'
+export type MessageRole = 'user' | 'assistant' | 'system' | 'tool_call' | 'tool_result'
 
 export interface MessageImage {
   dataUrl: string
@@ -45,6 +45,12 @@ export interface ChatMessage {
   images?: MessageImage[]
   isStreaming?: boolean
   isJson?: boolean
+  // Pour tool_call
+  toolCallId?: string
+  toolName?: string
+  toolArgs?: string
+  // Pour tool_result
+  toolCallResultId?: string
 }
 
 export interface HttpExchange {

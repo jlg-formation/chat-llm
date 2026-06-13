@@ -4,7 +4,7 @@ import { ChatMessageView } from './chat/ChatMessage'
 import { ChatInput } from './chat/ChatInput'
 import { useConfig } from '../store/configStore'
 import { loadSkills, getSkillContent, parseSkillFrontmatter } from '../store/skillsStore'
-import { sendMessage, sendToolResults } from '../services/llm'
+import { sendMessage } from '../services/llm'
 import type { SkillRef, LLMToolCall } from '../services/llm'
 import { Trash2 } from 'lucide-react'
 
@@ -84,38 +84,57 @@ export function Chat() {
     try {
       const { systemPrompt, skillRefs } = await buildSystemAndSkills()
 
+      let apiMessages = [...newMessages]
       let finalContent = ''
       const onToken = (token: string) => {
         finalContent += token
         updateAssistant(finalContent, true)
       }
 
-      let result = await sendMessage(config, newMessages, systemPrompt, skillRefs, onToken)
+      let result = await sendMessage(config, apiMessages, systemPrompt, skillRefs, onToken)
 
       let iterations = 0
       while (result.type === 'tool_calls' && iterations < MAX_TOOL_ITERATIONS) {
         iterations++
         finalContent = ''
 
-        // Indicateur visuel pendant l'exécution du/des tool(s)
-        const toolNames = result.calls.map(c => (c.args.name as string) ?? c.name).join(', ')
-        updateAssistant(`⏳ Récupération du skill « ${toolNames} »…`, true)
-
         const toolResults = await Promise.all(
           result.calls.map(async call => ({
-            callId: call.id,
+            call,
             content: await resolveToolCall(call),
           }))
         )
 
-        const prevCalls: LLMToolCall[] = result.calls
-        const prevResponseId = result.responseId
+        // Construire les messages tool_call + tool_result et les ajouter à l'historique
+        const toolMsgs: ChatMessageType[] = []
+        for (const { call, content } of toolResults) {
+          toolMsgs.push({
+            id: genId(),
+            role: 'tool_call',
+            content: call.rawArgs,
+            toolCallId: call.id,
+            toolName: call.name,
+            toolArgs: call.rawArgs,
+          })
+          toolMsgs.push({
+            id: genId(),
+            role: 'tool_result',
+            content,
+            toolCallResultId: call.id,
+          })
+        }
 
-        result = await sendToolResults(
-          config, newMessages, systemPrompt, skillRefs,
-          prevCalls, toolResults, prevResponseId,
-          onToken,
-        )
+        apiMessages = [...apiMessages, ...toolMsgs]
+
+        // Mettre à jour l'UI : insérer les messages tool avant le message assistant en cours
+        setMessages(prev => {
+          const withoutLast = prev.slice(0, -1)
+          return [...withoutLast, ...toolMsgs, prev[prev.length - 1]]
+        })
+
+        updateAssistant('', true)
+
+        result = await sendMessage(config, apiMessages, systemPrompt, skillRefs, onToken)
       }
 
       if (!config.streamEnabled && result.type === 'text') {
