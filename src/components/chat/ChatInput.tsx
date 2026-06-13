@@ -20,6 +20,10 @@ export function ChatInput({ onSend, disabled }: Props) {
     }
   }, [text])
 
+  useEffect(() => {
+    if (!disabled) textareaRef.current?.focus()
+  }, [disabled])
+
   function handleSend() {
     if (!text.trim() && images.length === 0) return
     onSend(text.trim(), images)
