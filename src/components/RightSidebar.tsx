@@ -1,5 +1,5 @@
 import { ChevronRight, ChevronLeft, Trash2, ArrowRight, ArrowLeft } from 'lucide-react'
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { useHttpExchanges } from '../store/httpStore'
 import type { HttpExchange } from '../types'
 
@@ -110,6 +110,11 @@ export function RightSidebar() {
   const dragging = useRef(false)
   const startX = useRef(0)
   const startWidth = useRef(0)
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [exchanges])
 
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     dragging.current = true
@@ -184,6 +189,7 @@ export function RightSidebar() {
         {exchanges.map(ex => (
           <ExchangeCard key={ex.id} exchange={ex} />
         ))}
+        <div ref={bottomRef} />
       </div>
     </aside>
     </div>

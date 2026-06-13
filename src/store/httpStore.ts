@@ -9,7 +9,7 @@ function notify() {
 }
 
 export function addExchange(exchange: HttpExchange) {
-  exchanges = [exchange, ...exchanges]
+  exchanges = [...exchanges, exchange]
   notify()
 }
 
