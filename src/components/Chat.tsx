@@ -22,6 +22,7 @@ export function Chat() {
   const [sending, setSending] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const lmStudioResponseIdRef = useRef<string | undefined>(undefined)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -106,8 +107,10 @@ export function Chat() {
       }
 
       const activeMcpTools = config.mcpEnabled ? config.mcpTools.filter(t => t.enabled) : []
-      let result = await sendMessage(config, apiMessages, systemPrompt, skillRefs, activeMcpTools, onToken, ctrl.signal)
+      const prevId = config.llm.apiFormat === 'lmstudio_chat' ? lmStudioResponseIdRef.current : undefined
+      let result = await sendMessage(config, apiMessages, systemPrompt, skillRefs, activeMcpTools, onToken, ctrl.signal, prevId)
       if (result.usage) addUsage(result.usage)
+      if (result.responseId) lmStudioResponseIdRef.current = result.responseId
 
       let iterations = 0
       while (result.type === 'tool_calls' && iterations < MAX_TOOL_ITERATIONS) {
@@ -186,7 +189,7 @@ export function Chat() {
         <span className="text-sm font-medium text-gray-600">Conversation</span>
         {messages.length > 0 && (
           <button
-            onClick={() => { setMessages([]); resetUsage() }}
+            onClick={() => { setMessages([]); resetUsage(); lmStudioResponseIdRef.current = undefined }}
             className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-blue-500 transition-colors"
           >
             <SquarePen className="w-3.5 h-3.5" />

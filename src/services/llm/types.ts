@@ -13,5 +13,5 @@ export interface LLMToolCall {
 }
 
 export type LLMResult =
-  | { type: 'text'; content: string; usage?: TokenUsage }
+  | { type: 'text'; content: string; usage?: TokenUsage; responseId?: string }
   | { type: 'tool_calls'; calls: LLMToolCall[]; responseId?: string; rawAssistantMsg?: unknown; usage?: TokenUsage }

@@ -130,29 +130,26 @@ export function buildLmStudioChatBody(
   config: AppConfig,
   messages: ChatMessage[],
   systemPrompt: string,
+  previousResponseId?: string,
 ) {
-  // L'input est un tableau d'objets {type, role, content} pour les tours multiples
-  const input: unknown[] = []
+  // Trouver le dernier message utilisateur (le tour courant)
+  const lastUserMsg = [...messages].reverse().find(m => m.role === 'user' && !m.isError)
 
-  for (const m of messages) {
-    if (m.isError) continue
-    if (m.role === 'assistant') {
-      input.push({ type: 'message', role: 'assistant', content: m.content })
-    } else if (m.role === 'user') {
-      const parts: unknown[] = []
-      if (m.content) parts.push({ type: 'text', content: m.content })
-      for (const img of m.images ?? []) parts.push({ type: 'image', data_url: img.dataUrl })
-      input.push({ type: 'message', role: 'user', content: parts.length === 1 && (parts[0] as Record<string, unknown>).type === 'text' ? m.content : parts })
-    }
-    // tool_call / tool_result ignorés : /api/v1/chat gère les outils via integrations MCP
+  // input = liste d'items {type:"text"|"image"} du tour courant uniquement
+  const input: unknown[] = []
+  if (lastUserMsg) {
+    if (lastUserMsg.content) input.push({ type: 'text', content: lastUserMsg.content })
+    for (const img of lastUserMsg.images ?? []) input.push({ type: 'image', data_url: img.dataUrl })
   }
 
   const body: Record<string, unknown> = {
     model: config.llm.model,
     input,
     stream: config.streamEnabled,
+    store: true,
   }
 
+  if (previousResponseId) body.previous_response_id = previousResponseId
   if (systemPrompt) body.system_prompt = systemPrompt
   if (config.llm.temperature !== null) body.temperature = config.llm.temperature
   if (config.llm.topP !== null) body.top_p = config.llm.topP
@@ -167,9 +164,10 @@ export function buildBody(
   systemPrompt: string,
   skillRefs: SkillRef[],
   mcpTools: McpTool[],
+  options?: { previousResponseId?: string },
 ) {
   if (config.llm.apiFormat === 'lmstudio_chat') {
-    return buildLmStudioChatBody(config, messages, systemPrompt)
+    return buildLmStudioChatBody(config, messages, systemPrompt, options?.previousResponseId)
   }
   return usesResponsesAPI(config)
     ? buildOpenAIResponsesBody(config, messages, systemPrompt, skillRefs, mcpTools)

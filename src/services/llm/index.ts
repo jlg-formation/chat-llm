@@ -14,12 +14,13 @@ export async function sendMessage(
   mcpTools: McpTool[],
   onToken: (token: string) => void,
   signal?: AbortSignal,
+  previousResponseId?: string,
 ): Promise<import('./types').LLMResult> {
   const isLmStudioChat = config.llm.apiFormat === 'lmstudio_chat'
   const isResponsesAPI = usesResponsesAPI(config)
   const isOllama = config.llm.provider === 'ollama'
 
-  const body = buildBody(config, messages, systemPrompt, skillRefs, mcpTools)
+  const body = buildBody(config, messages, systemPrompt, skillRefs, mcpTools, { previousResponseId })
   const endpoint = getEndpoint(config)
   const headers = getHeaders(config)
 

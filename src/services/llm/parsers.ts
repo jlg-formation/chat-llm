@@ -49,6 +49,7 @@ async function* parseSSEStreamWithEvents(response: Response): AsyncGenerator<{ e
 
 export async function streamLmStudioChat(response: Response, onToken: (t: string) => void): Promise<LLMResult> {
   let fullText = ''
+  let responseId: string | undefined
   let usage: TokenUsage | undefined
 
   for await (const { event, data } of parseSSEStreamWithEvents(response)) {
@@ -58,24 +59,25 @@ export async function streamLmStudioChat(response: Response, onToken: (t: string
         const chunk = (json.content as string) ?? ''
         if (chunk) { fullText += chunk; onToken(chunk) }
       } else if (event === 'chat.end') {
-        const stats = json as Record<string, unknown>
-        if (stats.input_tokens !== undefined) {
+        responseId = (json.response_id as string) ?? undefined
+        if (json.input_tokens !== undefined) {
           usage = {
-            promptTokens: (stats.input_tokens as number) ?? 0,
-            completionTokens: (stats.total_output_tokens as number) ?? 0,
+            promptTokens: (json.input_tokens as number) ?? 0,
+            completionTokens: (json.total_output_tokens as number) ?? 0,
           }
         }
       }
     } catch { /* chunk non-JSON */ }
   }
 
-  return { type: 'text', content: fullText, usage }
+  return { type: 'text', content: fullText, usage, responseId }
 }
 
 export function parseLmStudioChatNonStreaming(json: unknown): LLMResult {
   const obj = json as Record<string, unknown>
   const outputs = (obj.output as unknown[]) ?? []
   let text = ''
+  const responseId = (obj.response_id as string) ?? undefined
   const stats = obj.stats as Record<string, unknown> | undefined
   const usage: TokenUsage | undefined = stats ? {
     promptTokens: (stats.input_tokens as number) ?? 0,
@@ -87,7 +89,7 @@ export function parseLmStudioChatNonStreaming(json: unknown): LLMResult {
     if (o.type === 'message') text += (o.content as string) ?? ''
   }
 
-  return { type: 'text', content: text, usage }
+  return { type: 'text', content: text, usage, responseId }
 }
 
 export function safeParseArgs(raw: string): Record<string, unknown> {
