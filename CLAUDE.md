@@ -5,10 +5,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commandes essentielles
 
 ```bash
-npm run dev      # Serveur de développement (http://localhost:5173/chat-llm/)
-npm run build    # Build de production (output : dist/)
+bun run dev      # Serveur de développement (http://localhost:5173/chat-llm/)
+bun run build    # Build de production (output : dist/) — tsc -b puis vite build
+bun run lint     # ESLint sur tout le projet
+bun run test     # Tests Playwright (nécessite le serveur dev lancé)
+bun run test:ui  # Tests Playwright en mode UI interactif
+bun run preview  # Prévisualise le build dist/ en local
 npx tsc --noEmit # Vérification TypeScript sans compilation
 ```
+
+Le projet utilise **bun** comme gestionnaire de paquets (présence de `bun.lock`). Les commandes `npm run …` fonctionnent aussi mais préférer `bun run …`.
 
 ## Architecture
 
