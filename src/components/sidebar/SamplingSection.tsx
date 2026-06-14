@@ -32,24 +32,22 @@ function SliderField({ label, hint, min, max, step, defaultValue, value, leftLab
           <span className={`absolute h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${enabled ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
         </button>
       </div>
-      {enabled && (
-        <div className="mt-2">
-          <div className="flex justify-between text-xs text-gray-500 mb-1">
-            <span>{label}</span>
-            <span className="font-mono font-semibold text-purple-700">{value!.toFixed(2)}</span>
-          </div>
-          <input
-            type="range" min={min} max={max} step={step}
-            value={value!}
-            onChange={e => onChange(parseFloat(e.target.value))}
-            className="w-full accent-purple-500"
-          />
-          <div className="flex justify-between text-xs text-gray-300 mt-0.5">
-            <span>{leftLabel}</span>
-            <span>{rightLabel}</span>
-          </div>
+      <div className={`mt-2 transition-opacity ${enabled ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
+        <div className="flex justify-between text-xs text-gray-500 mb-1">
+          <span>{label}</span>
+          <span className="font-mono font-semibold text-purple-700">{(value ?? defaultValue).toFixed(2)}</span>
         </div>
-      )}
+        <input
+          type="range" min={min} max={max} step={step}
+          value={value ?? defaultValue}
+          onChange={e => onChange(parseFloat(e.target.value))}
+          className="w-full accent-purple-500"
+        />
+        <div className="flex justify-between text-xs text-gray-300 mt-0.5">
+          <span>{leftLabel}</span>
+          <span>{rightLabel}</span>
+        </div>
+      </div>
     </div>
   )
 }
