@@ -2,18 +2,11 @@ import { ChevronRight, ChevronLeft, Trash2, ArrowRight, ArrowLeft } from 'lucide
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useHttpExchanges } from '../store/httpStore'
 import type { HttpExchange } from '../types'
+import { JsonTree } from './JsonTree'
 
 const MIN_WIDTH = 200
 const MAX_WIDTH = 800
 const DEFAULT_WIDTH = 320
-
-function formatJson(val: unknown): string {
-  if (val === null || val === undefined) return ''
-  if (typeof val === 'string') {
-    try { return JSON.stringify(JSON.parse(val), null, 2) } catch { return val }
-  }
-  return JSON.stringify(val, null, 2)
-}
 
 function ExchangeCard({ exchange }: { exchange: HttpExchange }) {
   const [open, setOpen] = useState(true)
@@ -54,9 +47,7 @@ function ExchangeCard({ exchange }: { exchange: HttpExchange }) {
             {exchange.requestBody !== null && (
               <>
                 <div className="text-gray-500 font-medium mt-1">Body :</div>
-                <pre className="font-mono text-gray-700 whitespace-pre-wrap break-all bg-gray-50 rounded p-1.5 leading-relaxed">
-                  {formatJson(exchange.requestBody)}
-                </pre>
+                <JsonTree value={exchange.requestBody} />
               </>
             )}
           </div>
@@ -84,9 +75,7 @@ function ExchangeCard({ exchange }: { exchange: HttpExchange }) {
               {exchange.responseBody !== undefined && (
                 <>
                   <div className="text-gray-500 font-medium mt-1">Body :</div>
-                  <pre className="font-mono text-gray-700 whitespace-pre-wrap break-all bg-gray-50 rounded p-1.5 leading-relaxed">
-                    {formatJson(exchange.responseBody)}
-                  </pre>
+                  <JsonTree value={exchange.responseBody} />
                 </>
               )}
             </div>
