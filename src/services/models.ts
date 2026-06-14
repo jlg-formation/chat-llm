@@ -33,13 +33,14 @@ export async function fetchModels(provider: Provider, baseUrl: string, apiKey: s
     data?: Array<{
       id: string
       owned_by?: string
+      type?: string
       context_length?: number
       max_completion_tokens?: number
       pricing?: { prompt?: string; completion?: string }
     }>
   }
 
-  return (json.data ?? []).map(m => ({
+  return (json.data ?? []).filter(m => m.type !== 'embedding').map(m => ({
     id: m.id,
     ownedBy: m.owned_by,
     contextLength: m.context_length || undefined,
