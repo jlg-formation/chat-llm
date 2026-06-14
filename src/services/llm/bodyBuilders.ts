@@ -78,8 +78,6 @@ export function buildOpenAIResponsesBody(
 ) {
   const input: unknown[] = []
 
-  if (systemPrompt) input.push({ role: 'system', content: systemPrompt })
-
   for (const m of messages) {
     if (m.role === 'assistant') {
       input.push({ role: 'assistant', content: m.content })
@@ -104,6 +102,8 @@ export function buildOpenAIResponsesBody(
     input,
     stream: config.streamEnabled,
   }
+
+  if (systemPrompt) body.instructions = systemPrompt
 
   if (config.llm.temperature !== null) body.temperature = config.llm.temperature
   if (config.llm.topP !== null) body.top_p = config.llm.topP
