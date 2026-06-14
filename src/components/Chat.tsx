@@ -7,7 +7,7 @@ import { loadSkills, getSkillContent, parseSkillFrontmatter } from '../store/ski
 import { sendMessage } from '../services/llm'
 import { callMcpTool } from '../services/mcp'
 import type { SkillRef, LLMToolCall } from '../services/llm'
-import { SquarePen } from 'lucide-react'
+import { SquarePen, Square } from 'lucide-react'
 
 const MAX_TOOL_ITERATIONS = 5
 
@@ -19,6 +19,7 @@ export function Chat() {
   const [config] = useConfig()
   const [messages, setMessages] = useState<ChatMessageType[]>([])
   const [sending, setSending] = useState(false)
+  const abortRef = useRef<AbortController | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -84,6 +85,9 @@ export function Chat() {
     setMessages([...newMessages, assistantMsg])
     setSending(true)
 
+    const ctrl = new AbortController()
+    abortRef.current = ctrl
+
     const updateAssistant = (content: string, isStreaming: boolean, isJson = false) => {
       setMessages(prev => prev.map(m =>
         m.id === assistantId ? { ...m, content, isStreaming, isJson } : m
@@ -101,7 +105,7 @@ export function Chat() {
       }
 
       const activeMcpTools = config.mcpEnabled ? config.mcpTools.filter(t => t.enabled) : []
-      let result = await sendMessage(config, apiMessages, systemPrompt, skillRefs, activeMcpTools, onToken)
+      let result = await sendMessage(config, apiMessages, systemPrompt, skillRefs, activeMcpTools, onToken, ctrl.signal)
 
       let iterations = 0
       while (result.type === 'tool_calls' && iterations < MAX_TOOL_ITERATIONS) {
@@ -144,7 +148,7 @@ export function Chat() {
 
         updateAssistant('', true)
 
-        result = await sendMessage(config, apiMessages, systemPrompt, skillRefs, activeMcpTools, onToken)
+        result = await sendMessage(config, apiMessages, systemPrompt, skillRefs, activeMcpTools, onToken, ctrl.signal)
       }
 
       if (!config.streamEnabled && result.type === 'text') {
@@ -157,8 +161,16 @@ export function Chat() {
 
       updateAssistant(finalContent, false, isJson)
     } catch (err) {
-      updateAssistant(`Erreur : ${(err as Error).message}`, false)
+      if ((err as Error).name === 'AbortError') {
+        // Arrêt demandé par l'utilisateur — on conserve le contenu partiel déjà affiché
+        setMessages(prev => prev.map(m =>
+          m.id === assistantId ? { ...m, isStreaming: false } : m
+        ))
+      } else {
+        updateAssistant(`Erreur : ${(err as Error).message}`, false)
+      }
     } finally {
+      abortRef.current = null
       setSending(false)
     }
   }
@@ -167,15 +179,26 @@ export function Chat() {
     <main className="flex-1 flex flex-col min-h-0 bg-gray-50">
       <div className="flex items-center justify-between px-4 h-10 bg-white border-b border-gray-200">
         <span className="text-sm font-medium text-gray-600">Conversation</span>
-        {messages.length > 0 && (
-          <button
-            onClick={() => setMessages([])}
-            className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-blue-500 transition-colors"
-          >
-            <SquarePen className="w-3.5 h-3.5" />
-            Nouvelle discussion
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {sending && (
+            <button
+              onClick={() => abortRef.current?.abort()}
+              className="flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 border border-red-300 hover:border-red-500 bg-red-50 hover:bg-red-100 px-2 py-1 rounded transition-colors"
+            >
+              <Square className="w-3 h-3 fill-current" />
+              Arrêter
+            </button>
+          )}
+          {messages.length > 0 && !sending && (
+            <button
+              onClick={() => setMessages([])}
+              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-blue-500 transition-colors"
+            >
+              <SquarePen className="w-3.5 h-3.5" />
+              Nouvelle discussion
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">

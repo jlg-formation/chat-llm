@@ -433,7 +433,6 @@ function parseNonStreamingResponse(json: unknown, isOpenAI: boolean, isOllama: b
 }
 
 // ─── API publique ─────────────────────────────────────────────────────────────
-
 export async function sendMessage(
   config: AppConfig,
   messages: ChatMessage[],
@@ -441,6 +440,7 @@ export async function sendMessage(
   skillRefs: SkillRef[],
   mcpTools: import('../types').McpTool[],
   onToken: (token: string) => void,
+  signal?: AbortSignal,
 ): Promise<LLMResult> {
   const isResponsesAPI = usesResponsesAPI(config)
   const isOllama = config.llm.provider === 'ollama'
@@ -464,7 +464,7 @@ export async function sendMessage(
   }
   addExchange(exchange)
 
-  const response = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body) })
+  const response = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body), signal })
 
   const respHeaders: Record<string, string> = {}
   for (const k of ['content-type', 'x-request-id', 'x-ratelimit-limit-requests', 'x-ratelimit-remaining-requests', 'x-ratelimit-reset-requests']) {
