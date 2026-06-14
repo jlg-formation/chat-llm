@@ -159,8 +159,8 @@ function buildChatCompletionsBody(
     stream: config.streamEnabled,
   }
 
-  if ((config.llm.samplingMode ?? 'default') === 'temperature') body.temperature = config.llm.temperature ?? 1
-  else if (config.llm.samplingMode === 'top_p') body.top_p = config.llm.topP ?? 0.9
+  if (config.llm.temperature !== null) body.temperature = config.llm.temperature
+  if (config.llm.topP !== null) body.top_p = config.llm.topP
   if (config.llm.maxTokens !== null) body.max_tokens = config.llm.maxTokens
 
   const allTools = [
@@ -222,8 +222,8 @@ function buildOpenAIResponsesBody(
     stream: config.streamEnabled,
   }
 
-  if ((config.llm.samplingMode ?? 'default') === 'temperature') body.temperature = config.llm.temperature ?? 1
-  else if (config.llm.samplingMode === 'top_p') body.top_p = config.llm.topP ?? 0.9
+  if (config.llm.temperature !== null) body.temperature = config.llm.temperature
+  if (config.llm.topP !== null) body.top_p = config.llm.topP
   if (config.llm.maxTokens !== null) body.max_output_tokens = config.llm.maxTokens
 
   const allTools = [

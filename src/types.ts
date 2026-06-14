@@ -2,17 +2,14 @@ export type Provider = 'openai' | 'ovh' | 'lmstudio' | 'ollama'
 
 export type ApiFormat = 'responses' | 'chat_completions'
 
-export type SamplingMode = 'default' | 'temperature' | 'top_p'
-
 export interface LLMConfig {
   provider: Provider
   baseUrl: string
   apiKeys: Record<Provider, string>
   model: string
   apiFormat: ApiFormat
-  samplingMode: SamplingMode
-  temperature: number
-  topP: number
+  temperature: number | null
+  topP: number | null
   maxTokens: number | null
 }
 
@@ -91,9 +88,8 @@ export const DEFAULT_CONFIG: AppConfig = {
     apiKeys: { openai: '', ovh: '', lmstudio: '', ollama: '' },
     model: 'gpt-5.4-nano',
     apiFormat: 'responses',
-    samplingMode: 'default',
-    temperature: 1,
-    topP: 0.9,
+    temperature: null,
+    topP: null,
     maxTokens: null,
   },
   streamEnabled: true,
