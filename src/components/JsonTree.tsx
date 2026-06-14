@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 
-const CW = 14 // largeur de la colonne chevron en px
+const CW = 14 // largeur du chevron en px
 
 function Chevron({ open, onClick }: { open: boolean; onClick: () => void }) {
   return (
@@ -14,10 +14,6 @@ function Chevron({ open, onClick }: { open: boolean; onClick: () => void }) {
       {open ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
     </button>
   )
-}
-
-function Spacer() {
-  return <span style={{ display: 'inline-block', width: CW, flexShrink: 0 }} />
 }
 
 function Primitive({ value }: { value: unknown }) {
@@ -34,10 +30,7 @@ function JsonNode({ value, prefix, suffix }: { value: unknown; prefix?: ReactNod
 
   if (Array.isArray(value)) {
     if (value.length === 0) return (
-      <div className="flex">
-        <Spacer />
-        <span>{prefix}<span className="text-gray-500">[]</span>{suffix}</span>
-      </div>
+      <div>{prefix}<span className="text-gray-500">[]</span>{suffix}</div>
     )
     return (
       <>
@@ -55,10 +48,7 @@ function JsonNode({ value, prefix, suffix }: { value: unknown; prefix?: ReactNod
                 <JsonNode key={i} value={item} suffix={i < value.length - 1 ? <span className="text-gray-400">,</span> : null} />
               ))}
             </div>
-            <div className="flex">
-              <Spacer />
-              <span className="text-gray-500">]</span>{suffix}
-            </div>
+            <div><span className="text-gray-500">]</span>{suffix}</div>
           </>
         )}
       </>
@@ -68,10 +58,7 @@ function JsonNode({ value, prefix, suffix }: { value: unknown; prefix?: ReactNod
   if (value !== null && typeof value === 'object') {
     const entries = Object.entries(value as Record<string, unknown>)
     if (entries.length === 0) return (
-      <div className="flex">
-        <Spacer />
-        <span>{prefix}<span className="text-gray-500">{'{}'}</span>{suffix}</span>
-      </div>
+      <div>{prefix}<span className="text-gray-500">{'{}'}</span>{suffix}</div>
     )
     return (
       <>
@@ -94,22 +81,14 @@ function JsonNode({ value, prefix, suffix }: { value: unknown; prefix?: ReactNod
                 />
               ))}
             </div>
-            <div className="flex">
-              <Spacer />
-              <span className="text-gray-500">{'}'}</span>{suffix}
-            </div>
+            <div><span className="text-gray-500">{'}'}</span>{suffix}</div>
           </>
         )}
       </>
     )
   }
 
-  return (
-    <div className="flex">
-      <Spacer />
-      <span>{prefix}<Primitive value={value} />{suffix}</span>
-    </div>
-  )
+  return <div>{prefix}<Primitive value={value} />{suffix}</div>
 }
 
 export function JsonTree({ value }: { value: unknown }) {
