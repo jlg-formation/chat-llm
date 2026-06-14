@@ -162,7 +162,7 @@ export function RightSidebar() {
         title="Redimensionner"
       />
     <aside className="flex-1 bg-white border-l border-gray-200 flex flex-col min-h-0 overflow-hidden">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 bg-gray-50 shrink-0">
+      <div className="flex items-center justify-between px-3 h-10 border-b border-gray-200 bg-gray-50 shrink-0">
         <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Inspecteur HTTP</span>
         <div className="flex items-center gap-2">
           {exchanges.length > 0 && (

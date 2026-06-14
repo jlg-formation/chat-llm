@@ -31,7 +31,7 @@ export function LeftSidebar() {
 
   return (
     <aside className="w-72 shrink-0 bg-white border-r border-gray-200 overflow-y-auto flex flex-col">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-200 bg-gray-50">
+      <div className="flex items-center gap-2 px-4 h-10 shrink-0 border-b border-gray-200 bg-gray-50">
         <Settings className="w-4 h-4 text-gray-500" />
         <span className="text-sm font-semibold text-gray-700 flex-1">Configuration</span>
         <button
