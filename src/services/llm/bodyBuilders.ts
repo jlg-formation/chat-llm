@@ -160,9 +160,8 @@ export function buildLmStudioChatBody(
   if (config.mcpEnabled && config.mcpUrl) {
     const enabledTools = mcpTools.filter(t => t.enabled)
     const integration: Record<string, unknown> = {
-      type: 'ephemeral_mcp',
-      server_label: config.mcpName || 'mcp',
-      server_url: config.mcpUrl,
+      type: 'plugin',
+      id: `mcp/${config.mcpName || 'mcp'}`,
     }
     if (enabledTools.length > 0) {
       integration.allowed_tools = enabledTools.map(t => t.name)
