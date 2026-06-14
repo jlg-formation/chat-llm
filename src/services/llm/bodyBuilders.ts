@@ -42,9 +42,13 @@ export function buildChatCompletionsBody(
     stream: config.streamEnabled,
   }
 
+  if (config.streamEnabled) {
+    body.stream_options = { include_usage: true }
+  }
+
   if (config.llm.temperature !== null) body.temperature = config.llm.temperature
   if (config.llm.topP !== null) body.top_p = config.llm.topP
-  if (config.llm.maxTokens !== null) body.max_tokens = config.llm.maxTokens
+  if (config.llm.maxTokens !== null) body.max_completion_tokens = config.llm.maxTokens
 
   const allTools = [
     ...(skillRefs.length > 0 ? [skillToolForChatCompletions()] : []),

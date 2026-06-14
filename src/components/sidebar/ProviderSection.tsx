@@ -1,22 +1,11 @@
-import { Server } from 'lucide-react'
+import { Server, RefreshCw } from 'lucide-react'
+import { useState } from 'react'
 import { useConfig } from '../../store/configStore'
 import { type Provider, type ApiFormat, PROVIDER_DEFAULTS } from '../../types'
 import { Accordion } from './Accordion'
-
-interface ModelOption {
-  id: string
-  label: string
-  price: string
-}
-
-const OPENAI_MODELS: ModelOption[] = [
-  { id: 'gpt-5.4-nano',  label: 'GPT-5.4 nano',  price: '$0.20 / $1.25' },
-  { id: 'gpt-5.4-mini',  label: 'GPT-5.4 mini',  price: '$0.75 / $4.50' },
-  { id: 'gpt-5.4',       label: 'GPT-5.4',        price: '$2.50 / $15' },
-  { id: 'gpt-5.4-pro',   label: 'GPT-5.4 pro',   price: '$30 / $180' },
-  { id: 'gpt-5.5',       label: 'GPT-5.5',        price: '$5 / $30' },
-  { id: 'gpt-5.5-pro',   label: 'GPT-5.5 pro',   price: '$30 / $180' },
-]
+import { fetchModels } from '../../services/models'
+import { setCachedModels, useModelsCache } from '../../store/modelsStore'
+import type { ModelInfo } from '../../services/models'
 
 const OVH_MODELS_RESPONSES_SUPPORTED = new Set(['gpt-oss-20b', 'gpt-oss-120b'])
 
@@ -26,27 +15,45 @@ function supportsFormat(provider: Provider, model: string, fmt: ApiFormat): bool
   return true
 }
 
-// ✦ = supporte aussi /v1/responses
-const OVH_MODELS: ModelOption[] = [
-  { id: 'gpt-oss-20b',                        label: 'gpt-oss-20b ✦',                        price: '$0.05 / $0.18' },
-  { id: 'gpt-oss-120b',                       label: 'gpt-oss-120b ✦',                       price: '$0.09 / $0.47' },
-  { id: 'Mistral-7B-Instruct-v0.3',           label: 'Mistral-7B-Instruct-v0.3',             price: '$0.11' },
-  { id: 'Mistral-Nemo-Instruct-2407',         label: 'Mistral-Nemo-Instruct-2407',           price: '$0.14' },
-  { id: 'Mistral-Small-3.2-24B-Instruct-2506', label: 'Mistral-Small-3.2-24B-Instruct-2506', price: '$0.10 / $0.31' },
-  { id: 'Llama-3.1-8B-Instruct',             label: 'Llama-3.1-8B-Instruct',               price: '$0.11' },
-  { id: 'Meta-Llama-3_3-70B-Instruct',        label: 'Meta-Llama-3.3-70B-Instruct',          price: '$0.74' },
-  { id: 'Qwen3-32B',                          label: 'Qwen3-32B',                            price: '$0.09 / $0.25' },
-  { id: 'Qwen3.5-9B',                         label: 'Qwen3.5-9B',                           price: '$0.12 / $0.18' },
-  { id: 'Qwen3.5-397B-A17B',                  label: 'Qwen3.5-397B-A17B',                    price: '$0.71 / $4.25' },
-  { id: 'Qwen3.6-27B',                        label: 'Qwen3.6-27B',                          price: '$0.47 / $3.19' },
-  { id: 'Qwen3-Coder-30B-A3B-Instruct',       label: 'Qwen3-Coder-30B-A3B-Instruct',         price: '$0.07 / $0.26' },
-  { id: 'Qwen2.5-VL-72B-Instruct',            label: 'Qwen2.5-VL-72B-Instruct',             price: '$1.01' },
+function modelLabel(m: ModelInfo): string {
+  let label = m.id
+  const parts: string[] = []
+  if (m.contextLength) parts.push(`${m.contextLength >= 1000 ? Math.round(m.contextLength / 1000) + 'k' : m.contextLength} ctx`)
+  if (m.pricingPrompt !== undefined && m.pricingCompletion !== undefined) {
+    const pIn = (m.pricingPrompt * 1_000_000).toFixed(2)
+    const pOut = (m.pricingCompletion * 1_000_000).toFixed(2)
+    parts.push(`$${pIn}/$${pOut} /Mtok`)
+  } else if (m.pricingPrompt !== undefined) {
+    parts.push(`$${(m.pricingPrompt * 1_000_000).toFixed(2)}/Mtok`)
+  }
+  if (parts.length > 0) label += ` — ${parts.join(', ')}`
+  return label
+}
+
+const STATIC_OPENAI_MODELS: ModelInfo[] = [
+  { id: 'gpt-5.4-nano',  pricingPrompt: 0.20e-6,  pricingCompletion: 1.25e-6  },
+  { id: 'gpt-5.4-mini',  pricingPrompt: 0.75e-6,  pricingCompletion: 4.50e-6  },
+  { id: 'gpt-5.4',       pricingPrompt: 2.50e-6,  pricingCompletion: 15e-6    },
+  { id: 'gpt-5.4-pro',   pricingPrompt: 30e-6,    pricingCompletion: 180e-6   },
+  { id: 'gpt-5.5',       pricingPrompt: 5e-6,     pricingCompletion: 30e-6    },
+  { id: 'gpt-5.5-pro',   pricingPrompt: 30e-6,    pricingCompletion: 180e-6   },
 ]
 
+// Filtre les modèles OVH pertinents pour le chat (exclut embeddings, audio, image)
+function isOvhChatModel(m: ModelInfo): boolean {
+  const id = m.id.toLowerCase()
+  if (id.includes('embed') || id.includes('whisper') || id.includes('diffusion') || id.includes('ppl') || id.includes('bge')) return false
+  if (m.maxCompletionTokens === 0 && m.contextLength === 0) return false
+  return true
+}
 
 export function ProviderSection() {
   const [config, update] = useConfig()
   const { llm } = config
+  const [loadingModels, setLoadingModels] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const cachedModels = useModelsCache(llm.provider)
+
   const DEFAULT_MODEL: Record<Provider, string> = {
     openai: 'gpt-5.4-nano',
     ovh: 'gpt-oss-20b',
@@ -64,7 +71,46 @@ export function ProviderSection() {
         model: DEFAULT_MODEL[provider],
       },
     })
+    setLoadError(null)
   }
+
+  async function handleLoadModels() {
+    setLoadingModels(true)
+    setLoadError(null)
+    try {
+      const models = await fetchModels(llm.provider, llm.baseUrl, llm.apiKeys[llm.provider])
+      setCachedModels(llm.provider, models)
+    } catch (e) {
+      setLoadError((e as Error).message)
+    } finally {
+      setLoadingModels(false)
+    }
+  }
+
+  // Modèles à afficher dans la liste
+  function getDisplayModels(): ModelInfo[] {
+    if (llm.provider === 'openai') {
+      if (cachedModels) {
+        // Depuis l'API : on garde les gpt-* récents uniquement
+        const known = new Set(STATIC_OPENAI_MODELS.map(m => m.id))
+        return cachedModels
+          .filter(m => m.id.startsWith('gpt-') && !m.id.includes('audio') && !m.id.includes('realtime') && !m.id.includes('image') && !m.id.includes('transcribe') && !m.id.includes('tts') && !m.id.includes('search'))
+          // Enrichir avec pricing statique si dispo
+          .map(m => known.has(m.id) ? { ...m, ...STATIC_OPENAI_MODELS.find(s => s.id === m.id) } : m)
+          .sort((a, b) => a.id.localeCompare(b.id))
+      }
+      return STATIC_OPENAI_MODELS
+    }
+    if (llm.provider === 'ovh') {
+      const models = cachedModels ?? []
+      return models.filter(isOvhChatModel)
+    }
+    return cachedModels ?? []
+  }
+
+  const displayModels = getDisplayModels()
+  const showDropdown = llm.provider === 'openai' || llm.provider === 'ovh' || cachedModels !== undefined
+  const modelInList = displayModels.some(m => m.id === llm.model)
 
   return (
     <Accordion title="Provider LLM" icon={<Server className="w-4 h-4 text-blue-500" />} defaultOpen>
@@ -83,37 +129,38 @@ export function ProviderSection() {
         </div>
 
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Modèle</label>
-          {llm.provider === 'openai' ? (
-            <select
-              value={OPENAI_MODELS.some(m => m.id === llm.model) ? llm.model : '__custom__'}
-              onChange={e => {
-                if (e.target.value !== '__custom__') update({ llm: { ...llm, model: e.target.value } })
-              }}
-              className="w-full text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-xs text-gray-500">Modèle</label>
+            <button
+              onClick={handleLoadModels}
+              disabled={loadingModels}
+              title="Charger les modèles depuis l'API"
+              className="flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition-colors disabled:opacity-40"
             >
-              {OPENAI_MODELS.map(m => (
-                <option key={m.id} value={m.id}>{m.label} — {m.price}</option>
-              ))}
-              {!OPENAI_MODELS.some(m => m.id === llm.model) && (
-                <option value="__custom__">{llm.model} (personnalisé)</option>
-              )}
-            </select>
-          ) : llm.provider === 'ovh' ? (
+              <RefreshCw className={`w-3 h-3 ${loadingModels ? 'animate-spin' : ''}`} />
+              {cachedModels ? 'Actualiser' : 'Charger'}
+            </button>
+          </div>
+
+          {loadError && (
+            <p className="text-xs text-red-500 mb-1">{loadError}</p>
+          )}
+
+          {showDropdown && displayModels.length > 0 ? (
             <select
-              value={OVH_MODELS.some(m => m.id === llm.model) ? llm.model : '__custom__'}
+              value={modelInList ? llm.model : '__custom__'}
               onChange={e => {
                 if (e.target.value === '__custom__') return
                 const newModel = e.target.value
-                const apiFormat = supportsFormat('ovh', newModel, llm.apiFormat) ? llm.apiFormat : 'chat_completions'
+                const apiFormat = supportsFormat(llm.provider, newModel, llm.apiFormat) ? llm.apiFormat : 'chat_completions'
                 update({ llm: { ...llm, model: newModel, apiFormat } })
               }}
               className="w-full text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             >
-              {OVH_MODELS.map(m => (
-                <option key={m.id} value={m.id}>{m.label} — {m.price}</option>
+              {displayModels.map(m => (
+                <option key={m.id} value={m.id}>{modelLabel(m)}</option>
               ))}
-              {!OVH_MODELS.some(m => m.id === llm.model) && (
+              {!modelInList && (
                 <option value="__custom__">{llm.model} (personnalisé)</option>
               )}
             </select>

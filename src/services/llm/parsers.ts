@@ -1,4 +1,5 @@
 import type { LLMResult, LLMToolCall } from './types'
+import type { TokenUsage } from '../../types'
 
 export async function* parseSSEStream(response: Response): AsyncGenerator<string> {
   const reader = response.body!.getReader()
@@ -28,6 +29,7 @@ export function safeParseArgs(raw: string): Record<string, unknown> {
 export async function streamOpenAIResponses(response: Response, onToken: (t: string) => void): Promise<LLMResult> {
   let fullText = ''
   let responseId = ''
+  let usage: TokenUsage | undefined
   const pendingCalls = new Map<string, { call_id: string; name: string; argsBuffer: string }>()
 
   for await (const rawData of parseSSEStream(response)) {
@@ -53,6 +55,8 @@ export async function streamOpenAIResponses(response: Response, onToken: (t: str
         case 'response.completed': {
           const resp = json.response as Record<string, unknown>
           responseId = (resp?.id as string) ?? ''
+          const u = resp?.usage as Record<string, unknown> | undefined
+          if (u) usage = { promptTokens: (u.input_tokens as number) ?? 0, completionTokens: (u.output_tokens as number) ?? 0 }
           break
         }
       }
@@ -69,15 +73,17 @@ export async function streamOpenAIResponses(response: Response, onToken: (t: str
         args: safeParseArgs(c.argsBuffer),
       })),
       responseId,
+      usage,
     }
   }
-  return { type: 'text', content: fullText }
+  return { type: 'text', content: fullText, usage }
 }
 
 export async function streamChatCompletions(response: Response, isOllama: boolean, onToken: (t: string) => void): Promise<LLMResult> {
   let fullText = ''
   const toolCallsMap = new Map<number, { id: string; name: string; argsBuffer: string }>()
   let finishReason = ''
+  let usage: TokenUsage | undefined
 
   for await (const rawData of parseSSEStream(response)) {
     try {
@@ -87,7 +93,17 @@ export async function streamChatCompletions(response: Response, isOllama: boolea
         const msg = json.message as Record<string, unknown>
         const delta = (msg?.content as string) ?? ''
         if (delta) { fullText += delta; onToken(delta) }
+        const u = json.prompt_eval_count !== undefined
+          ? { promptTokens: (json.prompt_eval_count as number) ?? 0, completionTokens: (json.eval_count as number) ?? 0 }
+          : undefined
+        if (u) usage = u
         continue
+      }
+
+      // Chunk de fin avec usage (stream_options.include_usage)
+      const u = json.usage as Record<string, unknown> | undefined
+      if (u?.prompt_tokens !== undefined) {
+        usage = { promptTokens: (u.prompt_tokens as number) ?? 0, completionTokens: (u.completion_tokens as number) ?? 0 }
       }
 
       const choices = json.choices as unknown[]
@@ -126,9 +142,19 @@ export async function streamChatCompletions(response: Response, isOllama: boolea
         rawArgs: tc.argsBuffer,
         args: safeParseArgs(tc.argsBuffer),
       })),
+      usage,
     }
   }
-  return { type: 'text', content: fullText }
+  return { type: 'text', content: fullText, usage }
+}
+
+function extractUsageFromOpenAIResponse(obj: Record<string, unknown>): TokenUsage | undefined {
+  const u = obj.usage as Record<string, unknown> | undefined
+  if (!u) return undefined
+  return {
+    promptTokens: (u.input_tokens as number) ?? (u.prompt_tokens as number) ?? 0,
+    completionTokens: (u.output_tokens as number) ?? (u.completion_tokens as number) ?? 0,
+  }
 }
 
 export function parseNonStreamingResponse(json: unknown, isOpenAI: boolean, isOllama: boolean): LLMResult {
@@ -138,6 +164,7 @@ export function parseNonStreamingResponse(json: unknown, isOpenAI: boolean, isOl
     const outputs = obj.output as unknown[]
     const calls: LLMToolCall[] = []
     let text = ''
+    const usage = extractUsageFromOpenAIResponse(obj)
 
     for (const out of outputs ?? []) {
       const o = out as Record<string, unknown>
@@ -152,18 +179,28 @@ export function parseNonStreamingResponse(json: unknown, isOpenAI: boolean, isOl
       }
     }
 
-    if (calls.length > 0) return { type: 'tool_calls', calls, responseId }
-    return { type: 'text', content: text }
+    if (calls.length > 0) return { type: 'tool_calls', calls, responseId, usage }
+    return { type: 'text', content: text, usage }
   }
 
   if (isOllama) {
-    const msg = (json as Record<string, unknown>).message as Record<string, unknown>
-    return { type: 'text', content: (msg?.content as string) ?? '' }
+    const obj = json as Record<string, unknown>
+    const msg = obj.message as Record<string, unknown>
+    const usage: TokenUsage | undefined = obj.prompt_eval_count !== undefined
+      ? { promptTokens: (obj.prompt_eval_count as number) ?? 0, completionTokens: (obj.eval_count as number) ?? 0 }
+      : undefined
+    return { type: 'text', content: (msg?.content as string) ?? '', usage }
   }
 
-  const choices = (json as Record<string, unknown>).choices as unknown[]
+  const obj = json as Record<string, unknown>
+  const choices = obj.choices as unknown[]
   const choice = choices?.[0] as Record<string, unknown>
   const msg = choice?.message as Record<string, unknown>
+  const u = obj.usage as Record<string, unknown> | undefined
+  const usage: TokenUsage | undefined = u ? {
+    promptTokens: (u.prompt_tokens as number) ?? 0,
+    completionTokens: (u.completion_tokens as number) ?? 0,
+  } : undefined
 
   if (choice?.finish_reason === 'tool_calls') {
     const tcs = msg.tool_calls as Array<Record<string, unknown>>
@@ -175,7 +212,8 @@ export function parseNonStreamingResponse(json: unknown, isOpenAI: boolean, isOl
         return { id: tc.id as string, name: fn.name as string, rawArgs, args: safeParseArgs(rawArgs) }
       }),
       rawAssistantMsg: msg,
+      usage,
     }
   }
-  return { type: 'text', content: (msg?.content as string) ?? '' }
+  return { type: 'text', content: (msg?.content as string) ?? '', usage }
 }

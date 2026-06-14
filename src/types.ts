@@ -38,6 +38,11 @@ export interface Skill {
   files: Record<string, string>
 }
 
+export interface TokenUsage {
+  promptTokens: number
+  completionTokens: number
+}
+
 export type MessageRole = 'user' | 'assistant' | 'system' | 'tool_call' | 'tool_result'
 
 export interface MessageImage {

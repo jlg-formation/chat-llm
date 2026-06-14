@@ -1,3 +1,5 @@
+import type { TokenUsage } from '../../types'
+
 export interface SkillRef {
   name: string
   description: string
@@ -11,5 +13,5 @@ export interface LLMToolCall {
 }
 
 export type LLMResult =
-  | { type: 'text'; content: string }
-  | { type: 'tool_calls'; calls: LLMToolCall[]; responseId?: string; rawAssistantMsg?: unknown }
+  | { type: 'text'; content: string; usage?: TokenUsage }
+  | { type: 'tool_calls'; calls: LLMToolCall[]; responseId?: string; rawAssistantMsg?: unknown; usage?: TokenUsage }

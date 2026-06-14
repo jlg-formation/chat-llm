@@ -7,6 +7,7 @@ import { JsonSchemaSection } from './sidebar/JsonSchemaSection'
 import { SkillsSection } from './sidebar/SkillsSection'
 import { McpSection } from './sidebar/McpSection'
 import { SamplingSection } from './sidebar/SamplingSection'
+import { UsageSection } from './sidebar/UsageSection'
 import { updateConfig } from '../store/configStore'
 import { DEFAULT_CONFIG } from '../types'
 import localforage from 'localforage'
@@ -55,6 +56,7 @@ export function LeftSidebar() {
       <JsonSchemaSection />
       <SkillsSection />
       <McpSection />
+      <UsageSection />
     </aside>
   )
 }
