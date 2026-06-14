@@ -7,6 +7,7 @@ export interface ModelInfo {
   maxCompletionTokens?: number
   pricingPrompt?: number    // USD par token
   pricingCompletion?: number
+  supportsToolUse?: boolean
 }
 
 export async function fetchModels(provider: Provider, baseUrl: string, apiKey: string): Promise<ModelInfo[]> {
@@ -45,6 +46,7 @@ export async function fetchModels(provider: Provider, baseUrl: string, apiKey: s
         id: m.key,
         ownedBy: m.publisher,
         contextLength: m.max_context_length || undefined,
+        supportsToolUse: m.capabilities?.trained_for_tool_use ?? undefined,
       }))
   }
 

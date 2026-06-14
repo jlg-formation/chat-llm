@@ -1,4 +1,4 @@
-import { Server, RefreshCw } from 'lucide-react'
+import { Server, RefreshCw, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { useConfig } from '../../store/configStore'
 import { type Provider, type ApiFormat, PROVIDER_DEFAULTS } from '../../types'
@@ -111,6 +111,8 @@ export function ProviderSection() {
   const displayModels = getDisplayModels()
   const showDropdown = llm.provider === 'openai' || llm.provider === 'ovh' || cachedModels !== undefined
   const modelInList = displayModels.some(m => m.id === llm.model)
+  const currentModelInfo = cachedModels?.find(m => m.id === llm.model)
+  const toolUseWarning = currentModelInfo?.supportsToolUse === false
 
   return (
     <Accordion title="Provider LLM" icon={<Server className="w-4 h-4 text-blue-500" />} defaultOpen>
@@ -174,6 +176,15 @@ export function ProviderSection() {
             />
           )}
         </div>
+
+        {toolUseWarning && (
+          <div className="flex items-start gap-2 rounded-md bg-amber-50 border border-amber-200 px-3 py-2">
+            <TriangleAlert className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-700 leading-snug">
+              Ce modèle n'est pas entraîné pour le tool calling. Les skills et outils MCP risquent de ne pas fonctionner correctement.
+            </p>
+          </div>
+        )}
 
         {(llm.provider === 'openai' || llm.provider === 'ovh') && (
           <div>
