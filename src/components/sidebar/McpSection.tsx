@@ -3,7 +3,7 @@ import { Network, RefreshCw } from 'lucide-react'
 import { Toggle } from './Toggle'
 import { useConfig } from '../../store/configStore'
 import { Accordion } from './Accordion'
-import { fetchMcpTools, connectMcp, disconnectMcp } from '../../services/llm'
+import { fetchMcpTools, connectMcp, disconnectMcp } from '../../services/mcp'
 import type { McpTool } from '../../types'
 
 export function McpSection() {

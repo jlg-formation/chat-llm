@@ -81,16 +81,16 @@ interface Props {
 }
 
 function JsonDisplay({ content }: { content: string }) {
-  try {
-    const parsed = JSON.parse(content)
+  let formatted: string | null = null
+  try { formatted = JSON.stringify(JSON.parse(content), null, 2) } catch { /* JSON invalide */ }
+  if (formatted !== null) {
     return (
       <pre className="bg-gray-100 border border-gray-200 rounded-md p-3 text-xs font-mono overflow-x-auto whitespace-pre-wrap">
-        {JSON.stringify(parsed, null, 2)}
+        {formatted}
       </pre>
     )
-  } catch {
-    return <span className="text-gray-700">{content}</span>
   }
+  return <span className="text-gray-700">{content}</span>
 }
 
 function ToolMessageView({ message }: Props) {

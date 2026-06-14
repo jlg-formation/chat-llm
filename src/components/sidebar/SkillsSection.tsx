@@ -14,7 +14,7 @@ export function SkillsSection() {
     setSkills(await loadSkills())
   }
 
-  useEffect(() => { refresh() }, [])
+  useEffect(() => { loadSkills().then(setSkills) }, [])
 
   async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
