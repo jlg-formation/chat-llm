@@ -6,6 +6,7 @@ import { SystemPromptSection } from './sidebar/SystemPromptSection'
 import { JsonSchemaSection } from './sidebar/JsonSchemaSection'
 import { SkillsSection } from './sidebar/SkillsSection'
 import { McpSection } from './sidebar/McpSection'
+import { SamplingSection } from './sidebar/SamplingSection'
 import { updateConfig } from '../store/configStore'
 import { DEFAULT_CONFIG } from '../types'
 import localforage from 'localforage'
@@ -49,6 +50,7 @@ export function LeftSidebar() {
       </div>
       <ProviderSection />
       <StreamSection />
+      <SamplingSection />
       <SystemPromptSection />
       <JsonSchemaSection />
       <SkillsSection />

@@ -34,11 +34,8 @@ export type LLMResult =
 
 // ─── Helpers réseau ───────────────────────────────────────────────────────────
 
-function usesResponsesAPI(config: AppConfig): boolean {
-  if (config.llm.provider === 'ollama') return false
-  if (config.llm.provider === 'openai') return true
-  return config.llm.apiFormat === 'responses'
-}
+const usesResponsesAPI = (c: AppConfig) =>
+  c.llm.provider !== 'ollama' && (c.llm.provider === 'openai' || c.llm.apiFormat === 'responses')
 
 function getEndpoint(config: AppConfig): string {
   const base = config.llm.baseUrl.replace(/\/$/, '')
@@ -164,6 +161,9 @@ function buildChatCompletionsBody(
     stream: config.streamEnabled,
   }
 
+  Object.assign(body, config.llm.samplingMode === 'temperature' ? { temperature: config.llm.temperature } : { top_p: config.llm.topP })
+  if (config.llm.maxTokens !== null) body.max_tokens = config.llm.maxTokens
+
   const allTools = [
     ...(skillRefs.length > 0 ? [skillToolForChatCompletions()] : []),
     ...mcpTools.filter(t => t.enabled).map(mcpToolForChatCompletions),
@@ -222,6 +222,9 @@ function buildOpenAIResponsesBody(
     input,
     stream: config.streamEnabled,
   }
+
+  Object.assign(body, config.llm.samplingMode === 'temperature' ? { temperature: config.llm.temperature } : { top_p: config.llm.topP })
+  if (config.llm.maxTokens !== null) body.max_output_tokens = config.llm.maxTokens
 
   const allTools = [
     ...(skillRefs.length > 0 ? [skillToolForResponsesAPI()] : []),
