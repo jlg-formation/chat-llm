@@ -26,8 +26,29 @@ export async function fetchModels(provider: Provider, baseUrl: string, apiKey: s
     if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`
   }
 
-  const endpoint = provider === 'lmstudio' ? `${base}/api/v1/models` : `${base}/v1/models`
-  const r = await fetch(endpoint, { headers })
+  if (provider === 'lmstudio') {
+    const r = await fetch(`${base}/api/v1/models`, { headers })
+    if (!r.ok) throw new Error(`HTTP ${r.status}`)
+    const json = await r.json() as {
+      models?: Array<{
+        key: string
+        display_name?: string
+        type?: string
+        publisher?: string
+        max_context_length?: number
+        capabilities?: { vision?: boolean; trained_for_tool_use?: boolean }
+      }>
+    }
+    return (json.models ?? [])
+      .filter(m => m.type !== 'embedding')
+      .map(m => ({
+        id: m.key,
+        ownedBy: m.publisher,
+        contextLength: m.max_context_length || undefined,
+      }))
+  }
+
+  const r = await fetch(`${base}/v1/models`, { headers })
   if (!r.ok) throw new Error(`HTTP ${r.status}`)
   const json = await r.json() as {
     data?: Array<{
