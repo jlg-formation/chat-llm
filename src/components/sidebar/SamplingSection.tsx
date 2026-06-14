@@ -19,7 +19,7 @@ export function SamplingSection() {
         <div>
           <div className="flex flex-col gap-1.5">
             {([
-              { mode: 'default'     as SamplingMode, label: 'Réglage défaut', hint: 'Aucun paramètre envoyé — l\'API décide' },
+              { mode: 'default'     as SamplingMode, label: 'Réglage défaut', hint: 'L\'API décide' },
               { mode: 'temperature' as SamplingMode, label: 'Temperature',    hint: 'Créativité aléatoire' },
               { mode: 'top_p'       as SamplingMode, label: 'Top-P (nucleus)', hint: 'Filtrage par masse de probabilité' },
             ]).map(({ mode, label, hint }) => {
