@@ -43,18 +43,10 @@ const OVH_MODELS: ModelOption[] = [
   { id: 'Qwen2.5-VL-72B-Instruct',            label: 'Qwen2.5-VL-72B-Instruct',             price: '$1.01' },
 ]
 
-function getApiInfo(provider: Provider, apiFormat: ApiFormat): { label: string; endpoint: string; color: string } {
-  if (provider === 'ollama')   return { label: 'API Ollama native',    endpoint: 'POST /api/chat',            color: 'bg-orange-50 text-orange-700 border-orange-200' }
-  if (provider === 'lmstudio') return { label: 'API Chat Completions', endpoint: 'POST /v1/chat/completions', color: 'bg-blue-50 text-blue-700 border-blue-200' }
-  if (apiFormat === 'responses') return { label: 'API Responses',      endpoint: 'POST /v1/responses',        color: 'bg-violet-50 text-violet-700 border-violet-200' }
-  return { label: 'API Chat Completions', endpoint: 'POST /v1/chat/completions', color: 'bg-blue-50 text-blue-700 border-blue-200' }
-}
 
 export function ProviderSection() {
   const [config, update] = useConfig()
   const { llm } = config
-  const api = getApiInfo(llm.provider, llm.apiFormat)
-
   const DEFAULT_MODEL: Record<Provider, string> = {
     openai: 'gpt-5.4-nano',
     ovh: 'gpt-oss-20b',
