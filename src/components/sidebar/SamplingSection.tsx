@@ -19,7 +19,8 @@ export function SamplingSection() {
         <div>
           <div className="flex flex-col gap-1.5">
             {([
-              { mode: 'temperature' as SamplingMode, label: 'Temperature', hint: 'Créativité aléatoire' },
+              { mode: 'default'     as SamplingMode, label: 'Réglage défaut', hint: 'Aucun paramètre envoyé — l\'API décide' },
+              { mode: 'temperature' as SamplingMode, label: 'Temperature',    hint: 'Créativité aléatoire' },
               { mode: 'top_p'       as SamplingMode, label: 'Top-P (nucleus)', hint: 'Filtrage par masse de probabilité' },
             ]).map(({ mode, label, hint }) => {
               const active = llm.samplingMode === mode
@@ -48,7 +49,7 @@ export function SamplingSection() {
           </div>
 
           {/* Slider valeur active */}
-          {llm.samplingMode === 'temperature' ? (
+          {llm.samplingMode === 'temperature' && (
             <div className="mt-3">
               <div className="flex justify-between text-xs text-gray-500 mb-1">
                 <span>Temperature</span>
@@ -65,7 +66,8 @@ export function SamplingSection() {
                 <span>2 — aléatoire</span>
               </div>
             </div>
-          ) : (
+          )}
+          {llm.samplingMode === 'top_p' && (
             <div className="mt-3">
               <div className="flex justify-between text-xs text-gray-500 mb-1">
                 <span>Top-P</span>

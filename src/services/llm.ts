@@ -61,9 +61,7 @@ function getPedagogicHeaders(headers: Record<string, string>, config: AppConfig)
   if (headers['Accept']) result['Accept'] = headers['Accept']
   return result
 }
-
 // ─── Définition du tool skill ─────────────────────────────────────────────────
-
 function skillToolForResponsesAPI() {
   return {
     type: 'function',
@@ -161,7 +159,8 @@ function buildChatCompletionsBody(
     stream: config.streamEnabled,
   }
 
-  Object.assign(body, (config.llm.samplingMode ?? 'temperature') === 'temperature' ? { temperature: config.llm.temperature ?? 1 } : { top_p: config.llm.topP ?? 0.9 })
+  if ((config.llm.samplingMode ?? 'default') === 'temperature') body.temperature = config.llm.temperature ?? 1
+  else if (config.llm.samplingMode === 'top_p') body.top_p = config.llm.topP ?? 0.9
   if (config.llm.maxTokens !== null) body.max_tokens = config.llm.maxTokens
 
   const allTools = [
@@ -223,7 +222,8 @@ function buildOpenAIResponsesBody(
     stream: config.streamEnabled,
   }
 
-  Object.assign(body, (config.llm.samplingMode ?? 'temperature') === 'temperature' ? { temperature: config.llm.temperature ?? 1 } : { top_p: config.llm.topP ?? 0.9 })
+  if ((config.llm.samplingMode ?? 'default') === 'temperature') body.temperature = config.llm.temperature ?? 1
+  else if (config.llm.samplingMode === 'top_p') body.top_p = config.llm.topP ?? 0.9
   if (config.llm.maxTokens !== null) body.max_output_tokens = config.llm.maxTokens
 
   const allTools = [
