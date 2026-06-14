@@ -1,10 +1,13 @@
 export type Provider = 'openai' | 'ovh' | 'lmstudio' | 'ollama'
 
+export type ApiFormat = 'responses' | 'chat_completions'
+
 export interface LLMConfig {
   provider: Provider
   baseUrl: string
   apiKeys: Record<Provider, string>
   model: string
+  apiFormat: ApiFormat
 }
 
 export interface AppConfig {
@@ -81,6 +84,7 @@ export const DEFAULT_CONFIG: AppConfig = {
     baseUrl: PROVIDER_DEFAULTS.openai.baseUrl,
     apiKeys: { openai: '', ovh: '', lmstudio: '', ollama: '' },
     model: 'gpt-5.4-nano',
+    apiFormat: 'responses',
   },
   streamEnabled: true,
   systemPrompt: '',

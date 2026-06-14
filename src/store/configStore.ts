@@ -17,6 +17,10 @@ function loadConfig(): AppConfig {
       }
       delete saved.llm.apiKey
     }
+    // Migration : si pas d'apiFormat, dériver depuis le provider sauvegardé
+    if (saved.llm && !saved.llm.apiFormat) {
+      saved.llm.apiFormat = saved.llm.provider === 'openai' ? 'responses' : 'chat_completions'
+    }
     return {
       ...DEFAULT_CONFIG,
       ...saved,

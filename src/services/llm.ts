@@ -34,10 +34,16 @@ export type LLMResult =
 
 // ─── Helpers réseau ───────────────────────────────────────────────────────────
 
+function usesResponsesAPI(config: AppConfig): boolean {
+  if (config.llm.provider === 'ollama') return false
+  if (config.llm.provider === 'openai') return true
+  return config.llm.apiFormat === 'responses'
+}
+
 function getEndpoint(config: AppConfig): string {
   const base = config.llm.baseUrl.replace(/\/$/, '')
-  if (config.llm.provider === 'openai') return `${base}/v1/responses`
   if (config.llm.provider === 'ollama') return `${base}/api/chat`
+  if (usesResponsesAPI(config)) return `${base}/v1/responses`
   return `${base}/v1/chat/completions`
 }
 
@@ -433,10 +439,10 @@ async function _send(
   mcpTools: import('../types').McpTool[],
   onToken: (token: string) => void,
 ): Promise<LLMResult> {
-  const isOpenAI = config.llm.provider === 'openai'
+  const isResponsesAPI = usesResponsesAPI(config)
   const isOllama = config.llm.provider === 'ollama'
 
-  const body = isOpenAI
+  const body = isResponsesAPI
     ? buildOpenAIResponsesBody(config, messages, systemPrompt, skillRefs, mcpTools)
     : buildChatCompletionsBody(config, messages, systemPrompt, skillRefs, mcpTools)
 
@@ -470,7 +476,7 @@ async function _send(
   }
 
   if (config.streamEnabled) {
-    const result = isOpenAI
+    const result = isResponsesAPI
       ? await streamOpenAIResponses(response, onToken)
       : await streamChatCompletions(response, isOllama, onToken)
 
@@ -484,7 +490,7 @@ async function _send(
     return result
   } else {
     const json = await response.json()
-    const result = parseNonStreamingResponse(json, isOpenAI, isOllama)
+    const result = parseNonStreamingResponse(json, isResponsesAPI, isOllama)
     updateExchange(exchangeId, { responseStatus: response.status, responseHeaders: respHeaders, responseBody: json })
     return result
   }
