@@ -62,12 +62,18 @@ export function ProviderSection() {
   }
 
   function handleProviderChange(provider: Provider) {
+    const defaultFormat: Record<Provider, ApiFormat> = {
+      openai: llm.apiFormat === 'lmstudio_chat' ? 'responses' : llm.apiFormat,
+      ovh: llm.apiFormat === 'lmstudio_chat' ? 'responses' : llm.apiFormat,
+      lmstudio: 'lmstudio_chat',
+      ollama: 'chat_completions',
+    }
     update({
       llm: {
         ...llm,
         provider,
         baseUrl: PROVIDER_DEFAULTS[provider].baseUrl,
-        apiFormat: (provider === 'openai' || provider === 'ovh') ? llm.apiFormat : 'chat_completions',
+        apiFormat: defaultFormat[provider],
         model: DEFAULT_MODEL[provider],
       },
     })
@@ -186,11 +192,15 @@ export function ProviderSection() {
           </div>
         )}
 
-        {(llm.provider === 'openai' || llm.provider === 'ovh') && (
+        {(llm.provider === 'openai' || llm.provider === 'ovh' || llm.provider === 'lmstudio') && (
           <div>
             <label className="block text-xs text-gray-500 mb-1">Format API</label>
             <div className="flex flex-col gap-1.5">
-              {([
+              {(llm.provider === 'lmstudio' ? [
+                { fmt: 'lmstudio_chat'    as ApiFormat, path: '/api/v1/chat',         name: 'LM Studio Chat' },
+                { fmt: 'chat_completions' as ApiFormat, path: '/v1/chat/completions', name: 'API Chat Completions' },
+                { fmt: 'responses'        as ApiFormat, path: '/v1/responses',        name: 'API Responses' },
+              ] : [
                 { fmt: 'responses'        as ApiFormat, path: '/v1/responses',        name: 'API Responses' },
                 { fmt: 'chat_completions' as ApiFormat, path: '/v1/chat/completions', name: 'API Chat Completions' },
               ]).map(({ fmt, path, name }) => {

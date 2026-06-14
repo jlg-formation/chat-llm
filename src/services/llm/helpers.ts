@@ -19,6 +19,7 @@ export const usesResponsesAPI = (c: AppConfig) =>
 export function getEndpoint(config: AppConfig): string {
   const base = config.llm.baseUrl.replace(/\/$/, '')
   if (config.llm.provider === 'ollama') return `${base}/api/chat`
+  if (config.llm.apiFormat === 'lmstudio_chat') return `${base}/api/v1/chat`
   if (usesResponsesAPI(config)) return `${base}/v1/responses`
   return `${base}/v1/chat/completions`
 }

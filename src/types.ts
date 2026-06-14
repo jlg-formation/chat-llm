@@ -1,6 +1,6 @@
 export type Provider = 'openai' | 'ovh' | 'lmstudio' | 'ollama'
 
-export type ApiFormat = 'responses' | 'chat_completions'
+export type ApiFormat = 'responses' | 'chat_completions' | 'lmstudio_chat'
 
 export interface LLMConfig {
   provider: Provider
