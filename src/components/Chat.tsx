@@ -7,7 +7,7 @@ import { loadSkills, getSkillContent, parseSkillFrontmatter } from '../store/ski
 import { sendMessage } from '../services/llm'
 import { callMcpTool } from '../services/mcp'
 import type { SkillRef, LLMToolCall } from '../services/llm'
-import { SquarePen, Square } from 'lucide-react'
+import { SquarePen } from 'lucide-react'
 
 const MAX_TOOL_ITERATIONS = 5
 
@@ -179,26 +179,15 @@ export function Chat() {
     <main className="flex-1 flex flex-col min-h-0 bg-gray-50">
       <div className="flex items-center justify-between px-4 h-10 bg-white border-b border-gray-200">
         <span className="text-sm font-medium text-gray-600">Conversation</span>
-        <div className="flex items-center gap-2">
-          {sending && (
-            <button
-              onClick={() => abortRef.current?.abort()}
-              className="flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 border border-red-300 hover:border-red-500 bg-red-50 hover:bg-red-100 px-2 py-1 rounded transition-colors"
-            >
-              <Square className="w-3 h-3 fill-current" />
-              Arrêter
-            </button>
-          )}
-          {messages.length > 0 && !sending && (
-            <button
-              onClick={() => setMessages([])}
-              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-blue-500 transition-colors"
-            >
-              <SquarePen className="w-3.5 h-3.5" />
-              Nouvelle discussion
-            </button>
-          )}
-        </div>
+        {messages.length > 0 && (
+          <button
+            onClick={() => setMessages([])}
+            className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-blue-500 transition-colors"
+          >
+            <SquarePen className="w-3.5 h-3.5" />
+            Nouvelle discussion
+          </button>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
@@ -218,7 +207,7 @@ export function Chat() {
         <div ref={bottomRef} />
       </div>
 
-      <ChatInput onSend={handleSend} disabled={sending} />
+      <ChatInput onSend={handleSend} onStop={() => abortRef.current?.abort()} disabled={sending} />
     </main>
   )
 }

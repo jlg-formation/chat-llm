@@ -1,13 +1,14 @@
 import { useRef, useState, useEffect, type KeyboardEvent, type ClipboardEvent } from 'react'
-import { Send, Plus, X } from 'lucide-react'
+import { Send, Square, Plus, X } from 'lucide-react'
 import type { MessageImage } from '../../types'
 
 interface Props {
   onSend: (text: string, images: MessageImage[]) => void
+  onStop?: () => void
   disabled?: boolean
 }
 
-export function ChatInput({ onSend, disabled }: Props) {
+export function ChatInput({ onSend, onStop, disabled }: Props) {
   const [text, setText] = useState('')
   const [images, setImages] = useState<MessageImage[]>([])
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -123,13 +124,24 @@ export function ChatInput({ onSend, disabled }: Props) {
           style={{ minHeight: '42px' }}
         />
 
-        <button
-          onClick={handleSend}
-          disabled={disabled || (!text.trim() && images.length === 0)}
-          className="p-2.5 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-        >
-          <Send className="w-4 h-4" />
-        </button>
+        {disabled && onStop ? (
+          <button
+            onClick={onStop}
+            className="p-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors shrink-0"
+            title="Arrêter la génération"
+          >
+            <Square className="w-4 h-4 fill-current" />
+          </button>
+        ) : (
+          <button
+            onClick={handleSend}
+            disabled={disabled || (!text.trim() && images.length === 0)}
+            className="p-2.5 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+            title="Envoyer"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </div>
   )
