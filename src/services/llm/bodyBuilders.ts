@@ -130,6 +130,7 @@ export function buildLmStudioChatBody(
   config: AppConfig,
   messages: ChatMessage[],
   systemPrompt: string,
+  mcpTools: McpTool[],
   previousResponseId?: string,
 ) {
   // Trouver le dernier message utilisateur (le tour courant)
@@ -155,6 +156,20 @@ export function buildLmStudioChatBody(
   if (config.llm.topP !== null) body.top_p = config.llm.topP
   if (config.llm.maxTokens !== null) body.max_output_tokens = config.llm.maxTokens
 
+  // Intégration MCP via ephemeral_mcp (format natif LM Studio)
+  if (config.mcpEnabled && config.mcpUrl) {
+    const enabledTools = mcpTools.filter(t => t.enabled)
+    const integration: Record<string, unknown> = {
+      type: 'ephemeral_mcp',
+      server_label: config.mcpName || 'mcp',
+      server_url: config.mcpUrl,
+    }
+    if (enabledTools.length > 0) {
+      integration.allowed_tools = enabledTools.map(t => t.name)
+    }
+    body.integrations = [integration]
+  }
+
   return body
 }
 
@@ -167,7 +182,7 @@ export function buildBody(
   options?: { previousResponseId?: string },
 ) {
   if (config.llm.apiFormat === 'lmstudio_chat') {
-    return buildLmStudioChatBody(config, messages, systemPrompt, options?.previousResponseId)
+    return buildLmStudioChatBody(config, messages, systemPrompt, mcpTools, options?.previousResponseId)
   }
   return usesResponsesAPI(config)
     ? buildOpenAIResponsesBody(config, messages, systemPrompt, skillRefs, mcpTools)
