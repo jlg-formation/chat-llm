@@ -80,16 +80,14 @@ export function buildOpenAIResponsesBody(
 
   for (const m of messages) {
     if (m.role === 'assistant') {
-      input.push({ role: 'assistant', content: m.content })
+      input.push({ role: 'assistant', content: [{ type: 'output_text', text: m.content }] })
     } else if (m.role === 'user') {
-      if (m.images && m.images.length > 0) {
-        const contentParts: unknown[] = []
-        if (m.content) contentParts.push({ type: 'input_text', text: m.content })
+      const contentParts: unknown[] = []
+      if (m.content) contentParts.push({ type: 'input_text', text: m.content })
+      if (m.images) {
         for (const img of m.images) contentParts.push({ type: 'input_image', image_url: img.dataUrl })
-        input.push({ role: 'user', content: contentParts })
-      } else {
-        input.push({ role: 'user', content: m.content })
       }
+      input.push({ role: 'user', content: contentParts })
     } else if (m.role === 'tool_call') {
       input.push({ type: 'function_call', call_id: m.toolCallId, name: m.toolName, arguments: m.toolArgs ?? '{}' })
     } else if (m.role === 'tool_result') {
