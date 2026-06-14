@@ -3,6 +3,63 @@ import { useState } from 'react'
 import type { ChatMessage as ChatMessageType } from '../../types'
 import { User, Bot, Wrench, ChevronDown, ChevronRight } from 'lucide-react'
 
+// ─── Parseur de blocs XML (ex: <think>…</think>) ─────────────────────────────
+
+interface Segment {
+  type: 'text' | 'xml'
+  content: string
+  tag?: string
+  unclosed?: boolean
+}
+
+function parseXmlBlocks(content: string): Segment[] {
+  const segments: Segment[] = []
+  const re = /<(\w+)>([\s\S]*?)<\/\1>/g
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+
+  while ((match = re.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push({ type: 'text', content: content.slice(lastIndex, match.index) })
+    }
+    segments.push({ type: 'xml', tag: match[1], content: match[2] })
+    lastIndex = re.lastIndex
+  }
+
+  const remaining = content.slice(lastIndex)
+  const openTag = remaining.match(/^<(\w+)>([\s\S]*)$/)
+  if (openTag) {
+    segments.push({ type: 'xml', tag: openTag[1], content: openTag[2], unclosed: true })
+  } else if (remaining) {
+    segments.push({ type: 'text', content: remaining })
+  }
+
+  return segments
+}
+
+function XmlBlock({ tag, content, unclosed }: { tag: string; content: string; unclosed?: boolean }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="text-xs rounded-lg border border-gray-200 bg-gray-50 overflow-hidden mb-2">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-1.5 px-3 py-1.5 text-gray-500 hover:text-gray-700 w-full font-mono"
+      >
+        {open ? <ChevronDown className="w-3 h-3 shrink-0" /> : <ChevronRight className="w-3 h-3 shrink-0" />}
+        <span className="text-gray-400">&lt;{tag}&gt;</span>
+        {!open && <span className="text-gray-400 ml-1">…</span>}
+        {unclosed && <span className="inline-block w-1.5 h-3 bg-gray-400 animate-pulse ml-1" />}
+      </button>
+      {open && (
+        <div className="px-3 pb-2 text-gray-600 whitespace-pre-wrap text-xs border-t border-gray-200 bg-white max-h-64 overflow-y-auto font-mono">
+          {content}
+          {unclosed && <span className="inline-block w-1.5 h-3 bg-gray-400 animate-pulse ml-0.5" />}
+        </div>
+      )}
+    </div>
+  )
+}
+
 interface Props {
   message: ChatMessageType
 }
@@ -98,8 +155,14 @@ export function ChatMessageView({ message }: Props) {
               <p className="text-sm whitespace-pre-wrap">{message.content}</p>
             ) : (
               <div className="prose-chat text-sm">
-                <ReactMarkdown>{message.content}</ReactMarkdown>
-                {message.isStreaming && (
+                {parseXmlBlocks(message.content).map((seg, i) =>
+                  seg.type === 'xml' ? (
+                    <XmlBlock key={i} tag={seg.tag!} content={seg.content} unclosed={seg.unclosed} />
+                  ) : (
+                    <ReactMarkdown key={i}>{seg.content}</ReactMarkdown>
+                  )
+                )}
+                {message.isStreaming && !message.content.match(/<\w+>[\s\S]*$/) && (
                   <span className="inline-block w-1.5 h-4 bg-gray-400 animate-pulse ml-0.5 align-text-bottom" />
                 )}
               </div>
