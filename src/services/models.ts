@@ -26,7 +26,8 @@ export async function fetchModels(provider: Provider, baseUrl: string, apiKey: s
     if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`
   }
 
-  const r = await fetch(`${base}/v1/models`, { headers })
+  const endpoint = provider === 'lmstudio' ? `${base}/api/v1/models` : `${base}/v1/models`
+  const r = await fetch(endpoint, { headers })
   if (!r.ok) throw new Error(`HTTP ${r.status}`)
   const json = await r.json() as {
     data?: Array<{
