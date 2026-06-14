@@ -78,7 +78,7 @@ test.describe('Serveur MCP — activation / désactivation', () => {
     await expect(mcpCheckbox(page)).toBeChecked({ timeout: 10_000 })
 
     // Les outils doivent apparaître sans clic supplémentaire
-    await expect(page.locator('span.font-mono', { hasText: 'about-jlg-consulting' }).first()).toBeVisible({ timeout: 10_000 })
+    await expect(page.locator('div.font-mono', { hasText: 'about-jlg-consulting' }).first()).toBeVisible({ timeout: 10_000 })
   })
 
   test('désactivation : envoie shutdown puis exit', async ({ page }) => {
