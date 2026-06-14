@@ -4,6 +4,10 @@
   box-sizing: border-box;
 }
 
+button, a, [role="button"], label[for], summary {
+  cursor: pointer;
+}
+
 body {
   margin: 0;
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
