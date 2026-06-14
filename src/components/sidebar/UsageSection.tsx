@@ -6,7 +6,7 @@ import { Accordion } from './Accordion'
 import type { ModelInfo } from '../../services/models'
 
 // Pricing statique de repli pour les modèles OpenAI connus
-const OPENAI_STATIC_PRICING: Record<string, Pick<ModelInfo, 'pricingPrompt' | 'pricingCompletion'>> = {
+const OPENAI_STATIC_PRICING: Record<string, Pick<ModelInfo, 'pricingPrompt' | 'pricingCompletion' | 'contextLength'>> = {
   'gpt-5.4-nano':  { pricingPrompt: 0.20e-6, pricingCompletion: 1.25e-6 },
   'gpt-5.4-mini':  { pricingPrompt: 0.75e-6, pricingCompletion: 4.50e-6 },
   'gpt-5.4':       { pricingPrompt: 2.50e-6, pricingCompletion: 15e-6   },
