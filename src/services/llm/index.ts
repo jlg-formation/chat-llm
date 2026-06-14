@@ -2,7 +2,7 @@ import type { AppConfig, ChatMessage, McpTool } from '../../types'
 import { addExchange, updateExchange } from '../../store/httpStore'
 import { genId, usesResponsesAPI, getEndpoint, getHeaders, getPedagogicHeaders } from './helpers'
 import { buildBody } from './bodyBuilders'
-import { streamOpenAIResponses, streamChatCompletions, parseNonStreamingResponse } from './parsers'
+import { streamOpenAIResponses, streamChatCompletions, streamLmStudioChat, parseLmStudioChatNonStreaming, parseNonStreamingResponse } from './parsers'
 
 export type { SkillRef, LLMToolCall, LLMResult } from './types'
 
@@ -15,6 +15,7 @@ export async function sendMessage(
   onToken: (token: string) => void,
   signal?: AbortSignal,
 ): Promise<import('./types').LLMResult> {
+  const isLmStudioChat = config.llm.apiFormat === 'lmstudio_chat'
   const isResponsesAPI = usesResponsesAPI(config)
   const isOllama = config.llm.provider === 'ollama'
 
@@ -48,9 +49,11 @@ export async function sendMessage(
   }
 
   if (config.streamEnabled) {
-    const result = isResponsesAPI
-      ? await streamOpenAIResponses(response, onToken)
-      : await streamChatCompletions(response, isOllama, onToken)
+    const result = isLmStudioChat
+      ? await streamLmStudioChat(response, onToken)
+      : isResponsesAPI
+        ? await streamOpenAIResponses(response, onToken)
+        : await streamChatCompletions(response, isOllama, onToken)
 
     updateExchange(exchangeId, {
       responseStatus: response.status,
@@ -62,7 +65,9 @@ export async function sendMessage(
     return result
   } else {
     const json = await response.json()
-    const result = parseNonStreamingResponse(json, isResponsesAPI, isOllama)
+    const result = isLmStudioChat
+      ? parseLmStudioChatNonStreaming(json)
+      : parseNonStreamingResponse(json, isResponsesAPI, isOllama)
     updateExchange(exchangeId, { responseStatus: response.status, responseHeaders: respHeaders, responseBody: json })
     return result
   }

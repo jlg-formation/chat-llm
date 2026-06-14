@@ -126,6 +126,41 @@ export function buildOpenAIResponsesBody(
   return body
 }
 
+export function buildLmStudioChatBody(
+  config: AppConfig,
+  messages: ChatMessage[],
+  systemPrompt: string,
+) {
+  // L'input est un tableau d'objets {type, role, content} pour les tours multiples
+  const input: unknown[] = []
+
+  for (const m of messages) {
+    if (m.isError) continue
+    if (m.role === 'assistant') {
+      input.push({ type: 'message', role: 'assistant', content: m.content })
+    } else if (m.role === 'user') {
+      const parts: unknown[] = []
+      if (m.content) parts.push({ type: 'text', content: m.content })
+      for (const img of m.images ?? []) parts.push({ type: 'image', data_url: img.dataUrl })
+      input.push({ type: 'message', role: 'user', content: parts.length === 1 && (parts[0] as Record<string, unknown>).type === 'text' ? m.content : parts })
+    }
+    // tool_call / tool_result ignorés : /api/v1/chat gère les outils via integrations MCP
+  }
+
+  const body: Record<string, unknown> = {
+    model: config.llm.model,
+    input,
+    stream: config.streamEnabled,
+  }
+
+  if (systemPrompt) body.system_prompt = systemPrompt
+  if (config.llm.temperature !== null) body.temperature = config.llm.temperature
+  if (config.llm.topP !== null) body.top_p = config.llm.topP
+  if (config.llm.maxTokens !== null) body.max_output_tokens = config.llm.maxTokens
+
+  return body
+}
+
 export function buildBody(
   config: AppConfig,
   messages: ChatMessage[],
@@ -133,6 +168,9 @@ export function buildBody(
   skillRefs: SkillRef[],
   mcpTools: McpTool[],
 ) {
+  if (config.llm.apiFormat === 'lmstudio_chat') {
+    return buildLmStudioChatBody(config, messages, systemPrompt)
+  }
   return usesResponsesAPI(config)
     ? buildOpenAIResponsesBody(config, messages, systemPrompt, skillRefs, mcpTools)
     : buildChatCompletionsBody(config, messages, systemPrompt, skillRefs, mcpTools)
