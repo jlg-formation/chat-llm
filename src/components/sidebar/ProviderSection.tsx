@@ -10,12 +10,12 @@ interface ModelOption {
 }
 
 const OPENAI_MODELS: ModelOption[] = [
-  { id: 'gpt-5.4-nano',  label: 'GPT-5.4 nano',  price: '$0.20 / $1.25 per 1M tok' },
-  { id: 'gpt-5.4-mini',  label: 'GPT-5.4 mini',  price: '$0.75 / $4.50 per 1M tok' },
-  { id: 'gpt-5.4',       label: 'GPT-5.4',        price: '$2.50 / $15 per 1M tok' },
-  { id: 'gpt-5.4-pro',   label: 'GPT-5.4 pro',   price: '$30 / $180 per 1M tok' },
-  { id: 'gpt-5.5',       label: 'GPT-5.5',        price: '$5 / $30 per 1M tok' },
-  { id: 'gpt-5.5-pro',   label: 'GPT-5.5 pro',   price: '$30 / $180 per 1M tok' },
+  { id: 'gpt-5.4-nano',  label: 'GPT-5.4 nano',  price: '$0.20 / $1.25' },
+  { id: 'gpt-5.4-mini',  label: 'GPT-5.4 mini',  price: '$0.75 / $4.50' },
+  { id: 'gpt-5.4',       label: 'GPT-5.4',        price: '$2.50 / $15' },
+  { id: 'gpt-5.4-pro',   label: 'GPT-5.4 pro',   price: '$30 / $180' },
+  { id: 'gpt-5.5',       label: 'GPT-5.5',        price: '$5 / $30' },
+  { id: 'gpt-5.5-pro',   label: 'GPT-5.5 pro',   price: '$30 / $180' },
 ]
 
 const OVH_MODELS_RESPONSES_SUPPORTED = new Set(['gpt-oss-20b', 'gpt-oss-120b'])
@@ -28,19 +28,19 @@ function supportsFormat(provider: Provider, model: string, fmt: ApiFormat): bool
 
 // ✦ = supporte aussi /v1/responses
 const OVH_MODELS: ModelOption[] = [
-  { id: 'gpt-oss-20b',                        label: 'gpt-oss-20b ✦',                        price: '$0.05 / $0.18 per 1M tok' },
-  { id: 'gpt-oss-120b',                       label: 'gpt-oss-120b ✦',                       price: '$0.09 / $0.47 per 1M tok' },
-  { id: 'Mistral-7B-Instruct-v0.3',           label: 'Mistral-7B-Instruct-v0.3',             price: '$0.11 per 1M tok' },
-  { id: 'Mistral-Nemo-Instruct-2407',         label: 'Mistral-Nemo-Instruct-2407',           price: '$0.14 per 1M tok' },
-  { id: 'Mistral-Small-3.2-24B-Instruct-2506', label: 'Mistral-Small-3.2-24B-Instruct-2506', price: '$0.10 / $0.31 per 1M tok' },
-  { id: 'Llama-3.1-8B-Instruct',             label: 'Llama-3.1-8B-Instruct',               price: '$0.11 per 1M tok' },
-  { id: 'Meta-Llama-3_3-70B-Instruct',        label: 'Meta-Llama-3.3-70B-Instruct',          price: '$0.74 per 1M tok' },
-  { id: 'Qwen3-32B',                          label: 'Qwen3-32B',                            price: '$0.09 / $0.25 per 1M tok' },
-  { id: 'Qwen3.5-9B',                         label: 'Qwen3.5-9B',                           price: '$0.12 / $0.18 per 1M tok' },
-  { id: 'Qwen3.5-397B-A17B',                  label: 'Qwen3.5-397B-A17B',                    price: '$0.71 / $4.25 per 1M tok' },
-  { id: 'Qwen3.6-27B',                        label: 'Qwen3.6-27B',                          price: '$0.47 / $3.19 per 1M tok' },
-  { id: 'Qwen3-Coder-30B-A3B-Instruct',       label: 'Qwen3-Coder-30B-A3B-Instruct',         price: '$0.07 / $0.26 per 1M tok' },
-  { id: 'Qwen2.5-VL-72B-Instruct',            label: 'Qwen2.5-VL-72B-Instruct',             price: '$1.01 per 1M tok' },
+  { id: 'gpt-oss-20b',                        label: 'gpt-oss-20b ✦',                        price: '$0.05 / $0.18' },
+  { id: 'gpt-oss-120b',                       label: 'gpt-oss-120b ✦',                       price: '$0.09 / $0.47' },
+  { id: 'Mistral-7B-Instruct-v0.3',           label: 'Mistral-7B-Instruct-v0.3',             price: '$0.11' },
+  { id: 'Mistral-Nemo-Instruct-2407',         label: 'Mistral-Nemo-Instruct-2407',           price: '$0.14' },
+  { id: 'Mistral-Small-3.2-24B-Instruct-2506', label: 'Mistral-Small-3.2-24B-Instruct-2506', price: '$0.10 / $0.31' },
+  { id: 'Llama-3.1-8B-Instruct',             label: 'Llama-3.1-8B-Instruct',               price: '$0.11' },
+  { id: 'Meta-Llama-3_3-70B-Instruct',        label: 'Meta-Llama-3.3-70B-Instruct',          price: '$0.74' },
+  { id: 'Qwen3-32B',                          label: 'Qwen3-32B',                            price: '$0.09 / $0.25' },
+  { id: 'Qwen3.5-9B',                         label: 'Qwen3.5-9B',                           price: '$0.12 / $0.18' },
+  { id: 'Qwen3.5-397B-A17B',                  label: 'Qwen3.5-397B-A17B',                    price: '$0.71 / $4.25' },
+  { id: 'Qwen3.6-27B',                        label: 'Qwen3.6-27B',                          price: '$0.47 / $3.19' },
+  { id: 'Qwen3-Coder-30B-A3B-Instruct',       label: 'Qwen3-Coder-30B-A3B-Instruct',         price: '$0.07 / $0.26' },
+  { id: 'Qwen2.5-VL-72B-Instruct',            label: 'Qwen2.5-VL-72B-Instruct',             price: '$1.01' },
 ]
 
 function getApiInfo(provider: Provider, apiFormat: ApiFormat): { label: string; endpoint: string; color: string } {
