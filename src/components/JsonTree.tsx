@@ -10,7 +10,7 @@ function Primitive({ value }: { value: unknown }) {
   return <span>{String(value)}</span>
 }
 
-function JsonNode({ value, depth = 0 }: { value: unknown; depth?: number }) {
+function JsonNode({ value }: { value: unknown }) {
   const [open, setOpen] = useState(true)
 
   if (Array.isArray(value)) {
@@ -28,10 +28,10 @@ function JsonNode({ value, depth = 0 }: { value: unknown; depth?: number }) {
         {open ? (
           <>
             <span className="text-gray-500">[</span>
-            <div style={{ paddingLeft: `${(depth + 1) * 14}px` }}>
+            <div style={{ paddingLeft: '1ch' }}>
               {value.map((item, i) => (
                 <div key={i}>
-                  <JsonNode value={item} depth={depth + 1} />
+                  <JsonNode value={item} />
                   {i < value.length - 1 && <span className="text-gray-400">,</span>}
                 </div>
               ))}
@@ -63,12 +63,12 @@ function JsonNode({ value, depth = 0 }: { value: unknown; depth?: number }) {
         {open ? (
           <>
             <span className="text-gray-500">{'{'}</span>
-            <div style={{ paddingLeft: `${(depth + 1) * 14}px` }}>
+            <div style={{ paddingLeft: '1ch' }}>
               {entries.map(([k, v], i) => (
                 <div key={k}>
                   <span className="text-indigo-700">"{k}"</span>
                   <span className="text-gray-500">: </span>
-                  <JsonNode value={v} depth={depth + 1} />
+                  <JsonNode value={v} />
                   {i < entries.length - 1 && <span className="text-gray-400">,</span>}
                 </div>
               ))}
@@ -94,7 +94,7 @@ export function JsonTree({ value }: { value: unknown }) {
 
   return (
     <div className="font-mono text-xs bg-gray-50 rounded p-1.5 leading-relaxed overflow-x-auto">
-      <div style={{ paddingLeft: '14px' }}>
+      <div style={{ paddingLeft: '1ch' }}>
         <JsonNode value={parsed} depth={0} />
       </div>
     </div>
