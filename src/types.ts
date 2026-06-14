@@ -57,6 +57,7 @@ export interface ChatMessage {
   images?: MessageImage[]
   isStreaming?: boolean
   isJson?: boolean
+  isError?: boolean
   // Pour tool_call
   toolCallId?: string
   toolName?: string

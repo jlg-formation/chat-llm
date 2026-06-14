@@ -170,7 +170,9 @@ export function Chat() {
           m.id === assistantId ? { ...m, isStreaming: false } : m
         ))
       } else {
-        updateAssistant(`Erreur : ${(err as Error).message}`, false)
+        setMessages(prev => prev.map(m =>
+          m.id === assistantId ? { ...m, content: `Erreur : ${(err as Error).message}`, isStreaming: false, isError: true } : m
+        ))
       }
     } finally {
       abortRef.current = null

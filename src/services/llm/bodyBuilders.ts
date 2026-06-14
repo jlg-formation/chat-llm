@@ -15,6 +15,7 @@ export function buildChatCompletionsBody(
   if (systemPrompt) msgs.push({ role: 'system', content: systemPrompt })
 
   for (const m of messages) {
+    if (m.isError) continue
     if (m.role === 'assistant') {
       msgs.push({ role: 'assistant', content: m.content })
     } else if (m.role === 'user') {
@@ -79,8 +80,9 @@ export function buildOpenAIResponsesBody(
   const input: unknown[] = []
 
   for (const m of messages) {
+    if (m.isError) continue
     if (m.role === 'assistant') {
-      input.push({ type: 'message', role: 'assistant', content: [{ type: 'output_text', text: m.content }] })
+      input.push({ type: 'message', role: 'assistant', content: m.content })
     } else if (m.role === 'user') {
       const contentParts: unknown[] = []
       if (m.content) contentParts.push({ type: 'input_text', text: m.content })
@@ -99,6 +101,7 @@ export function buildOpenAIResponsesBody(
     model: config.llm.model,
     input,
     stream: config.streamEnabled,
+    store: false,
   }
 
   if (systemPrompt) body.instructions = systemPrompt

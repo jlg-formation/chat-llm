@@ -8,7 +8,7 @@ const SKILL_PARAMS = {
 }
 
 export function skillToolForResponsesAPI() {
-  return { type: 'function', name: 'get_skill_details', description: SKILL_DESCRIPTION, parameters: SKILL_PARAMS }
+  return { type: 'function', name: 'get_skill_details', description: SKILL_DESCRIPTION, parameters: SKILL_PARAMS, strict: false }
 }
 
 export function skillToolForChatCompletions() {
@@ -32,5 +32,6 @@ export function mcpToolForResponsesAPI(tool: McpTool) {
     name: tool.name,
     description: tool.description,
     parameters: (tool.inputSchema as Record<string, unknown>) ?? { type: 'object', properties: {} },
+    strict: false,
   }
 }
