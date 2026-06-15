@@ -27,9 +27,9 @@ export function buildChatCompletionsBody(
         msgs.push({ role: 'user', content: m.content })
       }
     } else if (m.role === 'tool_call') {
-      const isOllama = config.llm.provider === 'ollama'
+      const isOllamaNative = config.llm.apiFormat === 'ollama_chat'
       const rawArgs = m.toolArgs ?? '{}'
-      const argsValue = isOllama ? ((() => { try { return JSON.parse(rawArgs) } catch { return {} } })()) : rawArgs
+      const argsValue = isOllamaNative ? ((() => { try { return JSON.parse(rawArgs) } catch { return {} } })()) : rawArgs
       msgs.push({
         role: 'assistant',
         content: null,
@@ -50,7 +50,7 @@ export function buildChatCompletionsBody(
     body.stream_options = { include_usage: true }
   }
 
-  if (config.llm.provider === 'ollama') body.think = false
+  if (config.llm.apiFormat === 'ollama_chat') body.think = false
 
   if (config.llm.temperature !== null) body.temperature = config.llm.temperature
   if (config.llm.topP !== null) body.top_p = config.llm.topP

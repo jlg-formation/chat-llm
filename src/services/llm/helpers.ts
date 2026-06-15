@@ -13,14 +13,15 @@ export function currentApiKey(config: AppConfig): string {
   return config.llm.apiKeys[config.llm.provider] ?? ''
 }
 
-export const usesResponsesAPI = (c: AppConfig) =>
-  c.llm.provider !== 'ollama' && c.llm.apiFormat === 'responses'
+export const usesResponsesAPI = (c: AppConfig) => c.llm.apiFormat === 'responses'
+
+export const usesOllamaNative = (c: AppConfig) => c.llm.apiFormat === 'ollama_chat'
 
 export function getEndpoint(config: AppConfig): string {
   const base = config.llm.baseUrl.replace(/\/$/, '')
-  if (config.llm.provider === 'ollama') return `${base}/api/chat`
+  if (config.llm.apiFormat === 'ollama_chat') return `${base}/api/chat`
   if (config.llm.apiFormat === 'lmstudio_chat') return `${base}/api/v1/chat`
-  if (usesResponsesAPI(config)) return `${base}/v1/responses`
+  if (config.llm.apiFormat === 'responses') return `${base}/v1/responses`
   return `${base}/v1/chat/completions`
 }
 

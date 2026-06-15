@@ -1,6 +1,6 @@
 import type { AppConfig, ChatMessage, McpTool } from '../../types'
 import { addExchange, updateExchange } from '../../store/httpStore'
-import { genId, usesResponsesAPI, getEndpoint, getHeaders, getPedagogicHeaders } from './helpers'
+import { genId, usesResponsesAPI, usesOllamaNative, getEndpoint, getHeaders, getPedagogicHeaders } from './helpers'
 import { buildBody } from './bodyBuilders'
 import { streamOpenAIResponses, streamChatCompletions, streamLmStudioChat, parseLmStudioChatNonStreaming, parseNonStreamingResponse } from './parsers'
 
@@ -18,7 +18,7 @@ export async function sendMessage(
 ): Promise<import('./types').LLMResult> {
   const isLmStudioChat = config.llm.apiFormat === 'lmstudio_chat'
   const isResponsesAPI = usesResponsesAPI(config)
-  const isOllama = config.llm.provider === 'ollama'
+  const isOllama = usesOllamaNative(config)
 
   const body = buildBody(config, messages, systemPrompt, skillRefs, mcpTools, { previousResponseId })
   const endpoint = getEndpoint(config)

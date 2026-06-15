@@ -63,10 +63,10 @@ export function ProviderSection() {
 
   function handleProviderChange(provider: Provider) {
     const defaultFormat: Record<Provider, ApiFormat> = {
-      openai: llm.apiFormat === 'lmstudio_chat' ? 'responses' : llm.apiFormat,
-      ovh: llm.apiFormat === 'lmstudio_chat' ? 'responses' : llm.apiFormat,
+      openai: llm.apiFormat === 'lmstudio_chat' || llm.apiFormat === 'ollama_chat' ? 'responses' : llm.apiFormat,
+      ovh: llm.apiFormat === 'lmstudio_chat' || llm.apiFormat === 'ollama_chat' ? 'responses' : llm.apiFormat,
       lmstudio: 'lmstudio_chat',
-      ollama: 'chat_completions',
+      ollama: 'ollama_chat',
     }
     update({
       llm: {
@@ -197,7 +197,7 @@ export function ProviderSection() {
           </div>
         )}
 
-        {(llm.provider === 'openai' || llm.provider === 'ovh' || llm.provider === 'lmstudio') && (
+        {(llm.provider === 'openai' || llm.provider === 'ovh' || llm.provider === 'lmstudio' || llm.provider === 'ollama') && (
           <div>
             <label className="block text-xs text-gray-500 mb-1">Format API</label>
             <div className="flex flex-col gap-1.5" role="radiogroup" aria-label="Format API">
@@ -205,6 +205,9 @@ export function ProviderSection() {
                 { fmt: 'lmstudio_chat'    as ApiFormat, path: '/api/v1/chat',         name: 'LM Studio Chat' },
                 { fmt: 'chat_completions' as ApiFormat, path: '/v1/chat/completions', name: 'API Chat Completions' },
                 { fmt: 'responses'        as ApiFormat, path: '/v1/responses',        name: 'API Responses' },
+              ] : llm.provider === 'ollama' ? [
+                { fmt: 'ollama_chat'      as ApiFormat, path: '/api/chat',            name: 'Ollama natif' },
+                { fmt: 'chat_completions' as ApiFormat, path: '/v1/chat/completions', name: 'OpenAI compatible' },
               ] : [
                 { fmt: 'responses'        as ApiFormat, path: '/v1/responses',        name: 'API Responses' },
                 { fmt: 'chat_completions' as ApiFormat, path: '/v1/chat/completions', name: 'API Chat Completions' },
