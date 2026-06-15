@@ -27,10 +27,13 @@ export function buildChatCompletionsBody(
         msgs.push({ role: 'user', content: m.content })
       }
     } else if (m.role === 'tool_call') {
+      const isOllama = config.llm.provider === 'ollama'
+      const rawArgs = m.toolArgs ?? '{}'
+      const argsValue = isOllama ? ((() => { try { return JSON.parse(rawArgs) } catch { return {} } })()) : rawArgs
       msgs.push({
         role: 'assistant',
         content: null,
-        tool_calls: [{ id: m.toolCallId, type: 'function', function: { name: m.toolName, arguments: m.toolArgs ?? '{}' } }],
+        tool_calls: [{ id: m.toolCallId, type: 'function', function: { name: m.toolName, arguments: argsValue } }],
       })
     } else if (m.role === 'tool_result') {
       msgs.push({ role: 'tool', tool_call_id: m.toolCallResultId, content: m.content })
@@ -46,6 +49,8 @@ export function buildChatCompletionsBody(
   if (config.streamEnabled) {
     body.stream_options = { include_usage: true }
   }
+
+  if (config.llm.provider === 'ollama') body.think = false
 
   if (config.llm.temperature !== null) body.temperature = config.llm.temperature
   if (config.llm.topP !== null) body.top_p = config.llm.topP

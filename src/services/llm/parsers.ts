@@ -149,13 +149,32 @@ export async function streamOpenAIResponses(response: Response, onToken: (t: str
   return { type: 'text', content: fullText, usage }
 }
 
+async function* parseNdjsonStream(response: Response): AsyncGenerator<string> {
+  const reader = response.body!.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    const lines = buffer.split('\n')
+    buffer = lines.pop() ?? ''
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (trimmed) yield trimmed
+    }
+  }
+  if (buffer.trim()) yield buffer.trim()
+}
+
 export async function streamChatCompletions(response: Response, isOllama: boolean, onToken: (t: string) => void): Promise<LLMResult> {
   let fullText = ''
   const toolCallsMap = new Map<number, { id: string; name: string; argsBuffer: string }>()
   let finishReason = ''
   let usage: TokenUsage | undefined
 
-  for await (const rawData of parseSSEStream(response)) {
+  for await (const rawData of (isOllama ? parseNdjsonStream(response) : parseSSEStream(response))) {
     try {
       const json = JSON.parse(rawData) as Record<string, unknown>
 
@@ -163,6 +182,18 @@ export async function streamChatCompletions(response: Response, isOllama: boolea
         const msg = json.message as Record<string, unknown>
         const delta = (msg?.content as string) ?? ''
         if (delta) { fullText += delta; onToken(delta) }
+        // Tool calls Ollama : présents dans message.tool_calls sur le chunk final
+        const tcs = msg?.tool_calls as Array<Record<string, unknown>> | undefined
+        if (tcs) {
+          for (const [idx, tc] of tcs.entries()) {
+            const fn = tc.function as Record<string, unknown>
+            const existing = toolCallsMap.get(idx) ?? { id: `ollama-tool-${idx}`, name: '', argsBuffer: '' }
+            if (fn?.name) existing.name = fn.name as string
+            const args = fn?.arguments
+            if (args) existing.argsBuffer = typeof args === 'string' ? args : JSON.stringify(args)
+            toolCallsMap.set(idx, existing)
+          }
+        }
         const u = json.prompt_eval_count !== undefined
           ? { promptTokens: (json.prompt_eval_count as number) ?? 0, completionTokens: (json.eval_count as number) ?? 0 }
           : undefined
@@ -259,6 +290,16 @@ export function parseNonStreamingResponse(json: unknown, isOpenAI: boolean, isOl
     const usage: TokenUsage | undefined = obj.prompt_eval_count !== undefined
       ? { promptTokens: (obj.prompt_eval_count as number) ?? 0, completionTokens: (obj.eval_count as number) ?? 0 }
       : undefined
+    const tcs = msg?.tool_calls as Array<Record<string, unknown>> | undefined
+    if (tcs && tcs.length > 0) {
+      const calls: LLMToolCall[] = tcs.map((tc, idx) => {
+        const fn = tc.function as Record<string, unknown>
+        const args = fn?.arguments
+        const rawArgs = typeof args === 'string' ? args : JSON.stringify(args ?? {})
+        return { id: `ollama-tool-${idx}`, name: fn?.name as string, rawArgs, args: safeParseArgs(rawArgs) }
+      })
+      return { type: 'tool_calls', calls, usage }
+    }
     return { type: 'text', content: (msg?.content as string) ?? '', usage }
   }
 
