@@ -22,6 +22,8 @@ function ExchangeCard({ exchange }: { exchange: HttpExchange }) {
     <div className={`border ${borderColor} rounded-lg overflow-hidden text-xs`}>
       <button
         onClick={() => setOpen(o => !o)}
+        aria-expanded={open}
+        aria-label={`${isLlm ? 'LLM' : 'MCP'} ${exchange.method} ${exchange.url}`}
         className={`w-full flex items-center gap-2 px-3 py-2 ${headerBg} text-left`}
       >
         <span className={`px-1.5 py-0.5 rounded text-xs font-bold uppercase ${badgeClass}`}>
@@ -134,7 +136,8 @@ export function RightSidebar() {
         <button
           onClick={() => setCollapsed(false)}
           className="text-gray-400 hover:text-gray-700 transition-colors"
-          title="Afficher l'inspecteur HTTP"
+          aria-label="Afficher l'inspecteur HTTP"
+          aria-expanded={false}
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
@@ -150,16 +153,16 @@ export function RightSidebar() {
         className="w-1 shrink-0 cursor-col-resize hover:bg-blue-400 active:bg-blue-500 transition-colors bg-gray-200"
         title="Redimensionner"
       />
-    <aside className="flex-1 bg-white border-l border-gray-200 flex flex-col min-h-0 overflow-hidden">
+    <aside aria-label="Inspecteur HTTP" className="flex-1 bg-white border-l border-gray-200 flex flex-col min-h-0 overflow-hidden">
       <div className="flex items-center justify-between px-3 h-10 border-b border-gray-200 bg-gray-50 shrink-0">
         <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Inspecteur HTTP</span>
         <div className="flex items-center gap-2">
           {exchanges.length > 0 && (
-            <button onClick={clear} className="text-gray-400 hover:text-red-500 transition-colors" title="Vider">
-              <Trash2 className="w-3.5 h-3.5" />
+            <button onClick={clear} className="text-gray-400 hover:text-red-500 transition-colors" aria-label="Vider l'inspecteur">
+              <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
           )}
-          <button onClick={() => setCollapsed(true)} className="text-gray-400 hover:text-gray-700 transition-colors">
+          <button onClick={() => setCollapsed(true)} aria-label="Masquer l'inspecteur HTTP" aria-expanded={true} className="text-gray-400 hover:text-gray-700 transition-colors">
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>

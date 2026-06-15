@@ -39,6 +39,7 @@ export function LeftSidebar() {
         <button
           onClick={handleReset}
           title="Réinitialiser toute la configuration"
+          aria-label="Réinitialiser toute la configuration"
           className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${
             confirming
               ? 'bg-red-500 text-white hover:bg-red-600'

@@ -124,8 +124,9 @@ export function ProviderSection() {
     <Accordion title="Provider LLM" icon={<Server className="w-4 h-4 text-blue-500" />} defaultOpen>
       <div className="space-y-3">
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Provider</label>
+          <label htmlFor="provider-select" className="block text-xs text-gray-500 mb-1">Provider</label>
           <select
+            id="provider-select"
             value={llm.provider}
             onChange={e => handleProviderChange(e.target.value as Provider)}
             className="w-full text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
@@ -156,6 +157,8 @@ export function ProviderSection() {
 
           {showDropdown && displayModels.length > 0 ? (
             <select
+              id="model-select"
+              aria-label="Modèle"
               value={modelInList ? llm.model : '__custom__'}
               onChange={e => {
                 if (e.target.value === '__custom__') return
@@ -174,7 +177,9 @@ export function ProviderSection() {
             </select>
           ) : (
             <input
+              id="model-input"
               type="text"
+              aria-label="Modèle"
               value={llm.model}
               onChange={e => update({ llm: { ...llm, model: e.target.value } })}
               className="w-full text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -195,7 +200,7 @@ export function ProviderSection() {
         {(llm.provider === 'openai' || llm.provider === 'ovh' || llm.provider === 'lmstudio') && (
           <div>
             <label className="block text-xs text-gray-500 mb-1">Format API</label>
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5" role="radiogroup" aria-label="Format API">
               {(llm.provider === 'lmstudio' ? [
                 { fmt: 'lmstudio_chat'    as ApiFormat, path: '/api/v1/chat',         name: 'LM Studio Chat' },
                 { fmt: 'chat_completions' as ApiFormat, path: '/v1/chat/completions', name: 'API Chat Completions' },
@@ -209,6 +214,8 @@ export function ProviderSection() {
                 return (
                   <button
                     key={fmt}
+                    role="radio"
+                    aria-checked={active}
                     onClick={() => !disabled && update({ llm: { ...llm, apiFormat: fmt } })}
                     disabled={disabled}
                     className={`w-full text-left px-3 py-2 rounded-md border transition-colors ${
@@ -236,8 +243,9 @@ export function ProviderSection() {
         )}
 
         <div>
-          <label className="block text-xs text-gray-500 mb-1">URL de base</label>
+          <label htmlFor="base-url" className="block text-xs text-gray-500 mb-1">URL de base</label>
           <input
+            id="base-url"
             type="url"
             value={llm.baseUrl}
             onChange={e => update({ llm: { ...llm, baseUrl: e.target.value } })}
@@ -249,10 +257,11 @@ export function ProviderSection() {
         </div>
 
         <div>
-          <label className="block text-xs text-gray-500 mb-1">
+          <label htmlFor="api-key" className="block text-xs text-gray-500 mb-1">
             Clé API <span className="text-gray-400">(propre à {PROVIDER_DEFAULTS[llm.provider].label})</span>
           </label>
           <input
+            id="api-key"
             type="password"
             value={llm.apiKeys[llm.provider]}
             onChange={e => update({ llm: { ...llm, apiKeys: { ...llm.apiKeys, [llm.provider]: e.target.value } } })}

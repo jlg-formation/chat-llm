@@ -20,6 +20,9 @@ export function StreamSection() {
         </div>
         <button
           onClick={() => update({ streamEnabled: !config.streamEnabled })}
+          role="switch"
+          aria-checked={config.streamEnabled}
+          aria-label="Mode stream"
           className={`relative shrink-0 inline-flex h-6 w-11 items-center rounded-full transition-colors ${
             config.streamEnabled ? 'bg-green-500' : 'bg-gray-300'
           }`}

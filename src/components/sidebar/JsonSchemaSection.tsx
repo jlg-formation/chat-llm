@@ -16,6 +16,8 @@ export function JsonSchemaSection() {
           value={config.jsonSchema}
           onChange={e => update({ jsonSchema: e.target.value })}
           rows={6}
+          aria-label="Schéma JSON"
+          aria-invalid={!isValid}
           className={`w-full text-sm border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y font-mono ${
             !isValid ? 'border-red-400' : 'border-gray-300'
           }`}

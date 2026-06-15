@@ -26,8 +26,10 @@ function SliderField({ label, hint, min, max, step, defaultValue, value, leftLab
         </div>
         <button
           onClick={() => onChange(enabled ? null : defaultValue)}
+          role="switch"
+          aria-checked={enabled}
+          aria-label={`Activer ${label}`}
           className={`relative shrink-0 inline-flex h-5 w-9 items-center rounded-full transition-colors ${enabled ? 'bg-purple-500' : 'bg-gray-300'}`}
-          title={enabled ? 'Désactiver' : 'Activer'}
         >
           <span className={`absolute h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${enabled ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
         </button>
@@ -41,6 +43,10 @@ function SliderField({ label, hint, min, max, step, defaultValue, value, leftLab
           type="range" min={min} max={max} step={step}
           value={value ?? defaultValue}
           onChange={e => onChange(parseFloat(e.target.value))}
+          aria-label={label}
+          aria-valuemin={min}
+          aria-valuemax={max}
+          aria-valuenow={value ?? defaultValue}
           className="w-full accent-purple-500"
         />
         <div className="flex justify-between text-xs text-gray-300 mt-0.5">
@@ -77,11 +83,12 @@ export function SamplingSection() {
         />
 
         <div>
-          <label className="block text-xs text-gray-500 mb-1">
+          <label htmlFor="max-tokens" className="block text-xs text-gray-500 mb-1">
             Max tokens en sortie
             <span className="ml-1 text-gray-400">(vide = illimité)</span>
           </label>
           <input
+            id="max-tokens"
             type="number"
             min={1}
             step={256}

@@ -81,12 +81,13 @@ export function ChatInput({ onSend, onStop, disabled }: Props) {
         <div className="flex gap-2 flex-wrap mb-2">
           {images.map((img, i) => (
             <div key={i} className="relative">
-              <img src={img.dataUrl} alt="" className="h-16 w-16 object-cover rounded-md border border-gray-200" />
+              <img src={img.dataUrl} alt={`Image jointe ${i + 1}`} className="h-16 w-16 object-cover rounded-md border border-gray-200" />
               <button
                 onClick={() => removeImage(i)}
+                aria-label={`Supprimer l'image ${i + 1}`}
                 className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center"
               >
-                <X className="w-2.5 h-2.5" />
+                <X className="w-2.5 h-2.5" aria-hidden="true" />
               </button>
             </div>
           ))}
@@ -106,9 +107,9 @@ export function ChatInput({ onSend, onStop, disabled }: Props) {
           onClick={() => fileRef.current?.click()}
           disabled={disabled}
           className="p-2 rounded-md text-gray-500 hover:bg-gray-100 transition-colors disabled:opacity-40 shrink-0"
-          title="Ajouter une image"
+          aria-label="Ajouter une image"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-5 h-5" aria-hidden="true" />
         </button>
 
         <textarea
@@ -119,6 +120,7 @@ export function ChatInput({ onSend, onStop, disabled }: Props) {
           onPaste={handlePaste}
           disabled={disabled}
           rows={1}
+          aria-label="Message"
           className="flex-1 resize-none border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 leading-snug"
           placeholder="Écrivez votre message... (Entrée pour envoyer, Maj+Entrée pour saut de ligne)"
           style={{ minHeight: '42px' }}
@@ -128,18 +130,18 @@ export function ChatInput({ onSend, onStop, disabled }: Props) {
           <button
             onClick={onStop}
             className="p-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors shrink-0"
-            title="Arrêter la génération"
+            aria-label="Arrêter la génération"
           >
-            <Square className="w-4 h-4 fill-current" />
+            <Square className="w-4 h-4 fill-current" aria-hidden="true" />
           </button>
         ) : (
           <button
             onClick={handleSend}
             disabled={disabled || (!text.trim() && images.length === 0)}
             className="p-2.5 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-            title="Envoyer"
+            aria-label="Envoyer"
           >
-            <Send className="w-4 h-4" />
+            <Send className="w-4 h-4" aria-hidden="true" />
           </button>
         )}
       </div>

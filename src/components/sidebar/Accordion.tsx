@@ -10,19 +10,22 @@ interface AccordionProps {
 
 export function Accordion({ title, icon, defaultOpen = false, children }: AccordionProps) {
   const [open, setOpen] = useState(defaultOpen)
+  const id = title.toLowerCase().replace(/\s+/g, '-')
 
   return (
     <div className="border-b border-gray-200">
       <button
         className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors text-left"
         onClick={() => setOpen(o => !o)}
+        aria-expanded={open}
+        aria-controls={`accordion-${id}`}
       >
         {icon}
         <span className="flex-1">{title}</span>
         {open ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
       </button>
       {open && (
-        <div className="px-4 pb-4 pt-1">
+        <div id={`accordion-${id}`} className="px-4 pb-4 pt-1" role="region" aria-label={title}>
           {children}
         </div>
       )}
