@@ -6,6 +6,8 @@ import { User, Bot, Wrench, ChevronDown, ChevronRight, Loader2 } from 'lucide-re
 import mermaid from 'mermaid'
 
 mermaid.initialize({ startOnLoad: false, theme: 'default' })
+// Neutralise le callback qui injecte les "bombes" d'erreur dans document.body
+;(mermaid as unknown as { parseError?: (err: unknown) => void }).parseError = () => {}
 
 let mermaidCounter = 0
 
