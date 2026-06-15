@@ -11,6 +11,13 @@ mermaid.initialize({ startOnLoad: false, theme: 'default' })
 
 let mermaidCounter = 0
 
+function expandSvg(svg: string): string {
+  // Supprime les attributs width/height fixes pour que le SVG s'étire librement
+  return svg
+    .replace(/(<svg[^>]*)\swidth="[^"]*"/i, '$1')
+    .replace(/(<svg[^>]*)\sheight="[^"]*"/i, '$1')
+}
+
 function MermaidModal({ svg, onClose }: { svg: string; onClose: () => void }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -20,14 +27,14 @@ function MermaidModal({ svg, onClose }: { svg: string; onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-xl shadow-2xl max-w-[90vw] max-h-[90vh] overflow-auto p-6"
+        className="bg-white rounded-xl shadow-2xl w-[90vw] max-h-[90vh] overflow-auto p-6"
         onClick={e => e.stopPropagation()}
       >
-        <div dangerouslySetInnerHTML={{ __html: svg }} />
+        <div className="[&>svg]:w-full [&>svg]:h-auto" dangerouslySetInnerHTML={{ __html: expandSvg(svg) }} />
       </div>
     </div>
   )
