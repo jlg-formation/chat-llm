@@ -1,5 +1,7 @@
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import rehypeHighlight from 'rehype-highlight'
+import 'highlight.js/styles/github.css'
 import { useState, useEffect } from 'react'
 import type { ChatMessage as ChatMessageType } from '../../types'
 import { User, Bot, Wrench, ChevronDown, ChevronRight, Loader2 } from 'lucide-react'
@@ -250,6 +252,7 @@ export function ChatMessageView({ message }: Props) {
                     <ReactMarkdown
                       key={i}
                       remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[[rehypeHighlight, { ignoreMissing: true }]]}
                       components={{
                         code({ className, children }) {
                           const lang = /language-(\w+)/.exec(className ?? '')?.[1]
