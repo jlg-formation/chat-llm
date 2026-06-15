@@ -1,6 +1,6 @@
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import type { ChatMessage as ChatMessageType } from '../../types'
 import { User, Bot, Wrench, ChevronDown, ChevronRight, Loader2 } from 'lucide-react'
 import mermaid from 'mermaid'
@@ -11,14 +11,33 @@ mermaid.initialize({ startOnLoad: false, theme: 'default' })
 
 let mermaidCounter = 0
 
+function MermaidModal({ svg, onClose }: { svg: string; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-xl shadow-2xl max-w-[90vw] max-h-[90vh] overflow-auto p-6"
+        onClick={e => e.stopPropagation()}
+      >
+        <div dangerouslySetInnerHTML={{ __html: svg }} />
+      </div>
+    </div>
+  )
+}
+
 function MermaidBlock({ code }: { code: string }) {
-  const containerRef = useRef<HTMLDivElement>(null)
   const [result, setResult] = useState<{ svg: string } | { error: true } | null>(null)
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    // parse() valide la syntaxe sans rien injecter dans le DOM.
-    // On n'appelle render() que si le diagramme est syntaxiquement correct,
-    // ce qui empêche Mermaid d'injecter ses erreurs visuelles dans document.body.
     mermaid.parse(code)
       .then(() => {
         const id = `mermaid-${++mermaidCounter}`
@@ -37,11 +56,15 @@ function MermaidBlock({ code }: { code: string }) {
     )
   }
   return (
-    <div
-      ref={containerRef}
-      className="flex justify-center my-2 overflow-x-auto"
-      dangerouslySetInnerHTML={{ __html: result.svg }}
-    />
+    <>
+      <div
+        className="flex justify-center my-2 overflow-hidden cursor-zoom-in rounded-lg border border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50 transition-colors"
+        title="Cliquer pour agrandir"
+        onClick={() => setOpen(true)}
+        dangerouslySetInnerHTML={{ __html: result.svg }}
+      />
+      {open && <MermaidModal svg={result.svg} onClose={() => setOpen(false)} />}
+    </>
   )
 }
 
