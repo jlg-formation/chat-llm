@@ -14,19 +14,16 @@ function MermaidBlock({ code }: { code: string }) {
   const [result, setResult] = useState<{ svg: string } | { error: true } | null>(null)
 
   useEffect(() => {
-    const id = `mermaid-${++mermaidCounter}`
-    // Conteneur hors-DOM pour éviter que mermaid injecte ses erreurs visuelles dans la page
-    const sandbox = document.createElement('div')
-    sandbox.id = id
-    sandbox.style.cssText = 'position:absolute;left:-9999px;visibility:hidden'
-    document.body.appendChild(sandbox)
-
-    mermaid.render(id, code)
+    // parse() valide la syntaxe sans rien injecter dans le DOM.
+    // On n'appelle render() que si le diagramme est syntaxiquement correct,
+    // ce qui empêche Mermaid d'injecter ses erreurs visuelles dans document.body.
+    mermaid.parse(code)
+      .then(() => {
+        const id = `mermaid-${++mermaidCounter}`
+        return mermaid.render(id, code)
+      })
       .then(({ svg: rendered }) => { setResult({ svg: rendered }) })
       .catch(() => { setResult({ error: true }) })
-      .finally(() => { sandbox.remove() })
-
-    return () => { sandbox.remove() }
   }, [code])
 
   if (!result) return null
