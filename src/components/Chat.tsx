@@ -10,7 +10,7 @@ import type { SkillRef, LLMToolCall } from '../services/llm'
 import { SquarePen } from 'lucide-react'
 import { addUsage, resetUsage } from '../store/usageStore'
 
-const MAX_TOOL_ITERATIONS = 5
+const MAX_TOOL_ITERATIONS = 100
 
 function genId() {
   return Math.random().toString(36).slice(2)

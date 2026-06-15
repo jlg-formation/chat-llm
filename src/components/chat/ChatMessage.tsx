@@ -1,7 +1,50 @@
 import ReactMarkdown from 'react-markdown'
-import { useState } from 'react'
+import remarkGfm from 'remark-gfm'
+import { useState, useEffect, useRef } from 'react'
 import type { ChatMessage as ChatMessageType } from '../../types'
 import { User, Bot, Wrench, ChevronDown, ChevronRight, Loader2 } from 'lucide-react'
+import mermaid from 'mermaid'
+
+mermaid.initialize({ startOnLoad: false, theme: 'default' })
+
+let mermaidCounter = 0
+
+function MermaidBlock({ code }: { code: string }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [result, setResult] = useState<{ svg: string } | { error: true } | null>(null)
+
+  useEffect(() => {
+    const id = `mermaid-${++mermaidCounter}`
+    // Conteneur hors-DOM pour éviter que mermaid injecte ses erreurs visuelles dans la page
+    const sandbox = document.createElement('div')
+    sandbox.id = id
+    sandbox.style.cssText = 'position:absolute;left:-9999px;visibility:hidden'
+    document.body.appendChild(sandbox)
+
+    mermaid.render(id, code)
+      .then(({ svg: rendered }) => { setResult({ svg: rendered }) })
+      .catch(() => { setResult({ error: true }) })
+      .finally(() => { sandbox.remove() })
+
+    return () => { sandbox.remove() }
+  }, [code])
+
+  if (!result) return null
+  if ('error' in result) {
+    return (
+      <pre className="bg-gray-50 border border-gray-200 rounded-md p-3 text-xs text-gray-500 overflow-x-auto whitespace-pre-wrap font-mono">
+        {code}
+      </pre>
+    )
+  }
+  return (
+    <div
+      ref={containerRef}
+      className="flex justify-center my-2 overflow-x-auto"
+      dangerouslySetInnerHTML={{ __html: result.svg }}
+    />
+  )
+}
 
 // ─── Parseur de blocs XML (ex: <think>…</think>) ─────────────────────────────
 
@@ -175,7 +218,19 @@ export function ChatMessageView({ message }: Props) {
                   seg.type === 'xml' ? (
                     <XmlBlock key={i} tag={seg.tag!} content={seg.content} unclosed={seg.unclosed} />
                   ) : (
-                    <ReactMarkdown key={i}>{seg.content}</ReactMarkdown>
+                    <ReactMarkdown
+                      key={i}
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        code({ className, children }) {
+                          const lang = /language-(\w+)/.exec(className ?? '')?.[1]
+                          if (lang === 'mermaid' && !message.isStreaming) {
+                            return <MermaidBlock code={String(children).trimEnd()} />
+                          }
+                          return <code className={className}>{children}</code>
+                        },
+                      }}
+                    >{seg.content}</ReactMarkdown>
                   )
                 )}
                 {message.isStreaming && !message.content.match(/<\w+>[\s\S]*$/) && (
