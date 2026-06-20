@@ -13,6 +13,9 @@ export function ChatInput({ onSend, onStop, disabled }: Props) {
   const [images, setImages] = useState<MessageImage[]>([])
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const inputHistory = useRef<string[]>([])
+  const historyIndex = useRef<number>(-1)
+  const draft = useRef<string>('')
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -26,13 +29,57 @@ export function ChatInput({ onSend, onStop, disabled }: Props) {
   }, [disabled])
 
   function handleSend() {
-    if (!text.trim() && images.length === 0) return
-    onSend(text.trim(), images)
+    const trimmed = text.trim()
+    if (!trimmed && images.length === 0) return
+    if (trimmed) {
+      inputHistory.current = [trimmed, ...inputHistory.current]
+    }
+    historyIndex.current = -1
+    draft.current = ''
+    onSend(trimmed, images)
     setText('')
     setImages([])
   }
 
   function handleKey(e: KeyboardEvent<HTMLTextAreaElement>) {
+    const textarea = textareaRef.current
+    if (!textarea) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
+      return
+    }
+
+    if (e.key === 'ArrowUp') {
+      const beforeCursor = text.slice(0, textarea.selectionStart)
+      if (beforeCursor.includes('\n')) return
+      const hist = inputHistory.current
+      if (historyIndex.current === -1) draft.current = text
+      const nextIndex = historyIndex.current + 1
+      if (nextIndex < hist.length) {
+        historyIndex.current = nextIndex
+        setText(hist[nextIndex])
+        e.preventDefault()
+        requestAnimationFrame(() => {
+          textarea.setSelectionRange(hist[nextIndex].length, hist[nextIndex].length)
+        })
+      }
+      return
+    }
+
+    if (e.key === 'ArrowDown') {
+      if (historyIndex.current === -1) return
+      const afterCursor = text.slice(textarea.selectionStart)
+      if (afterCursor.includes('\n')) return
+      const nextIndex = historyIndex.current - 1
+      historyIndex.current = nextIndex
+      const newText = nextIndex === -1 ? draft.current : inputHistory.current[nextIndex]
+      setText(newText)
+      e.preventDefault()
+      requestAnimationFrame(() => {
+        textarea.setSelectionRange(newText.length, newText.length)
+      })
+      return
+    }
+
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend()
