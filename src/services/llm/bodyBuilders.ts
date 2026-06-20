@@ -135,7 +135,6 @@ export function buildLmStudioChatBody(
   config: AppConfig,
   messages: ChatMessage[],
   systemPrompt: string,
-  mcpTools: McpTool[],
   previousResponseId?: string,
 ) {
   // Trouver le dernier message utilisateur (le tour courant)
@@ -187,7 +186,7 @@ export function buildBody(
   options?: { previousResponseId?: string },
 ) {
   if (config.llm.apiFormat === 'lmstudio_chat') {
-    return buildLmStudioChatBody(config, messages, systemPrompt, mcpTools, options?.previousResponseId)
+    return buildLmStudioChatBody(config, messages, systemPrompt, options?.previousResponseId)
   }
   return usesResponsesAPI(config)
     ? buildOpenAIResponsesBody(config, messages, systemPrompt, skillRefs, mcpTools)

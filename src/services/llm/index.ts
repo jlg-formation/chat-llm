@@ -2,7 +2,8 @@ import type { AppConfig, ChatMessage, McpTool } from '../../types'
 import { addExchange, updateExchange } from '../../store/httpStore'
 import { genId, usesResponsesAPI, usesOllamaNative, getEndpoint, getHeaders, getPedagogicHeaders } from './helpers'
 import { buildBody } from './bodyBuilders'
-import { streamOpenAIResponses, streamChatCompletions, streamLmStudioChat, parseLmStudioChatNonStreaming, parseNonStreamingResponse } from './parsers'
+import { streamOpenAIResponses, streamChatCompletions, parseNonStreamingResponse } from './parsers'
+import { streamLmStudioChat, parseLmStudioChatNonStreaming } from './parsersLmStudio'
 
 export type { SkillRef, LLMToolCall, LLMResult } from './types'
 
