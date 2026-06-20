@@ -118,7 +118,7 @@ export async function connectMcp(mcpUrl: string): Promise<void> {
 export async function disconnectMcp(mcpUrl: string): Promise<void> {
   const session = getSession(mcpUrl)
   try {
-    await mcpJsonRpc(mcpUrl, 'shutdown', {}, session)
+    await mcpJsonRpc(mcpUrl, 'shutdown', {}, session).catch(() => { /* shutdown errors are non-fatal */ })
     await mcpPost(mcpUrl, { jsonrpc: '2.0', method: 'exit' }, session)
   } finally {
     sessions.delete(mcpUrl)
