@@ -18,10 +18,7 @@ export interface AppConfig {
   streamEnabled: boolean
   systemPrompt: string
   jsonSchema: string
-  mcpName: string
-  mcpUrl: string
-  mcpEnabled: boolean
-  mcpTools: McpTool[]
+  mcpServers: McpServer[]
 }
 
 export interface McpTool {
@@ -29,6 +26,14 @@ export interface McpTool {
   description: string
   enabled: boolean
   inputSchema?: unknown
+}
+
+export interface McpServer {
+  id: string
+  name: string
+  url: string
+  enabled: boolean
+  tools: McpTool[]
 }
 
 export interface Skill {
@@ -101,8 +106,5 @@ export const DEFAULT_CONFIG: AppConfig = {
   streamEnabled: true,
   systemPrompt: '',
   jsonSchema: '',
-  mcpName: '',
-  mcpUrl: '',
-  mcpEnabled: false,
-  mcpTools: [],
+  mcpServers: [],
 }

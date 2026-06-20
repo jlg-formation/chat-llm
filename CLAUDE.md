@@ -22,69 +22,99 @@ Application React 100 % front-end (aucun backend). Deux contraintes structurante
 
 ### Stores (pattern observer maison, sans Redux ni Zustand)
 
-- `src/store/configStore.ts` — configuration persistée en **localStorage**. Expose `useConfig()` (hook React) et `updateConfig()` (appel direct). Les listeners sont notifiés à chaque mise à jour.
-- `src/store/httpStore.ts` — log des échanges HTTP (non persisté, oldest-first). `addExchange()` / `updateExchange()` sont appelés par le service LLM ; `useHttpExchanges()` est consommé par la sidebar droite.
-- `src/store/skillsStore.ts` — CRUD skills en **IndexedDB** via `localforage`. Les skills sont des ZIP décompressés dont le contenu est stocké dans `files: Record<string, string>`. `parseSkillFrontmatter()` extrait `name` et `description` depuis le frontmatter YAML du fichier `SKILL.md`.
+- `src/store/configStore.ts` — configuration persistée en **localStorage**. Expose `useConfig()` (hook React) et `updateConfig()` (appel direct). Gère la migration depuis l'ancien format `apiKey` à plat vers `apiKeys: Record<Provider, string>`.
+- `src/store/httpStore.ts` — log des échanges HTTP (non persisté, oldest-first). `addExchange()` / `updateExchange()` couvrent les échanges LLM et MCP (`type: 'llm' | 'mcp'`). `useHttpExchanges()` consommé par la sidebar droite.
+- `src/store/skillsStore.ts` — CRUD skills en **IndexedDB** via `localforage`. Les skills sont des ZIP décompressés dont le contenu est stocké dans `files: Record<string, string>`. `parseSkillFrontmatter()` extrait `name` et `description` depuis le frontmatter YAML de `SKILL.md`.
+- `src/store/usageStore.ts` — compteur de tokens (promptTokens, completionTokens) cumulés sur la conversation. `addUsage()` appelé après chaque appel LLM ; `resetUsage()` déclenché manuellement ou à la réinitialisation de la conversation. Non persisté.
+- `src/store/modelsStore.ts` — cache mémoire des listes de modèles récupérées dynamiquement, indexées par provider. `setCachedModels()` / `useModelsCache()`.
 
-### Service LLM (`src/services/llm.ts`)
+### Service LLM (`src/services/llm/`)
 
-Un seul point d'entrée public : `sendMessage()`. Il adapte le format de la requête selon le provider :
-- **OpenAI** → `POST /v1/responses` (API Responses, champ `input`, events SSE `response.output_text.delta` / `response.completed`)
-- **OVH / LM Studio** → `POST /v1/chat/completions` (format OpenAI standard)
-- **Ollama** → `POST /api/chat` (format natif)
+Refactorisé en répertoire. Point d'entrée public : `src/services/llm/index.ts` → `sendMessage()`.
 
-Le streaming est géré par `parseSSEStream()` (générateur async). Chaque appel enregistre l'échange dans `httpStore` avec les headers pédagogiques tronqués (clé API masquée).
+**Quatre formats d'API** (`ApiFormat` dans `src/types.ts`) :
 
-`sendMessage()` retourne un type union `LLMResult` :
-- `{ type: 'text'; content: string }` — réponse finale
-- `{ type: 'tool_calls'; calls: LLMToolCall[] }` — le LLM a demandé un outil
+| `apiFormat` | Provider | Endpoint | Particularités |
+|---|---|---|---|
+| `responses` | OpenAI, OVH (2 modèles) | `POST /v1/responses` | SSE events `response.output_text.delta` / `response.completed`, champ `input`, `instructions` |
+| `chat_completions` | OVH, Ollama (compat.) | `POST /v1/chat/completions` | Format OpenAI standard, `messages` |
+| `ollama_chat` | Ollama | `POST /api/chat` | Format natif Ollama, `think: false` forcé |
+| `lmstudio_chat` | LM Studio | `POST /api/v1/chat` | Stateful : envoie seulement le dernier message utilisateur + `previous_response_id` ; MCP via `integrations` (format natif, pas de tool loop) |
+
+Le streaming est géré par `parseSSEStream()` (générateur async, `src/services/llm/parsers.ts`). LM Studio utilise `parseSSEStreamWithEvents()` car il envoie des `event:` explicites.
+
+`sendMessage()` retourne `LLMResult` :
+- `{ type: 'text'; content: string; usage?: TokenUsage; responseId?: string }`
+- `{ type: 'tool_calls'; calls: LLMToolCall[]; responseId?: string; rawAssistantMsg?: unknown; usage?: TokenUsage }`
+
+**OVH** : seuls `gpt-oss-20b` et `gpt-oss-120b` supportent le format `responses`. `fetchModels()` OVH utilise le header `X-Auth-Token` (pas `Authorization: Bearer`).
+
+### Service modèles (`src/services/models.ts`)
+
+`fetchModels(provider, baseUrl, apiKey)` récupère la liste de modèles pour chaque provider (endpoints différents, shapes différentes) et normalise vers `ModelInfo`. LM Studio utilise `/api/v1/models` avec une shape propre. Les résultats sont mis en cache dans `modelsStore`. OpenAI a une liste statique de repli (`STATIC_OPENAI_MODELS` dans `ProviderSection.tsx`).
+
+### Service MCP (`src/services/mcp.ts`)
+
+Client JSON-RPC over HTTP (protocole MCP 2025-11-25). Sessions maintenues en mémoire (`sessions: Map<string, McpSession>`) — déjà multi-serveur (clé = URL). Sur une erreur 404, la session est supprimée et la prochaine requête force une ré-initialisation.
+
+Fonctions publiques : `connectMcp()`, `disconnectMcp()`, `fetchMcpTools()`, `callMcpTool()`. Tous les échanges MCP sont loggés dans `httpStore` avec `type: 'mcp'`.
+
+LM Studio gère le MCP nativement via le champ `integrations` du corps de requête (pas via la boucle agentique) — `buildLmStudioChatBody()` dans `bodyBuilders.ts` génère une entrée par serveur actif.
 
 ### Skills et function calling
 
-Les skills actifs sont injectés dans le prompt système sous forme de **frontmatter uniquement** (name + description). Le contenu détaillé est accessible via l'outil `get_skill_details` que le LLM peut appeler s'il en a besoin.
+Les skills actifs sont injectés dans le prompt système sous forme de **frontmatter uniquement** (name + description). Le contenu détaillé est accessible via l'outil `get_skill_details` que le LLM peut appeler.
 
-La boucle agentique tourne dans `Chat.tsx` (max 5 itérations) :
+La boucle agentique tourne dans `Chat.tsx` (max **100** itérations) :
 1. `sendMessage()` → si `tool_calls` : résoudre les outils localement
 2. Ajouter des messages `tool_call` + `tool_result` dans l'historique
 3. Rappeler `sendMessage()` avec l'historique complet
 4. Répéter jusqu'à `type: 'text'`
 
-Les messages `tool_call` / `tool_result` sont sérialisés selon le provider :
+LM Studio court-circuite cette boucle : le MCP est délégué au serveur via `integrations`, non résolu localement.
+
+Les messages `tool_call` / `tool_result` sont sérialisés selon le format :
 - Responses API → `{type: "function_call"}` + `{type: "function_call_output"}` dans `input`
-- Chat Completions → `{role: "assistant", tool_calls: [...]}` + `{role: "tool"}` dans `messages`
+- Chat Completions / Ollama → `{role: "assistant", tool_calls: [...]}` + `{role: "tool"}` dans `messages`
 
 ### Types centraux (`src/types.ts`)
 
-`LLMConfig.apiKeys` est un `Record<Provider, string>` — une clé par provider, pas une clé globale. `DEFAULT_CONFIG` prépositionne sur `gpt-5.4-nano`. Le `configStore` gère la migration depuis l'ancien format `apiKey` à plat.
-
-`MessageRole` inclut `'user' | 'assistant' | 'system' | 'tool_call' | 'tool_result'`. Les messages `tool_call` portent `toolCallId`, `toolName`, `toolArgs` ; les messages `tool_result` portent `toolCallResultId`.
+- `Provider` : `'openai' | 'ovh' | 'lmstudio' | 'ollama'`
+- `ApiFormat` : `'responses' | 'chat_completions' | 'lmstudio_chat' | 'ollama_chat'`
+- `LLMConfig` contient `temperature`, `topP`, `maxTokens` (tous `number | null` — `null` = non envoyé à l'API)
+- `MessageRole` : `'user' | 'assistant' | 'system' | 'tool_call' | 'tool_result'`
+- `McpServer` : `{ id, name, url, enabled, tools: McpTool[] }` — `AppConfig.mcpServers` est un tableau de ces objets. Migration automatique depuis l'ancien format à plat (`mcpUrl`, `mcpEnabled`…) dans `configStore`.
+- `DEFAULT_CONFIG` prépositionne sur `openai` / `gpt-5.4-nano` / format `responses`, `mcpServers: []`
 
 ### Layout
 
 ```
 App
 ├── Header          — provider actif, modèle, stream on/off, lien GitHub
-├── LeftSidebar     — accordéons de configuration (6 sections)
-│   └── sidebar/    — ProviderSection, StreamSection, SystemPromptSection,
-│                     JsonSchemaSection, SkillsSection, McpSection
+├── LeftSidebar     — accordéons de configuration (8 sections)
+│   └── sidebar/    — ProviderSection, StreamSection, SamplingSection,
+│                     SystemPromptSection, JsonSchemaSection, SkillsSection,
+│                     McpSection, UsageSection (visible seulement si total > 0)
+│                     Accordion.tsx — composant accordéon réutilisable
 │                     Toggle.tsx — composant interrupteur CSS réutilisable
 ├── Chat            — historique + ChatInput (textarea auto-resize, paste image)
-│   └── chat/       — ChatMessageView (Markdown via react-markdown + rendu
-│                     tool_call/tool_result dépliables), ChatInput
+│   └── chat/       — ChatMessage.tsx (composant ChatMessageView : Markdown via
+│                     react-markdown + highlight.js, tool_call/tool_result dépliables,
+│                     zoom Mermaid en modale), ChatInput
 ├── RightSidebar    — inspecteur HTTP redimensionnable (drag sur la poignée gauche),
-│                     ordre chronologique + auto-scroll vers le bas
+│                     ordre chronologique + auto-scroll vers le bas, JsonTree.tsx
 └── Footer
 ```
 
-La sidebar droite a une largeur réglable par drag (200–800 px). L'état de largeur est local au composant (non persisté).
-
-### Modèles OpenAI disponibles
-
-Définis dans `ProviderSection.tsx` (`OPENAI_MODELS`) : uniquement la famille GPT-5.x (5.4-nano, 5.4-mini, 5.4, 5.4-pro, 5.5, 5.5-pro) avec prix input/output affichés. Pour les autres providers, le modèle est un champ texte libre.
+- **SamplingSection** : sliders Temperature (0–2), Top-P (0–1), champ Max tokens — tous désactivables (valeur `null`)
+- **UsageSection** : donut SVG prompt/completion tokens, coût estimé en USD (pricing live depuis `modelsStore` ou statique de repli), bouton reset. Se masque quand `total === 0`.
+- **McpSection** : liste de cartes de serveurs MCP (chacune : toggle enable, alias, URL + rafraîchir, liste d'outils avec toggle par outil). Bouton "Ajouter un serveur". Les cartes sont expand/collapse indépendants. `resolveToolCall` dans `Chat.tsx` itère les serveurs actifs pour dispatcher l'appel au bon (first-match-wins).
+- La sidebar droite a une largeur réglable par drag (200–800 px), état local non persisté.
+- La sidebar gauche a un bouton "Reset" avec confirmation (2 clics, timeout 3 s) qui vide localStorage + IndexedDB.
 
 ### Structured Output
 
-Activé via le champ JSON Schema dans la sidebar gauche. Envoyé dans `text.format` (Responses API) ou `response_format` (Chat Completions) avec `strict: false` pour ne pas imposer que `required` liste toutes les propriétés.
+Activé via le champ JSON Schema dans la sidebar gauche. Envoyé dans `text.format` (Responses API) ou `response_format` (Chat Completions) avec `strict: false`.
 
 ## Déploiement
 

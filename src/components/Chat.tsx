@@ -52,11 +52,11 @@ export function Chat() {
   }
 
   async function resolveToolCall(call: LLMToolCall): Promise<string> {
-    // Outils MCP — déléguer au serveur MCP si l'outil n'est pas get_skill_details
-    if (call.name !== 'get_skill_details' && config.mcpEnabled && config.mcpUrl) {
-      const mcpTool = config.mcpTools.find(t => t.name === call.name && t.enabled)
-      if (mcpTool) {
-        return callMcpTool(config.mcpUrl, call.name, call.args as Record<string, unknown>)
+    if (call.name !== 'get_skill_details') {
+      for (const server of config.mcpServers) {
+        if (!server.enabled) continue
+        const tool = server.tools.find(t => t.name === call.name && t.enabled)
+        if (tool) return callMcpTool(server.url, call.name, call.args as Record<string, unknown>)
       }
     }
 
@@ -106,7 +106,9 @@ export function Chat() {
         updateAssistant(finalContent, true)
       }
 
-      const activeMcpTools = config.mcpEnabled ? config.mcpTools.filter(t => t.enabled) : []
+      const activeMcpTools = config.mcpServers
+        .filter(s => s.enabled)
+        .flatMap(s => s.tools.filter(t => t.enabled))
       const prevId = config.llm.apiFormat === 'lmstudio_chat' ? lmStudioResponseIdRef.current : undefined
       let result = await sendMessage(config, apiMessages, systemPrompt, skillRefs, activeMcpTools, onToken, ctrl.signal, prevId)
       if (result.usage) addUsage(result.usage)

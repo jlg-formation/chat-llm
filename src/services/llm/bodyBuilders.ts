@@ -161,17 +161,18 @@ export function buildLmStudioChatBody(
   if (config.llm.topP !== null) body.top_p = config.llm.topP
   if (config.llm.maxTokens !== null) body.max_output_tokens = config.llm.maxTokens
 
-  // Intégration MCP via ephemeral_mcp (format natif LM Studio)
-  if (config.mcpEnabled && config.mcpUrl) {
-    const enabledTools = mcpTools.filter(t => t.enabled)
-    const integration: Record<string, unknown> = {
-      type: 'plugin',
-      id: `mcp/${config.mcpName || 'mcp'}`,
-    }
-    if (enabledTools.length > 0) {
-      integration.allowed_tools = enabledTools.map(t => t.name)
-    }
-    body.integrations = [integration]
+  // Intégration MCP via ephemeral_mcp (format natif LM Studio) — un plugin par serveur actif
+  const enabledServers = config.mcpServers.filter(s => s.enabled && s.url)
+  if (enabledServers.length > 0) {
+    body.integrations = enabledServers.map(server => {
+      const enabledTools = server.tools.filter(t => t.enabled)
+      const integration: Record<string, unknown> = {
+        type: 'plugin',
+        id: `mcp/${server.name || server.id}`,
+      }
+      if (enabledTools.length > 0) integration.allowed_tools = enabledTools.map(t => t.name)
+      return integration
+    })
   }
 
   return body

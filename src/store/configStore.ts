@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import type { AppConfig } from '../types'
+import type { AppConfig, McpServer, McpTool } from '../types'
 import { DEFAULT_CONFIG } from '../types'
 
 const LS_KEY = 'chat_pedagogique_config'
@@ -21,10 +21,26 @@ function loadConfig(): AppConfig {
     if (saved.llm && !saved.llm.apiFormat) {
       saved.llm.apiFormat = saved.llm.provider === 'openai' ? 'responses' : 'chat_completions'
     }
+    // Migration : champs MCP plats → tableau mcpServers
+    if (typeof saved.mcpUrl === 'string' && !Array.isArray(saved.mcpServers)) {
+      const legacyServer: McpServer = {
+        id: crypto.randomUUID(),
+        name: (saved.mcpName as string) || 'Serveur MCP',
+        url: saved.mcpUrl,
+        enabled: (saved.mcpEnabled as boolean) ?? false,
+        tools: (saved.mcpTools as McpTool[]) ?? [],
+      }
+      saved.mcpServers = saved.mcpUrl ? [legacyServer] : []
+      delete saved.mcpUrl
+      delete saved.mcpName
+      delete saved.mcpEnabled
+      delete saved.mcpTools
+    }
     return {
       ...DEFAULT_CONFIG,
-      ...saved,
+      ...(saved as Partial<AppConfig>),
       llm: { ...DEFAULT_CONFIG.llm, ...saved.llm, apiKeys: { ...DEFAULT_CONFIG.llm.apiKeys, ...saved.llm?.apiKeys } },
+      mcpServers: Array.isArray(saved.mcpServers) ? (saved.mcpServers as McpServer[]) : DEFAULT_CONFIG.mcpServers,
     }
   } catch {
     return DEFAULT_CONFIG
