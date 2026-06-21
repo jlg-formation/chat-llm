@@ -7,9 +7,7 @@ import type { ChatMessage as ChatMessageType } from '../../types'
 import { User, Bot, Wrench, ChevronDown, ChevronRight, Loader2 } from 'lucide-react'
 import mermaid from 'mermaid'
 
-mermaid.initialize({ startOnLoad: false, theme: 'default' })
-// Neutralise le callback qui injecte les "bombes" d'erreur dans document.body
-;(mermaid as unknown as { parseError?: (err: unknown) => void }).parseError = () => {}
+mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' })
 
 let mermaidCounter = 0
 
@@ -53,7 +51,7 @@ function MermaidBlock({ code }: { code: string }) {
         return mermaid.render(id, code)
       })
       .then(({ svg: rendered }) => { setResult({ svg: rendered }) })
-      .catch(() => { setResult({ error: true }) })
+      .catch((err) => { console.error('[Mermaid render error]', err); setResult({ error: true }) })
   }, [code])
 
   if (!result) return null
