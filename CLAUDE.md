@@ -119,3 +119,7 @@ Activé via le champ JSON Schema dans la sidebar gauche. Envoyé dans `text.form
 ## Déploiement
 
 Push sur `main` → GitHub Actions (`.github/workflows/deploy.yml`) build et déploie sur GitHub Pages via l'API `actions/deploy-pages`. Requires **Settings → Pages → Source = GitHub Actions** activé sur le dépôt.
+
+## Documentation
+
+Les décisions architecturales significatives sont tracées dans `docs/adr/` au format ADR (un fichier par décision, numérotés `NNN-titre-kebab-case.md`). Voir [`docs/adr/README.md`](docs/adr/README.md) pour le format et l'index. Toute nouvelle décision technique importante (choix de librairie, refactoring structurant, abandon d'une approche) doit y être documentée.
