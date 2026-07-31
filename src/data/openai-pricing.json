@@ -1,0 +1,447 @@
+{
+  "chatgpt-4o-latest": {
+    "pricingPrompt": 0.000005,
+    "pricingCompletion": 0.000015,
+    "contextLength": 128000
+  },
+  "ft:gpt-3.5-turbo": {
+    "pricingPrompt": 0.000003,
+    "pricingCompletion": 0.000006,
+    "contextLength": 16385
+  },
+  "ft:gpt-3.5-turbo-0125": {
+    "pricingPrompt": 0.000003,
+    "pricingCompletion": 0.000006,
+    "contextLength": 16385
+  },
+  "ft:gpt-3.5-turbo-0613": {
+    "pricingPrompt": 0.000003,
+    "pricingCompletion": 0.000006,
+    "contextLength": 4096
+  },
+  "ft:gpt-3.5-turbo-1106": {
+    "pricingPrompt": 0.000003,
+    "pricingCompletion": 0.000006,
+    "contextLength": 16385
+  },
+  "ft:gpt-4-0613": {
+    "pricingPrompt": 0.00003,
+    "pricingCompletion": 0.00006,
+    "contextLength": 8192
+  },
+  "ft:gpt-4.1-2025-04-14": {
+    "pricingPrompt": 0.000003,
+    "pricingCompletion": 0.000012,
+    "contextLength": 1047576
+  },
+  "ft:gpt-4.1-mini-2025-04-14": {
+    "pricingPrompt": 8e-7,
+    "pricingCompletion": 0.0000032,
+    "contextLength": 1047576
+  },
+  "ft:gpt-4.1-nano-2025-04-14": {
+    "pricingPrompt": 2e-7,
+    "pricingCompletion": 8e-7,
+    "contextLength": 1047576
+  },
+  "ft:gpt-4o-2024-08-06": {
+    "pricingPrompt": 0.00000375,
+    "pricingCompletion": 0.000015,
+    "contextLength": 128000
+  },
+  "ft:gpt-4o-2024-11-20": {
+    "pricingPrompt": 0.00000375,
+    "pricingCompletion": 0.000015,
+    "contextLength": 128000
+  },
+  "ft:gpt-4o-mini-2024-07-18": {
+    "pricingPrompt": 3e-7,
+    "pricingCompletion": 0.0000012,
+    "contextLength": 128000
+  },
+  "ft:o4-mini-2025-04-16": {
+    "pricingPrompt": 0.000004,
+    "pricingCompletion": 0.000016,
+    "contextLength": 200000
+  },
+  "gpt-3.5-turbo": {
+    "pricingPrompt": 5e-7,
+    "pricingCompletion": 0.0000015,
+    "contextLength": 16385
+  },
+  "gpt-3.5-turbo-0125": {
+    "pricingPrompt": 5e-7,
+    "pricingCompletion": 0.0000015,
+    "contextLength": 16385
+  },
+  "gpt-3.5-turbo-1106": {
+    "pricingPrompt": 0.000001,
+    "pricingCompletion": 0.000002,
+    "contextLength": 16385
+  },
+  "gpt-3.5-turbo-16k": {
+    "pricingPrompt": 0.000003,
+    "pricingCompletion": 0.000004,
+    "contextLength": 16385
+  },
+  "gpt-4": {
+    "pricingPrompt": 0.00003,
+    "pricingCompletion": 0.00006,
+    "contextLength": 8192
+  },
+  "gpt-4-0125-preview": {
+    "pricingPrompt": 0.00001,
+    "pricingCompletion": 0.00003,
+    "contextLength": 128000
+  },
+  "gpt-4-0314": {
+    "pricingPrompt": 0.00003,
+    "pricingCompletion": 0.00006,
+    "contextLength": 8192
+  },
+  "gpt-4-0613": {
+    "pricingPrompt": 0.00003,
+    "pricingCompletion": 0.00006,
+    "contextLength": 8192
+  },
+  "gpt-4-1106-preview": {
+    "pricingPrompt": 0.00001,
+    "pricingCompletion": 0.00003,
+    "contextLength": 128000
+  },
+  "gpt-4-turbo": {
+    "pricingPrompt": 0.00001,
+    "pricingCompletion": 0.00003,
+    "contextLength": 128000
+  },
+  "gpt-4-turbo-2024-04-09": {
+    "pricingPrompt": 0.00001,
+    "pricingCompletion": 0.00003,
+    "contextLength": 128000
+  },
+  "gpt-4-turbo-preview": {
+    "pricingPrompt": 0.00001,
+    "pricingCompletion": 0.00003,
+    "contextLength": 128000
+  },
+  "gpt-4.1": {
+    "pricingPrompt": 0.000002,
+    "pricingCompletion": 0.000008,
+    "contextLength": 1047576
+  },
+  "gpt-4.1-2025-04-14": {
+    "pricingPrompt": 0.000002,
+    "pricingCompletion": 0.000008,
+    "contextLength": 1047576
+  },
+  "gpt-4.1-mini": {
+    "pricingPrompt": 4e-7,
+    "pricingCompletion": 0.0000016,
+    "contextLength": 1047576
+  },
+  "gpt-4.1-mini-2025-04-14": {
+    "pricingPrompt": 4e-7,
+    "pricingCompletion": 0.0000016,
+    "contextLength": 1047576
+  },
+  "gpt-4.1-nano": {
+    "pricingPrompt": 1e-7,
+    "pricingCompletion": 4e-7,
+    "contextLength": 1047576
+  },
+  "gpt-4.1-nano-2025-04-14": {
+    "pricingPrompt": 1e-7,
+    "pricingCompletion": 4e-7,
+    "contextLength": 1047576
+  },
+  "gpt-4o": {
+    "pricingPrompt": 0.0000025,
+    "pricingCompletion": 0.00001,
+    "contextLength": 128000
+  },
+  "gpt-4o-2024-05-13": {
+    "pricingPrompt": 0.000005,
+    "pricingCompletion": 0.000015,
+    "contextLength": 128000
+  },
+  "gpt-4o-2024-08-06": {
+    "pricingPrompt": 0.0000025,
+    "pricingCompletion": 0.00001,
+    "contextLength": 128000
+  },
+  "gpt-4o-2024-11-20": {
+    "pricingPrompt": 0.0000025,
+    "pricingCompletion": 0.00001,
+    "contextLength": 128000
+  },
+  "gpt-4o-audio-preview": {
+    "pricingPrompt": 0.0000025,
+    "pricingCompletion": 0.00001,
+    "contextLength": 128000
+  },
+  "gpt-4o-audio-preview-2024-12-17": {
+    "pricingPrompt": 0.0000025,
+    "pricingCompletion": 0.00001,
+    "contextLength": 128000
+  },
+  "gpt-4o-audio-preview-2025-06-03": {
+    "pricingPrompt": 0.0000025,
+    "pricingCompletion": 0.00001,
+    "contextLength": 128000
+  },
+  "gpt-4o-mini": {
+    "pricingPrompt": 1.5e-7,
+    "pricingCompletion": 6e-7,
+    "contextLength": 128000
+  },
+  "gpt-4o-mini-2024-07-18": {
+    "pricingPrompt": 1.5e-7,
+    "pricingCompletion": 6e-7,
+    "contextLength": 128000
+  },
+  "gpt-4o-mini-audio-preview": {
+    "pricingPrompt": 1.5e-7,
+    "pricingCompletion": 6e-7,
+    "contextLength": 128000
+  },
+  "gpt-4o-mini-audio-preview-2024-12-17": {
+    "pricingPrompt": 1.5e-7,
+    "pricingCompletion": 6e-7,
+    "contextLength": 128000
+  },
+  "gpt-4o-mini-search-preview": {
+    "pricingPrompt": 1.5e-7,
+    "pricingCompletion": 6e-7,
+    "contextLength": 128000
+  },
+  "gpt-4o-mini-search-preview-2025-03-11": {
+    "pricingPrompt": 1.5e-7,
+    "pricingCompletion": 6e-7,
+    "contextLength": 128000
+  },
+  "gpt-4o-search-preview": {
+    "pricingPrompt": 0.0000025,
+    "pricingCompletion": 0.00001,
+    "contextLength": 128000
+  },
+  "gpt-4o-search-preview-2025-03-11": {
+    "pricingPrompt": 0.0000025,
+    "pricingCompletion": 0.00001,
+    "contextLength": 128000
+  },
+  "gpt-5": {
+    "pricingPrompt": 0.00000125,
+    "pricingCompletion": 0.00001,
+    "contextLength": 272000
+  },
+  "gpt-5-2025-08-07": {
+    "pricingPrompt": 0.00000125,
+    "pricingCompletion": 0.00001,
+    "contextLength": 272000
+  },
+  "gpt-5-chat": {
+    "pricingPrompt": 0.00000125,
+    "pricingCompletion": 0.00001,
+    "contextLength": 128000
+  },
+  "gpt-5-chat-latest": {
+    "pricingPrompt": 0.00000125,
+    "pricingCompletion": 0.00001,
+    "contextLength": 128000
+  },
+  "gpt-5-mini": {
+    "pricingPrompt": 2.5e-7,
+    "pricingCompletion": 0.000002,
+    "contextLength": 272000
+  },
+  "gpt-5-mini-2025-08-07": {
+    "pricingPrompt": 2.5e-7,
+    "pricingCompletion": 0.000002,
+    "contextLength": 272000
+  },
+  "gpt-5-nano": {
+    "pricingPrompt": 5e-8,
+    "pricingCompletion": 4e-7,
+    "contextLength": 272000
+  },
+  "gpt-5-nano-2025-08-07": {
+    "pricingPrompt": 5e-8,
+    "pricingCompletion": 4e-7,
+    "contextLength": 272000
+  },
+  "gpt-5-search-api": {
+    "pricingPrompt": 0.00000125,
+    "pricingCompletion": 0.00001,
+    "contextLength": 272000
+  },
+  "gpt-5-search-api-2025-10-14": {
+    "pricingPrompt": 0.00000125,
+    "pricingCompletion": 0.00001,
+    "contextLength": 272000
+  },
+  "gpt-5.1": {
+    "pricingPrompt": 0.00000125,
+    "pricingCompletion": 0.00001,
+    "contextLength": 272000
+  },
+  "gpt-5.1-2025-11-13": {
+    "pricingPrompt": 0.00000125,
+    "pricingCompletion": 0.00001,
+    "contextLength": 272000
+  },
+  "gpt-5.1-chat-latest": {
+    "pricingPrompt": 0.00000125,
+    "pricingCompletion": 0.00001,
+    "contextLength": 128000
+  },
+  "gpt-5.2": {
+    "pricingPrompt": 0.00000175,
+    "pricingCompletion": 0.000014,
+    "contextLength": 272000
+  },
+  "gpt-5.2-2025-12-11": {
+    "pricingPrompt": 0.00000175,
+    "pricingCompletion": 0.000014,
+    "contextLength": 272000
+  },
+  "gpt-5.2-chat-latest": {
+    "pricingPrompt": 0.00000175,
+    "pricingCompletion": 0.000014,
+    "contextLength": 128000
+  },
+  "gpt-5.3-chat-latest": {
+    "pricingPrompt": 0.00000175,
+    "pricingCompletion": 0.000014,
+    "contextLength": 128000
+  },
+  "gpt-5.4": {
+    "pricingPrompt": 0.0000025,
+    "pricingCompletion": 0.000015,
+    "contextLength": 1050000
+  },
+  "gpt-5.4-2026-03-05": {
+    "pricingPrompt": 0.0000025,
+    "pricingCompletion": 0.000015,
+    "contextLength": 1050000
+  },
+  "gpt-5.4-mini": {
+    "pricingPrompt": 7.5e-7,
+    "pricingCompletion": 0.0000045,
+    "contextLength": 272000
+  },
+  "gpt-5.4-mini-2026-03-17": {
+    "pricingPrompt": 7.5e-7,
+    "pricingCompletion": 0.0000045,
+    "contextLength": 272000
+  },
+  "gpt-5.4-nano": {
+    "pricingPrompt": 2e-7,
+    "pricingCompletion": 0.00000125,
+    "contextLength": 272000
+  },
+  "gpt-5.4-nano-2026-03-17": {
+    "pricingPrompt": 2e-7,
+    "pricingCompletion": 0.00000125,
+    "contextLength": 272000
+  },
+  "gpt-5.5": {
+    "pricingPrompt": 0.000005,
+    "pricingCompletion": 0.00003,
+    "contextLength": 1050000
+  },
+  "gpt-5.5-2026-04-23": {
+    "pricingPrompt": 0.000005,
+    "pricingCompletion": 0.00003,
+    "contextLength": 1050000
+  },
+  "gpt-5.6": {
+    "pricingPrompt": 0.000005,
+    "pricingCompletion": 0.00003,
+    "contextLength": 1050000
+  },
+  "gpt-5.6-luna": {
+    "pricingPrompt": 2e-7,
+    "pricingCompletion": 0.0000012,
+    "contextLength": 1050000
+  },
+  "gpt-5.6-sol": {
+    "pricingPrompt": 0.000005,
+    "pricingCompletion": 0.00003,
+    "contextLength": 1050000
+  },
+  "gpt-5.6-terra": {
+    "pricingPrompt": 0.000002,
+    "pricingCompletion": 0.000012,
+    "contextLength": 1050000
+  },
+  "gpt-audio": {
+    "pricingPrompt": 0.0000025,
+    "pricingCompletion": 0.00001,
+    "contextLength": 128000
+  },
+  "gpt-audio-1.5": {
+    "pricingPrompt": 0.0000025,
+    "pricingCompletion": 0.00001,
+    "contextLength": 128000
+  },
+  "gpt-audio-2025-08-28": {
+    "pricingPrompt": 0.0000025,
+    "pricingCompletion": 0.00001,
+    "contextLength": 128000
+  },
+  "gpt-audio-mini": {
+    "pricingPrompt": 6e-7,
+    "pricingCompletion": 0.0000024,
+    "contextLength": 128000
+  },
+  "gpt-audio-mini-2025-10-06": {
+    "pricingPrompt": 6e-7,
+    "pricingCompletion": 0.0000024,
+    "contextLength": 128000
+  },
+  "gpt-audio-mini-2025-12-15": {
+    "pricingPrompt": 6e-7,
+    "pricingCompletion": 0.0000024,
+    "contextLength": 128000
+  },
+  "o1": {
+    "pricingPrompt": 0.000015,
+    "pricingCompletion": 0.00006,
+    "contextLength": 200000
+  },
+  "o1-2024-12-17": {
+    "pricingPrompt": 0.000015,
+    "pricingCompletion": 0.00006,
+    "contextLength": 200000
+  },
+  "o3": {
+    "pricingPrompt": 0.000002,
+    "pricingCompletion": 0.000008,
+    "contextLength": 200000
+  },
+  "o3-2025-04-16": {
+    "pricingPrompt": 0.000002,
+    "pricingCompletion": 0.000008,
+    "contextLength": 200000
+  },
+  "o3-mini": {
+    "pricingPrompt": 0.0000011,
+    "pricingCompletion": 0.0000044,
+    "contextLength": 200000
+  },
+  "o3-mini-2025-01-31": {
+    "pricingPrompt": 0.0000011,
+    "pricingCompletion": 0.0000044,
+    "contextLength": 200000
+  },
+  "o4-mini": {
+    "pricingPrompt": 0.0000011,
+    "pricingCompletion": 0.0000044,
+    "contextLength": 200000
+  },
+  "o4-mini-2025-04-16": {
+    "pricingPrompt": 0.0000011,
+    "pricingCompletion": 0.0000044,
+    "contextLength": 200000
+  }
+}

@@ -13,7 +13,8 @@
     "test:e2e": "playwright test --reporter=line",
     "test:e2e:headed": "playwright test --headed --reporter=line",
     "audit": "lighthouse http://localhost:5173/chat-llm/ --output json --output html --output-path ./lighthouse-report --chrome-flags=\"--headless\" --only-categories=accessibility,best-practices,seo,performance",
-    "audit:ci": "node scripts/lighthouse-ci.js"
+    "audit:ci": "node scripts/lighthouse-ci.js",
+    "pricing": "bun scripts/fetch-pricing.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.1",
