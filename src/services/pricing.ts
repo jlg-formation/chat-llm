@@ -15,6 +15,9 @@ const DEFAULT_OPENAI_MODEL_IDS = [
   "gpt-5.4",
   "gpt-5.5",
   "gpt-5.6",
+  "gpt-5.6-luna",
+  "gpt-5.6-sol",
+  "gpt-5.6-terra",
 ];
 
 /** Prix d'un modèle : correspondance exacte, sinon plus long préfixe connu (variantes datées). */
