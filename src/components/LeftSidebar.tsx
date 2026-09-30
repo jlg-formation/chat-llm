@@ -8,27 +8,32 @@ import { SkillsSection } from './sidebar/SkillsSection'
 import { McpSection } from './sidebar/McpSection'
 import { SamplingSection } from './sidebar/SamplingSection'
 import { UsageSection } from './sidebar/UsageSection'
-import { updateConfig } from '../store/configStore'
+import { getConfig, updateConfig } from '../store/configStore'
+import { clearSkills } from '../store/skillsStore'
+import { disconnectMcp } from '../services/mcp'
 import { DEFAULT_CONFIG } from '../types'
-import localforage from 'localforage'
 
 async function resetAll() {
+  const activeServers = getConfig().mcpServers.filter(s => s.enabled && s.url)
+  await Promise.allSettled(activeServers.map(s => disconnectMcp(s.url)))
   localStorage.clear()
-  await localforage.clear()
+  await clearSkills()
   updateConfig(DEFAULT_CONFIG)
 }
 
 export function LeftSidebar() {
   const [confirming, setConfirming] = useState(false)
+  const [resetKey, setResetKey] = useState(0)
 
-  function handleReset() {
+  async function handleReset() {
     if (!confirming) {
       setConfirming(true)
       setTimeout(() => setConfirming(false), 3000)
       return
     }
-    resetAll()
     setConfirming(false)
+    await resetAll()
+    setResetKey(k => k + 1)
   }
 
   return (
@@ -55,8 +60,8 @@ export function LeftSidebar() {
       <SamplingSection />
       <SystemPromptSection />
       <JsonSchemaSection />
-      <SkillsSection />
-      <McpSection />
+      <SkillsSection key={`skills-${resetKey}`} />
+      <McpSection key={`mcp-${resetKey}`} />
       <UsageSection />
     </aside>
   )

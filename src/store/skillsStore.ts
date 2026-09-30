@@ -55,6 +55,10 @@ export async function deleteSkill(id: string): Promise<void> {
   await store.removeItem(id)
 }
 
+export async function clearSkills(): Promise<void> {
+  await store.clear()
+}
+
 export function getSkillContent(skill: Skill): string {
   const mainKey = Object.keys(skill.files).find(k =>
     k.toLowerCase().endsWith('skill.md')

@@ -18,6 +18,9 @@ dist-ssr
 # Rapports Lighthouse (artefacts générés, ne pas versionner)
 lighthouse-report*
 
+# Résultats Playwright
+test-results/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

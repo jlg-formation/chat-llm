@@ -1,0 +1,1 @@
+Je viens d'identifier un bug. Quand l'utilisateur clique sur le bouton « Set de configuration », il y a rarement les skills qui restent, alors que je pense qu'ils devraient être effacés. Pareil pour les serveurs MCP : ils devraient être effacés aussi s'il y a des serveurs MCP configurés. 
