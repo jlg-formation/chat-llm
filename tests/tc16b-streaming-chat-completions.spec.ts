@@ -14,12 +14,11 @@ function chatCompletionsSSE(text: string): string {
   ].join('\n')
 }
 
-/** SSE Ollama (même parseur parseSSEStream, format data: {...}). */
-function ollamaSSE(text: string): string {
+/** Stream natif Ollama (NDJSON, une ligne JSON par chunk). */
+function ollamaNdjson(text: string): string {
   return [
-    `data: ${JSON.stringify({ message: { role: 'assistant', content: text }, done: false })}`,
-    `data: ${JSON.stringify({ message: { role: 'assistant', content: '' }, done: true, prompt_eval_count: 10, eval_count: 5 })}`,
-    'data: [DONE]',
+    JSON.stringify({ message: { role: 'assistant', content: text }, done: false }),
+    JSON.stringify({ message: { role: 'assistant', content: '' }, done: true, prompt_eval_count: 10, eval_count: 5 }),
     '',
   ].join('\n')
 }
@@ -50,14 +49,14 @@ test.describe('TC-16 · Streaming — format Chat Completions', () => {
   test('Ollama en streaming affiche la réponse correctement', async ({ page }) => {
     await setConfig(page, {
       streamEnabled: true,
-      llm: { provider: 'ollama', baseUrl: OLLAMA_BASE, model: 'llama3:8b', apiFormat: 'chat_completions' },
+      llm: { provider: 'ollama', baseUrl: OLLAMA_BASE, model: 'llama3:8b', apiFormat: 'ollama_chat' },
     })
 
     await page.route('**/api/chat', async route => {
       await route.fulfill({
         status: 200,
-        headers: { 'Content-Type': 'text/event-stream' },
-        body: ollamaSSE('Réponse Ollama en streaming.'),
+        headers: { 'Content-Type': 'application/x-ndjson' },
+        body: ollamaNdjson('Réponse Ollama en streaming.'),
       })
     })
 

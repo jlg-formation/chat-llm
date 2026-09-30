@@ -75,7 +75,7 @@ test.describe('TC-30 · Prompt système — format Chat Completions', () => {
     await setConfig(page, {
       streamEnabled: false,
       systemPrompt,
-      llm: { provider: 'ollama', baseUrl: OLLAMA_BASE, model: 'llama3:8b', apiFormat: 'chat_completions' },
+      llm: { provider: 'ollama', baseUrl: OLLAMA_BASE, model: 'llama3:8b', apiFormat: 'ollama_chat' },
     })
 
     let capturedBody: Record<string, unknown> | null = null

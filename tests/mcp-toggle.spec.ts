@@ -5,23 +5,24 @@ const MCP_ALIAS = 'jlgc'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-async function openMcpSection(page: Page) {
-  const isOpen = await page.locator('input[placeholder="Mon serveur MCP"]').isVisible().catch(() => false)
-  if (!isOpen) await page.getByText('Serveur MCP').click()
+function mcpRegion(page: Page) {
+  return page.getByRole('region', { name: 'Serveurs MCP' })
 }
 
 async function configureMcp(page: Page) {
-  await openMcpSection(page)
+  await page.getByRole('button', { name: 'Serveurs MCP' }).click()
+  // L'ajout d'un serveur déplie automatiquement sa carte
+  await mcpRegion(page).getByRole('button', { name: 'Ajouter un serveur' }).click()
   await page.locator('input[placeholder="Mon serveur MCP"]').fill(MCP_ALIAS)
   await page.locator('input[placeholder="http://localhost:8000"]').fill(MCP_URL)
 }
 
-// Le Toggle "MCP activé" : label cliquable + checkbox pour lire l'état
+// Toggle d'activation du serveur (premier toggle de la carte) : label cliquable + checkbox pour lire l'état
 function mcpLabel(page: Page) {
-  return page.locator('text=MCP activé').locator('..').locator('label')
+  return mcpRegion(page).locator('label:has(input[type="checkbox"])').first()
 }
 function mcpCheckbox(page: Page) {
-  return page.locator('text=MCP activé').locator('..').locator('input[type="checkbox"]')
+  return mcpRegion(page).locator('input[type="checkbox"]').first()
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────

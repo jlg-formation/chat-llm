@@ -45,6 +45,14 @@ async function mockMcpServer(page: Page, handlers: Partial<Record<string, (route
   })
 }
 
+/** Ouvre l'accordéon "Serveurs MCP" et déplie la carte du premier serveur. */
+async function openMcpServerCard(page: Page) {
+  await page.getByRole('button', { name: 'Serveurs MCP' }).click()
+  const region = page.getByRole('region', { name: 'Serveurs MCP' })
+  await region.getByRole('button', { name: 'Développer' }).first().click()
+  return region
+}
+
 test.describe('TC-50 · Connexion à un serveur MCP', () => {
 
   test('activer le toggle MCP charge les outils et les affiche', async ({ page }) => {
@@ -52,14 +60,12 @@ test.describe('TC-50 · Connexion à un serveur MCP', () => {
     await mockMcpServer(page)
     await page.goto('/')
 
-    // Ouvrir l'accordéon Serveur MCP
-    await page.getByRole('button', { name: 'Serveur MCP' }).click()
+    const mcpRegion = await openMcpServerCard(page)
 
-    // Activer le toggle MCP
-    await page.getByRole('region', { name: 'Serveur MCP' }).locator('input[type="checkbox"]').first().click({ force: true })
+    // Activer le toggle du serveur
+    await mcpRegion.locator('input[type="checkbox"]').first().click({ force: true })
 
     // Les outils doivent apparaître
-    const mcpRegion = page.getByRole('region', { name: 'Serveur MCP' })
     await expect(mcpRegion.getByText('recherche', { exact: true })).toBeVisible({ timeout: 10_000 })
     await expect(mcpRegion.getByText('calculatrice', { exact: true })).toBeVisible({ timeout: 5_000 })
   })
@@ -69,10 +75,10 @@ test.describe('TC-50 · Connexion à un serveur MCP', () => {
     await mockMcpServer(page)
     await page.goto('/')
 
-    await page.getByRole('button', { name: 'Serveur MCP' }).click()
-    await page.getByRole('region', { name: 'Serveur MCP' }).locator('input[type="checkbox"]').first().click({ force: true })
+    const mcpRegion = await openMcpServerCard(page)
+    await mcpRegion.locator('input[type="checkbox"]').first().click({ force: true })
 
-    await page.getByRole('region', { name: 'Serveur MCP' }).getByText('recherche', { exact: true }).waitFor({ timeout: 10_000 })
+    await mcpRegion.getByText('recherche', { exact: true }).waitFor({ timeout: 10_000 })
 
     const inspector = page.getByRole('complementary', { name: 'Inspecteur HTTP' })
     await expect(inspector.locator('span.bg-green-100', { hasText: 'MCP' }).first()).toBeVisible({ timeout: 5_000 })
@@ -179,10 +185,10 @@ test.describe('TC-53 · Déconnexion MCP', () => {
     })
 
     await page.goto('/')
-    await page.getByRole('button', { name: 'Serveur MCP' }).click()
+    await page.getByRole('button', { name: 'Serveurs MCP' }).click()
 
     // Désactiver le toggle MCP (il est actuellement actif)
-    await page.getByRole('region', { name: 'Serveur MCP' }).locator('input[type="checkbox"]').first().click({ force: true })
+    await page.getByRole('region', { name: 'Serveurs MCP' }).locator('input[type="checkbox"]').first().click({ force: true })
 
     // Attendre que l'état MCP soit mis à jour
     await page.waitForTimeout(2_000)
@@ -201,8 +207,7 @@ test.describe('TC-53 · Déconnexion MCP', () => {
     await mockMcpServer(page)
     await page.goto('/')
 
-    await page.getByRole('button', { name: 'Serveur MCP' }).click()
-    const mcpRegion = page.getByRole('region', { name: 'Serveur MCP' })
+    const mcpRegion = await openMcpServerCard(page)
     await expect(mcpRegion.getByText('recherche', { exact: true })).toBeVisible({ timeout: 3_000 })
 
     // Désactiver MCP

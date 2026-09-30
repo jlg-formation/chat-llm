@@ -1,5 +1,5 @@
 import { ChevronRight, ChevronLeft, Trash2, ArrowRight, ArrowLeft } from 'lucide-react'
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback, useEffect, memo } from 'react'
 import { useHttpExchanges } from '../store/httpStore'
 import type { HttpExchange } from '../types'
 import { JsonTree } from './JsonTree'
@@ -8,7 +8,7 @@ const MIN_WIDTH = 200
 const MAX_WIDTH = 800
 const DEFAULT_WIDTH = 320
 
-function ExchangeCard({ exchange }: { exchange: HttpExchange }) {
+const ExchangeCard = memo(function ExchangeCard({ exchange }: { exchange: HttpExchange }) {
   const [open, setOpen] = useState(true)
   const isLlm = exchange.type === 'llm'
 
@@ -92,7 +92,7 @@ function ExchangeCard({ exchange }: { exchange: HttpExchange }) {
       )}
     </div>
   )
-}
+})
 
 export function RightSidebar() {
   const [exchanges, clear] = useHttpExchanges()

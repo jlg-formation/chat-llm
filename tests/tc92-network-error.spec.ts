@@ -18,7 +18,7 @@ test.describe('TC-92 · Gestion des erreurs réseau', () => {
     await page.getByRole('textbox', { name: 'Message' }).fill('Test erreur')
     await page.getByRole('textbox', { name: 'Message' }).press('Enter')
 
-    await expect(page.locator('main').getByText(/erreur/i)).toBeVisible({ timeout: 15_000 })
+    await expect(page.locator('main').getByText(/^Erreur : HTTP 500/)).toBeVisible({ timeout: 15_000 })
   })
 
   test('une erreur réseau (abort) affiche un message dans la conversation', async ({ page }) => {
