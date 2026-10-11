@@ -64,7 +64,7 @@ export function ProviderSection() {
   const cachedModels = useModelsCache(llm.provider);
 
   const DEFAULT_MODEL: Record<Provider, string> = {
-    openai: "gpt-5.6-luna",
+    openai: "gpt-6-luna",
     ovh: "gpt-oss-20b",
     lmstudio: "",
     ollama: "",

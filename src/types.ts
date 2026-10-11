@@ -125,7 +125,7 @@ export const DEFAULT_CONFIG: AppConfig = {
     provider: "openai",
     baseUrl: PROVIDER_DEFAULTS.openai.baseUrl,
     apiKeys: { openai: "", ovh: "", lmstudio: "", ollama: "" },
-    model: "gpt-5.6-luna",
+    model: "gpt-6-luna",
     apiFormat: "responses",
     temperature: null,
     topP: null,
