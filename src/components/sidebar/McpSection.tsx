@@ -6,8 +6,6 @@ import {
   Trash2,
   ChevronDown,
   ChevronRight,
-  Eye,
-  EyeOff,
 } from "lucide-react";
 import { Toggle } from "./Toggle";
 import { useConfig } from "../../store/configStore";
@@ -20,18 +18,6 @@ export function McpSection() {
   const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
   const [errorIds, setErrorIds] = useState<Map<string, string>>(new Map());
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const [visibleTokenIds, setVisibleTokenIds] = useState<Set<string>>(
-    new Set(),
-  );
-
-  function toggleTokenVisible(id: string) {
-    setVisibleTokenIds((prev) => {
-      const s = new Set(prev);
-      if (s.has(id)) s.delete(id);
-      else s.add(id);
-      return s;
-    });
-  }
 
   function updateServer(id: string, patch: Partial<McpServer>) {
     update({
@@ -171,7 +157,6 @@ export function McpSection() {
           const isLoading = loadingIds.has(server.id);
           const error = errorIds.get(server.id);
           const enabledCount = server.tools.filter((t) => t.enabled).length;
-          const isTokenVisible = visibleTokenIds.has(server.id);
 
           return (
             <div
@@ -274,7 +259,7 @@ export function McpSection() {
                     </label>
                     <div className="flex gap-2">
                       <input
-                        type={isTokenVisible ? "text" : "password"}
+                        type="password"
                         value={server.token ?? ""}
                         onChange={(e) =>
                           updateServer(server.id, { token: e.target.value })
@@ -283,38 +268,6 @@ export function McpSection() {
                         className="flex-1 text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-teal-500"
                         placeholder="Optionnel"
                       />
-                      <button
-                        onClick={() => toggleTokenVisible(server.id)}
-                        className="p-1.5 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                        title={
-                          isTokenVisible
-                            ? "Masquer le token"
-                            : "Afficher le token"
-                        }
-                        aria-label={
-                          isTokenVisible
-                            ? "Masquer le token"
-                            : "Afficher le token"
-                        }
-                      >
-                        {isTokenVisible ? (
-                          <EyeOff className="w-4 h-4 text-gray-600" />
-                        ) : (
-                          <Eye className="w-4 h-4 text-gray-600" />
-                        )}
-                      </button>
-                      {server.token && (
-                        <button
-                          onClick={() =>
-                            updateServer(server.id, { token: undefined })
-                          }
-                          className="p-1.5 border border-gray-300 rounded-md text-gray-400 hover:text-red-500 hover:bg-gray-50 transition-colors"
-                          title="Effacer le token"
-                          aria-label="Effacer le token"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
                     </div>
                   </div>
 
