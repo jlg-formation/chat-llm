@@ -1,7 +1,16 @@
 import type { McpServer, McpTool } from "../types";
 import { addExchange, updateExchange } from "../store/httpStore";
+import { parseSSEEvents } from "./sse";
 
 export type McpConnection = Pick<McpServer, "url" | "token">;
+
+const MCP_TIMEOUT_MS = 15_000;
+
+let rpcIdCounter = 0;
+function nextRpcId(): number {
+  rpcIdCounter += 1;
+  return rpcIdCounter;
+}
 
 function genId() {
   return Math.random().toString(36).slice(2);
@@ -54,6 +63,7 @@ async function mcpPost(
   headers: Headers;
 }> {
   const url = conn.url.replace(/\/$/, "");
+  const requestId = (body as { id?: number }).id;
   const exchangeId = genId();
   const reqHeaders = buildHeaders(session, conn.token);
   addExchange({
@@ -65,29 +75,74 @@ async function mcpPost(
     requestHeaders: maskAuthorization(reqHeaders),
     requestBody: body,
   });
-  const resp = await fetch(url, {
-    method: "POST",
-    headers: reqHeaders,
-    body: JSON.stringify(body),
-  });
-  // 202/204 — notifications JSON-RPC sans corps de réponse
-  if (
-    resp.status === 202 ||
-    resp.status === 204 ||
-    resp.headers.get("content-length") === "0"
-  ) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), MCP_TIMEOUT_MS);
+  try {
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: reqHeaders,
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    const contentType = resp.headers.get("content-type") ?? "";
+    const responseHeaders = { "content-type": contentType };
+    // 202/204 — notifications JSON-RPC sans corps de réponse
+    if (
+      resp.status === 202 ||
+      resp.status === 204 ||
+      resp.headers.get("content-length") === "0"
+    ) {
+      updateExchange(exchangeId, {
+        responseStatus: resp.status,
+        responseHeaders,
+        responseBody: null,
+      });
+      return { status: resp.status, json: {}, headers: resp.headers };
+    }
+    const json = contentType.includes("text/event-stream")
+      ? await readSSEResponse(resp.body!, requestId)
+      : ((await resp.json()) as Record<string, unknown>);
     updateExchange(exchangeId, {
       responseStatus: resp.status,
-      responseBody: null,
+      responseHeaders,
+      responseBody: json,
     });
-    return { status: resp.status, json: {}, headers: resp.headers };
+    return { status: resp.status, json, headers: resp.headers };
+  } catch (err) {
+    if (!controller.signal.aborted) {
+      updateExchange(exchangeId, { error: (err as Error).message });
+      throw err;
+    }
+    const message = `MCP timeout (${MCP_TIMEOUT_MS} ms)`;
+    updateExchange(exchangeId, { error: message });
+    throw new Error(message, { cause: err });
+  } finally {
+    clearTimeout(timer);
   }
-  const json = (await resp.json()) as Record<string, unknown>;
-  updateExchange(exchangeId, {
-    responseStatus: resp.status,
-    responseBody: json,
-  });
-  return { status: resp.status, json, headers: resp.headers };
+}
+
+/** Lit le flux SSE jusqu'à la réponse JSON-RPC dont l'id correspond à la requête. */
+async function readSSEResponse(
+  stream: ReadableStream<Uint8Array>,
+  requestId: unknown,
+): Promise<Record<string, unknown>> {
+  for await (const event of parseSSEEvents(stream)) {
+    let message: Record<string, unknown>;
+    try {
+      message = JSON.parse(event.data) as Record<string, unknown>;
+    } catch {
+      continue;
+    }
+    if (
+      message.id === requestId &&
+      ("result" in message || "error" in message)
+    ) {
+      return message;
+    }
+  }
+  throw new Error(
+    `MCP SSE: flux terminé sans réponse (id ${String(requestId)})`,
+  );
 }
 
 async function mcpJsonRpc(
@@ -98,7 +153,7 @@ async function mcpJsonRpc(
 ): Promise<unknown> {
   const { status, json } = await mcpPost(
     conn,
-    { jsonrpc: "2.0", id: 1, method, params },
+    { jsonrpc: "2.0", id: nextRpcId(), method, params },
     session,
   );
   if (status === 404 && session) {
@@ -117,7 +172,7 @@ async function mcpInitialize(conn: McpConnection): Promise<McpSession> {
 
   const { json, headers } = await mcpPost(conn, {
     jsonrpc: "2.0",
-    id: 1,
+    id: nextRpcId(),
     method: "initialize",
     params: {
       protocolVersion: "2025-11-25",
@@ -152,13 +207,49 @@ export async function connectMcp(conn: McpConnection): Promise<void> {
   await mcpInitialize(conn);
 }
 
+async function mcpDelete(
+  conn: McpConnection,
+  session: McpSession,
+): Promise<void> {
+  const url = conn.url.replace(/\/$/, "");
+  const exchangeId = genId();
+  const reqHeaders = buildHeaders(session, conn.token);
+  addExchange({
+    id: exchangeId,
+    timestamp: Date.now(),
+    type: "mcp",
+    method: "DELETE",
+    url,
+    requestHeaders: maskAuthorization(reqHeaders),
+    requestBody: null,
+  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), MCP_TIMEOUT_MS);
+  try {
+    const resp = await fetch(url, {
+      method: "DELETE",
+      headers: reqHeaders,
+      signal: controller.signal,
+    });
+    updateExchange(exchangeId, {
+      responseStatus: resp.status,
+      responseHeaders: {
+        "content-type": resp.headers.get("content-type") ?? "",
+      },
+      responseBody: null,
+    });
+  } catch (err) {
+    updateExchange(exchangeId, { error: (err as Error).message });
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function disconnectMcp(conn: McpConnection): Promise<void> {
   const session = getSession(conn.url);
   try {
-    await mcpJsonRpc(conn, "shutdown", {}, session).catch(() => {
-      /* shutdown errors are non-fatal */
-    });
-    await mcpPost(conn, { jsonrpc: "2.0", method: "exit" }, session);
+    if (session?.sessionId) await mcpDelete(conn, session);
   } finally {
     sessions.delete(conn.url);
   }

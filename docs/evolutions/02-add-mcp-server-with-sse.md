@@ -1,0 +1,1 @@
+La plupart des serveurs MCP marchent avec le streaming HTTP. Donc, il faudrait que le chat pédagogique puisse faire fonctionner ce type de serveur MCP. Je voudrais qu'on étudie ensemble comment faire.
