@@ -1,0 +1,1 @@
+Je voudrais que, quand on ajoute un serveur MCP, on ait la possibilité d'ajouter un token d'authentification, une clé d'API. J'ai compris que les serveurs MCP peuvent parfois accepter une en-tête `Authorization : Bearer machin chouette`, donc il faudrait qu'on permette ça.

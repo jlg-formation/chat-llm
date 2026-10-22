@@ -1,96 +1,156 @@
-import { useState } from 'react'
-import { Network, RefreshCw, Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
-import { Toggle } from './Toggle'
-import { useConfig } from '../../store/configStore'
-import { Accordion } from './Accordion'
-import { fetchMcpTools, connectMcp, disconnectMcp } from '../../services/mcp'
-import type { McpServer } from '../../types'
+import { useState } from "react";
+import {
+  Network,
+  RefreshCw,
+  Plus,
+  Trash2,
+  ChevronDown,
+  ChevronRight,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import { Toggle } from "./Toggle";
+import { useConfig } from "../../store/configStore";
+import { Accordion } from "./Accordion";
+import { fetchMcpTools, connectMcp, disconnectMcp } from "../../services/mcp";
+import type { McpServer } from "../../types";
 
 export function McpSection() {
-  const [config, update] = useConfig()
-  const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set())
-  const [errorIds, setErrorIds] = useState<Map<string, string>>(new Map())
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+  const [config, update] = useConfig();
+  const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
+  const [errorIds, setErrorIds] = useState<Map<string, string>>(new Map());
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [visibleTokenIds, setVisibleTokenIds] = useState<Set<string>>(
+    new Set(),
+  );
+
+  function toggleTokenVisible(id: string) {
+    setVisibleTokenIds((prev) => {
+      const s = new Set(prev);
+      if (s.has(id)) s.delete(id);
+      else s.add(id);
+      return s;
+    });
+  }
 
   function updateServer(id: string, patch: Partial<McpServer>) {
     update({
-      mcpServers: config.mcpServers.map(s => s.id === id ? { ...s, ...patch } : s),
-    })
+      mcpServers: config.mcpServers.map((s) =>
+        s.id === id ? { ...s, ...patch } : s,
+      ),
+    });
   }
 
   function addServer() {
-    const id = crypto.randomUUID()
+    const id = crypto.randomUUID();
     update({
-      mcpServers: [...config.mcpServers, { id, name: '', url: '', enabled: false, tools: [] }],
-    })
-    setExpandedIds(prev => new Set(prev).add(id))
+      mcpServers: [
+        ...config.mcpServers,
+        { id, name: "", url: "", enabled: false, tools: [] },
+      ],
+    });
+    setExpandedIds((prev) => new Set(prev).add(id));
   }
 
   async function removeServer(id: string) {
-    const server = config.mcpServers.find(s => s.id === id)
+    const server = config.mcpServers.find((s) => s.id === id);
     if (server?.enabled && server.url) {
-      try { await disconnectMcp(server.url) } catch { /* ignore */ }
+      try {
+        await disconnectMcp(server);
+      } catch {
+        /* ignore */
+      }
     }
-    update({ mcpServers: config.mcpServers.filter(s => s.id !== id) })
+    update({ mcpServers: config.mcpServers.filter((s) => s.id !== id) });
   }
 
   async function toggleServer(server: McpServer) {
-    const enabling = !server.enabled
-    if (!server.url) { updateServer(server.id, { enabled: enabling }); return }
-    setLoadingIds(prev => new Set(prev).add(server.id))
-    setErrorIds(prev => { const m = new Map(prev); m.delete(server.id); return m })
+    const enabling = !server.enabled;
+    if (!server.url) {
+      updateServer(server.id, { enabled: enabling });
+      return;
+    }
+    setLoadingIds((prev) => new Set(prev).add(server.id));
+    setErrorIds((prev) => {
+      const m = new Map(prev);
+      m.delete(server.id);
+      return m;
+    });
     try {
       if (enabling) {
-        await connectMcp(server.url)
-        const tools = await fetchMcpTools(server.url)
-        updateServer(server.id, { enabled: true, tools })
+        await connectMcp(server);
+        const tools = await fetchMcpTools(server);
+        updateServer(server.id, { enabled: true, tools });
       } else {
-        await disconnectMcp(server.url)
-        updateServer(server.id, { enabled: false, tools: [] })
+        await disconnectMcp(server);
+        updateServer(server.id, { enabled: false, tools: [] });
       }
     } catch (e) {
-      setErrorIds(prev => new Map(prev).set(server.id, `Erreur : ${(e as Error).message}`))
+      setErrorIds((prev) =>
+        new Map(prev).set(server.id, `Erreur : ${(e as Error).message}`),
+      );
     } finally {
-      setLoadingIds(prev => { const s = new Set(prev); s.delete(server.id); return s })
+      setLoadingIds((prev) => {
+        const s = new Set(prev);
+        s.delete(server.id);
+        return s;
+      });
     }
   }
 
   async function refreshTools(server: McpServer) {
-    if (!server.url) return
-    setLoadingIds(prev => new Set(prev).add(server.id))
-    setErrorIds(prev => { const m = new Map(prev); m.delete(server.id); return m })
+    if (!server.url) return;
+    setLoadingIds((prev) => new Set(prev).add(server.id));
+    setErrorIds((prev) => {
+      const m = new Map(prev);
+      m.delete(server.id);
+      return m;
+    });
     try {
-      const tools = await fetchMcpTools(server.url)
-      updateServer(server.id, { tools })
+      const tools = await fetchMcpTools(server);
+      updateServer(server.id, { tools });
     } catch (e) {
-      setErrorIds(prev => new Map(prev).set(server.id, `Erreur : ${(e as Error).message}`))
+      setErrorIds((prev) =>
+        new Map(prev).set(server.id, `Erreur : ${(e as Error).message}`),
+      );
     } finally {
-      setLoadingIds(prev => { const s = new Set(prev); s.delete(server.id); return s })
+      setLoadingIds((prev) => {
+        const s = new Set(prev);
+        s.delete(server.id);
+        return s;
+      });
     }
   }
 
   function toggleTool(serverId: string, toolName: string) {
     update({
-      mcpServers: config.mcpServers.map(s =>
-        s.id !== serverId ? s : {
-          ...s,
-          tools: s.tools.map(t => t.name === toolName ? { ...t, enabled: !t.enabled } : t),
-        }
+      mcpServers: config.mcpServers.map((s) =>
+        s.id !== serverId
+          ? s
+          : {
+              ...s,
+              tools: s.tools.map((t) =>
+                t.name === toolName ? { ...t, enabled: !t.enabled } : t,
+              ),
+            },
       ),
-    })
+    });
   }
 
   function toggleExpanded(id: string) {
-    setExpandedIds(prev => {
-      const s = new Set(prev)
-      if (s.has(id)) s.delete(id)
-      else s.add(id)
-      return s
-    })
+    setExpandedIds((prev) => {
+      const s = new Set(prev);
+      if (s.has(id)) s.delete(id);
+      else s.add(id);
+      return s;
+    });
   }
 
   return (
-    <Accordion title="Serveurs MCP" icon={<Network className="w-4 h-4 text-teal-500" />}>
+    <Accordion
+      title="Serveurs MCP"
+      icon={<Network className="w-4 h-4 text-teal-500" />}
+    >
       <div className="space-y-3">
         <button
           onClick={addServer}
@@ -101,19 +161,22 @@ export function McpSection() {
         </button>
 
         {config.mcpServers.length === 0 && (
-          <p className="text-xs text-gray-400 text-center py-1">Aucun serveur MCP configuré</p>
+          <p className="text-xs text-gray-400 text-center py-1">
+            Aucun serveur MCP configuré
+          </p>
         )}
 
-        {config.mcpServers.map(server => {
-          const isExpanded = expandedIds.has(server.id)
-          const isLoading = loadingIds.has(server.id)
-          const error = errorIds.get(server.id)
-          const enabledCount = server.tools.filter(t => t.enabled).length
+        {config.mcpServers.map((server) => {
+          const isExpanded = expandedIds.has(server.id);
+          const isLoading = loadingIds.has(server.id);
+          const error = errorIds.get(server.id);
+          const enabledCount = server.tools.filter((t) => t.enabled).length;
+          const isTokenVisible = visibleTokenIds.has(server.id);
 
           return (
             <div
               key={server.id}
-              className={`border rounded-md ${server.enabled ? 'border-teal-300 bg-teal-50/30' : 'border-gray-200'}`}
+              className={`border rounded-md ${server.enabled ? "border-teal-300 bg-teal-50/30" : "border-gray-200"}`}
             >
               {/* Header */}
               <div className="flex items-center gap-2 px-3 py-2">
@@ -127,7 +190,11 @@ export function McpSection() {
                   className="flex-1 text-sm font-medium text-gray-700 truncate cursor-pointer select-none"
                   onClick={() => toggleExpanded(server.id)}
                 >
-                  {server.name || <span className="text-gray-400 italic font-normal">Sans nom</span>}
+                  {server.name || (
+                    <span className="text-gray-400 italic font-normal">
+                      Sans nom
+                    </span>
+                  )}
                 </span>
                 {server.tools.length > 0 && (
                   <span className="text-xs text-teal-600 bg-teal-100 rounded-full px-1.5 py-0.5 shrink-0">
@@ -137,11 +204,13 @@ export function McpSection() {
                 <button
                   onClick={() => toggleExpanded(server.id)}
                   className="text-gray-400 hover:text-gray-600 shrink-0"
-                  aria-label={isExpanded ? 'Réduire' : 'Développer'}
+                  aria-label={isExpanded ? "Réduire" : "Développer"}
                 >
-                  {isExpanded
-                    ? <ChevronDown className="w-4 h-4" />
-                    : <ChevronRight className="w-4 h-4" />}
+                  {isExpanded ? (
+                    <ChevronDown className="w-4 h-4" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4" />
+                  )}
                 </button>
                 <button
                   onClick={() => removeServer(server.id)}
@@ -157,23 +226,31 @@ export function McpSection() {
               {isExpanded && (
                 <div className="px-3 pb-3 space-y-2 border-t border-gray-100 pt-2">
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">Alias</label>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      Alias
+                    </label>
                     <input
                       type="text"
                       value={server.name}
-                      onChange={e => updateServer(server.id, { name: e.target.value })}
+                      onChange={(e) =>
+                        updateServer(server.id, { name: e.target.value })
+                      }
                       className="w-full text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-teal-500"
                       placeholder="Mon serveur MCP"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">URL (Streamable HTTP)</label>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      URL (Streamable HTTP)
+                    </label>
                     <div className="flex gap-2">
                       <input
                         type="url"
                         value={server.url}
-                        onChange={e => updateServer(server.id, { url: e.target.value })}
+                        onChange={(e) =>
+                          updateServer(server.id, { url: e.target.value })
+                        }
                         className="flex-1 text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-teal-500"
                         placeholder="http://localhost:8000"
                       />
@@ -184,8 +261,60 @@ export function McpSection() {
                         title="Recharger les outils"
                         aria-label="Recharger les outils"
                       >
-                        <RefreshCw className={`w-4 h-4 text-gray-600 ${isLoading ? 'animate-spin' : ''}`} />
+                        <RefreshCw
+                          className={`w-4 h-4 text-gray-600 ${isLoading ? "animate-spin" : ""}`}
+                        />
                       </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      Token d'authentification (Bearer)
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type={isTokenVisible ? "text" : "password"}
+                        value={server.token ?? ""}
+                        onChange={(e) =>
+                          updateServer(server.id, { token: e.target.value })
+                        }
+                        autoComplete="off"
+                        className="flex-1 text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        placeholder="Optionnel"
+                      />
+                      <button
+                        onClick={() => toggleTokenVisible(server.id)}
+                        className="p-1.5 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                        title={
+                          isTokenVisible
+                            ? "Masquer le token"
+                            : "Afficher le token"
+                        }
+                        aria-label={
+                          isTokenVisible
+                            ? "Masquer le token"
+                            : "Afficher le token"
+                        }
+                      >
+                        {isTokenVisible ? (
+                          <EyeOff className="w-4 h-4 text-gray-600" />
+                        ) : (
+                          <Eye className="w-4 h-4 text-gray-600" />
+                        )}
+                      </button>
+                      {server.token && (
+                        <button
+                          onClick={() =>
+                            updateServer(server.id, { token: undefined })
+                          }
+                          className="p-1.5 border border-gray-300 rounded-md text-gray-400 hover:text-red-500 hover:bg-gray-50 transition-colors"
+                          title="Effacer le token"
+                          aria-label="Effacer le token"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -193,8 +322,10 @@ export function McpSection() {
 
                   {server.tools.length > 0 && (
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500 font-medium">Outils disponibles :</p>
-                      {server.tools.map(tool => (
+                      <p className="text-xs text-gray-500 font-medium">
+                        Outils disponibles :
+                      </p>
+                      {server.tools.map((tool) => (
                         <div key={tool.name} className="flex items-start gap-2">
                           <Toggle
                             checked={tool.enabled}
@@ -203,10 +334,14 @@ export function McpSection() {
                             size="sm"
                           />
                           <div className="min-w-0">
-                            <div className={`font-mono text-xs ${tool.enabled ? 'text-gray-800' : 'text-gray-400'}`}>
+                            <div
+                              className={`font-mono text-xs ${tool.enabled ? "text-gray-800" : "text-gray-400"}`}
+                            >
                               {tool.name}
                             </div>
-                            <div className="text-xs text-gray-400">{tool.description}</div>
+                            <div className="text-xs text-gray-400">
+                              {tool.description}
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -215,9 +350,9 @@ export function McpSection() {
                 </div>
               )}
             </div>
-          )
+          );
         })}
       </div>
     </Accordion>
-  )
+  );
 }

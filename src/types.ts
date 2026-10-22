@@ -38,6 +38,7 @@ export interface McpServer {
   url: string;
   enabled: boolean;
   tools: McpTool[];
+  token?: string;
 }
 
 export interface Skill {
