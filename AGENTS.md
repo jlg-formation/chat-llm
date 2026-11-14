@@ -76,7 +76,7 @@ Located in `src/components/Chat.tsx`:
 - **Parser**: `parseSSEStream()` generator (buffered line processing, handles chunked UTF-8)
 - **Responses API**: Custom events (`response.output_text.delta`, `response.completed`)
 - **Chat Completions / Ollama**: Standard `text/event-stream` with `data: [DONE]` sentinel
-- **LM Studio**: Explicit `event:` headers (parsed by `parseSSEStreamWithEvents()`)
+- **LM Studio**: Explicit `event:` headers (parsed by `parseSSEEvents()` from `src/services/sse.ts`, shared with `parseSSEStream()` and the MCP client)
 
 ### MCP Client (Custom JSON-RPC over HTTP)
 

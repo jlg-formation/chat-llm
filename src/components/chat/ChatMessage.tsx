@@ -4,29 +4,25 @@ import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import { useState } from "react";
 import type { ChatMessage as ChatMessageType } from "../../types";
-import {
-  User,
-  Bot,
-  Wrench,
-  ChevronDown,
-  ChevronRight
-} from "lucide-react";
+import { User, Bot, Wrench, ChevronDown, ChevronRight } from "lucide-react";
 import { MermaidBlock } from "./MermaidBlock";
 import { XmlBlock } from "./XmlBlock";
 import { parseXmlBlocks } from "./parseXmlBlocks";
-
 
 interface Props {
   message: ChatMessageType;
 }
 
-function JsonDisplay({ content }: { content: string }) {
-  let formatted: string | null = null;
+function prettyJson(content: string): string | null {
   try {
-    formatted = JSON.stringify(JSON.parse(content), null, 2);
+    return JSON.stringify(JSON.parse(content), null, 2);
   } catch {
-    /* JSON invalide */
+    return null;
   }
+}
+
+function JsonDisplay({ content }: { content: string }) {
+  const formatted = prettyJson(content);
   if (formatted !== null) {
     return (
       <pre className="bg-gray-100 border border-gray-200 rounded-md p-3 text-xs font-mono overflow-x-auto whitespace-pre-wrap">
@@ -68,13 +64,7 @@ function ToolMessageView({ message }: Props) {
         {open && (
           <pre className="px-3 pb-2 font-mono text-gray-600 whitespace-pre-wrap break-all border-t border-gray-200 bg-white max-h-48 overflow-y-auto">
             {isCall
-              ? (() => {
-                  try {
-                    return JSON.stringify(JSON.parse(message.content), null, 2);
-                  } catch {
-                    return message.content;
-                  }
-                })()
+              ? (prettyJson(message.content) ?? message.content)
               : message.content}
           </pre>
         )}
@@ -147,12 +137,12 @@ export function ChatMessageView({ message }: Props) {
                       key={i}
                       remarkPlugins={[remarkGfm]}
                       rehypePlugins={[
-                        [rehypeHighlight, { ignoreMissing: true }]
+                        [rehypeHighlight, { ignoreMissing: true }],
                       ]}
                       components={{
                         code({ className, children }) {
                           const lang = /language-(\w+)/.exec(
-                            className ?? ""
+                            className ?? "",
                           )?.[1];
                           if (lang === "mermaid" && !message.isStreaming) {
                             return (
@@ -172,12 +162,12 @@ export function ChatMessageView({ message }: Props) {
                               {children}
                             </a>
                           );
-                        }
+                        },
                       }}
                     >
                       {seg.content}
                     </ReactMarkdown>
-                  )
+                  ),
                 )}
                 {message.isStreaming &&
                   !message.content.match(/<\w+>[\s\S]*$/) && (

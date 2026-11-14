@@ -10,15 +10,12 @@ import {
 } from "../store/skillsStore";
 import { sendMessage } from "../services/llm";
 import { callMcpTool } from "../services/mcp";
+import { genId } from "../services/id";
 import type { SkillRef, LLMToolCall } from "../services/llm";
 import { SquarePen } from "lucide-react";
 import { addUsage, resetUsage } from "../store/usageStore";
 
 const MAX_TOOL_ITERATIONS = 100;
-
-function genId() {
-  return Math.random().toString(36).slice(2);
-}
 
 export function Chat() {
   const [config] = useConfig();
@@ -109,17 +106,16 @@ export function Chat() {
     const ctrl = new AbortController();
     abortRef.current = ctrl;
 
+    const patchAssistant = (patch: Partial<ChatMessageType>) => {
+      setMessages((prev) =>
+        prev.map((m) => (m.id === assistantId ? { ...m, ...patch } : m)),
+      );
+    };
     const updateAssistant = (
       content: string,
       isStreaming: boolean,
       isJson = false,
-    ) => {
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === assistantId ? { ...m, content, isStreaming, isJson } : m,
-        ),
-      );
-    };
+    ) => patchAssistant({ content, isStreaming, isJson });
 
     try {
       const { systemPrompt, skillRefs } = await buildSystemAndSkills();
@@ -138,17 +134,21 @@ export function Chat() {
         config.llm.apiFormat === "lmstudio_chat"
           ? lmStudioResponseIdRef.current
           : undefined;
-      let result = await sendMessage(
-        config,
-        apiMessages,
-        systemPrompt,
-        skillRefs,
-        activeMcpTools,
-        onToken,
-        ctrl.signal,
-        prevId,
-      );
-      if (result.usage) addUsage(result.usage);
+      const callLLM = async () => {
+        const res = await sendMessage(
+          config,
+          apiMessages,
+          systemPrompt,
+          skillRefs,
+          activeMcpTools,
+          onToken,
+          ctrl.signal,
+          prevId,
+        );
+        if (res.usage) addUsage(res.usage);
+        return res;
+      };
+      let result = await callLLM();
       if (result.responseId) lmStudioResponseIdRef.current = result.responseId;
 
       let iterations = 0;
@@ -192,16 +192,7 @@ export function Chat() {
 
         updateAssistant("", true);
 
-        result = await sendMessage(
-          config,
-          apiMessages,
-          systemPrompt,
-          skillRefs,
-          activeMcpTools,
-          onToken,
-          ctrl.signal,
-        );
-        if (result.usage) addUsage(result.usage);
+        result = await callLLM();
       }
 
       if (!config.streamEnabled && result.type === "text") {
@@ -223,24 +214,13 @@ export function Chat() {
     } catch (err) {
       if ((err as Error).name === "AbortError") {
         // Arrêt demandé par l'utilisateur — on conserve le contenu partiel déjà affiché
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantId ? { ...m, isStreaming: false } : m,
-          ),
-        );
+        patchAssistant({ isStreaming: false });
       } else {
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantId
-              ? {
-                  ...m,
-                  content: `Erreur : ${(err as Error).message}`,
-                  isStreaming: false,
-                  isError: true,
-                }
-              : m,
-          ),
-        );
+        patchAssistant({
+          content: `Erreur : ${(err as Error).message}`,
+          isStreaming: false,
+          isError: true,
+        });
       }
     } finally {
       abortRef.current = null;

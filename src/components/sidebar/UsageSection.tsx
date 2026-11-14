@@ -65,8 +65,7 @@ export function UsageSection() {
 
   if (total === 0) return null;
 
-  const promptRatio = total > 0 ? promptTokens / total : 0.5;
-  const promptDeg = promptRatio * 360;
+  const promptDeg = (promptTokens / total) * 360;
 
   return (
     <Accordion
@@ -78,9 +77,7 @@ export function UsageSection() {
         <div className="flex items-center gap-4">
           {/* Camembert SVG */}
           <svg viewBox="0 0 100 100" className="w-20 h-20 shrink-0">
-            {total === 0 ? (
-              <circle cx="50" cy="50" r="40" fill="#e5e7eb" />
-            ) : promptTokens === 0 ? (
+            {promptTokens === 0 ? (
               <circle cx="50" cy="50" r="40" fill="#86efac" />
             ) : completionTokens === 0 ? (
               <circle cx="50" cy="50" r="40" fill="#93c5fd" />

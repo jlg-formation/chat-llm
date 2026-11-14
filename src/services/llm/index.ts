@@ -1,53 +1,86 @@
-import type { AppConfig, ChatMessage, McpTool } from '../../types'
-import { addExchange, updateExchange } from '../../store/httpStore'
-import { genId, usesResponsesAPI, usesOllamaNative, getEndpoint, getHeaders, getPedagogicHeaders } from './helpers'
-import { buildBody } from './bodyBuilders'
-import { streamOpenAIResponses, streamChatCompletions, parseNonStreamingResponse } from './parsers'
-import { streamLmStudioChat, parseLmStudioChatNonStreaming } from './parsersLmStudio'
+import type { AppConfig, ChatMessage, McpTool } from "../../types";
+import type { SkillRef, LLMResult } from "./types";
+import { addExchange, updateExchange } from "../../store/httpStore";
+import { genId } from "../id";
+import {
+  usesResponsesAPI,
+  usesOllamaNative,
+  getEndpoint,
+  getHeaders,
+  getPedagogicHeaders,
+} from "./helpers";
+import { buildBody } from "./bodyBuilders";
+import {
+  streamOpenAIResponses,
+  streamChatCompletions,
+  parseNonStreamingResponse,
+} from "./parsers";
+import {
+  streamLmStudioChat,
+  parseLmStudioChatNonStreaming,
+} from "./parsersLmStudio";
 
-export type { SkillRef, LLMToolCall, LLMResult } from './types'
+export type { SkillRef, LLMToolCall, LLMResult } from "./types";
 
 export async function sendMessage(
   config: AppConfig,
   messages: ChatMessage[],
   systemPrompt: string,
-  skillRefs: import('./types').SkillRef[],
+  skillRefs: SkillRef[],
   mcpTools: McpTool[],
   onToken: (token: string) => void,
   signal?: AbortSignal,
   previousResponseId?: string,
-): Promise<import('./types').LLMResult> {
-  const isLmStudioChat = config.llm.apiFormat === 'lmstudio_chat'
-  const isResponsesAPI = usesResponsesAPI(config)
-  const isOllama = usesOllamaNative(config)
+): Promise<LLMResult> {
+  const isLmStudioChat = config.llm.apiFormat === "lmstudio_chat";
+  const isResponsesAPI = usesResponsesAPI(config);
+  const isOllama = usesOllamaNative(config);
 
-  const body = buildBody(config, messages, systemPrompt, skillRefs, mcpTools, { previousResponseId })
-  const endpoint = getEndpoint(config)
-  const headers = getHeaders(config)
+  const body = buildBody(config, messages, systemPrompt, skillRefs, mcpTools, {
+    previousResponseId,
+  });
+  const endpoint = getEndpoint(config);
+  const headers = getHeaders(config);
 
-  const exchangeId = genId()
+  const exchangeId = genId();
   addExchange({
     id: exchangeId,
     timestamp: Date.now(),
-    type: 'llm',
-    method: 'POST',
+    type: "llm",
+    method: "POST",
     url: endpoint,
     requestHeaders: getPedagogicHeaders(headers, config),
     requestBody: body,
-  })
+  });
 
-  const response = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body), signal })
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+    signal,
+  });
 
-  const respHeaders: Record<string, string> = {}
-  for (const k of ['content-type', 'x-request-id', 'x-ratelimit-limit-requests', 'x-ratelimit-remaining-requests', 'x-ratelimit-reset-requests']) {
-    const v = response.headers.get(k)
-    if (v) respHeaders[k] = v
+  const respHeaders: Record<string, string> = {};
+  for (const k of [
+    "content-type",
+    "x-request-id",
+    "x-ratelimit-limit-requests",
+    "x-ratelimit-remaining-requests",
+    "x-ratelimit-reset-requests",
+  ]) {
+    const v = response.headers.get(k);
+    if (v) respHeaders[k] = v;
   }
 
   if (!response.ok) {
-    const errText = await response.text()
-    updateExchange(exchangeId, { responseStatus: response.status, responseHeaders: respHeaders, responseBody: errText, error: `HTTP ${response.status}` })
-    throw new Error(`HTTP ${response.status}: ${errText}`)
+    const errText = await response.text();
+    updateExchange(exchangeId, {
+      responseStatus: response.status,
+      responseHeaders: respHeaders,
+      responseBody: errText,
+      error: `HTTP ${response.status}`,
+    });
+    throw new Error(`HTTP ${response.status}: ${errText}`);
   }
 
   if (config.streamEnabled) {
@@ -55,22 +88,27 @@ export async function sendMessage(
       ? await streamLmStudioChat(response, onToken)
       : isResponsesAPI
         ? await streamOpenAIResponses(response, onToken)
-        : await streamChatCompletions(response, isOllama, onToken)
+        : await streamChatCompletions(response, isOllama, onToken);
 
     updateExchange(exchangeId, {
       responseStatus: response.status,
       responseHeaders: respHeaders,
-      responseBody: result.type === 'text'
-        ? { streaming_response: result.content }
-        : { tool_calls: result.calls },
-    })
-    return result
+      responseBody:
+        result.type === "text"
+          ? { streaming_response: result.content }
+          : { tool_calls: result.calls },
+    });
+    return result;
   } else {
-    const json = await response.json()
+    const json = await response.json();
     const result = isLmStudioChat
       ? parseLmStudioChatNonStreaming(json)
-      : parseNonStreamingResponse(json, isResponsesAPI, isOllama)
-    updateExchange(exchangeId, { responseStatus: response.status, responseHeaders: respHeaders, responseBody: json })
-    return result
+      : parseNonStreamingResponse(json, isResponsesAPI, isOllama);
+    updateExchange(exchangeId, {
+      responseStatus: response.status,
+      responseHeaders: respHeaders,
+      responseBody: json,
+    });
+    return result;
   }
 }

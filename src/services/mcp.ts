@@ -1,6 +1,7 @@
 import type { McpServer, McpTool } from "../types";
 import { addExchange, updateExchange } from "../store/httpStore";
 import { parseSSEEvents } from "./sse";
+import { genId } from "./id";
 
 export type McpConnection = Pick<McpServer, "url" | "token">;
 
@@ -10,10 +11,6 @@ let rpcIdCounter = 0;
 function nextRpcId(): number {
   rpcIdCounter += 1;
   return rpcIdCounter;
-}
-
-function genId() {
-  return Math.random().toString(36).slice(2);
 }
 
 interface McpSession {
@@ -53,61 +50,47 @@ function maskAuthorization(
     : headers;
 }
 
-async function mcpPost(
+/**
+ * Envoie une requête MCP avec timeout et la journalise dans httpStore.
+ * `readBody` extrait le corps de la réponse (null = pas de corps).
+ */
+async function mcpFetch(
   conn: McpConnection,
+  method: "POST" | "DELETE",
+  session: McpSession | undefined,
   body: unknown,
-  session?: McpSession,
-): Promise<{
-  status: number;
-  json: Record<string, unknown>;
-  headers: Headers;
-}> {
+  readBody: (resp: Response) => Promise<Record<string, unknown> | null>,
+): Promise<{ resp: Response; json: Record<string, unknown> | null }> {
   const url = conn.url.replace(/\/$/, "");
-  const requestId = (body as { id?: number }).id;
   const exchangeId = genId();
   const reqHeaders = buildHeaders(session, conn.token);
   addExchange({
     id: exchangeId,
     timestamp: Date.now(),
     type: "mcp",
-    method: "POST",
+    method,
     url,
     requestHeaders: maskAuthorization(reqHeaders),
-    requestBody: body,
+    requestBody: body ?? null,
   });
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), MCP_TIMEOUT_MS);
   try {
     const resp = await fetch(url, {
-      method: "POST",
+      method,
       headers: reqHeaders,
-      body: JSON.stringify(body),
+      body: body === undefined ? undefined : JSON.stringify(body),
       signal: controller.signal,
     });
-    const contentType = resp.headers.get("content-type") ?? "";
-    const responseHeaders = { "content-type": contentType };
-    // 202/204 — notifications JSON-RPC sans corps de réponse
-    if (
-      resp.status === 202 ||
-      resp.status === 204 ||
-      resp.headers.get("content-length") === "0"
-    ) {
-      updateExchange(exchangeId, {
-        responseStatus: resp.status,
-        responseHeaders,
-        responseBody: null,
-      });
-      return { status: resp.status, json: {}, headers: resp.headers };
-    }
-    const json = contentType.includes("text/event-stream")
-      ? await readSSEResponse(resp.body!, requestId)
-      : ((await resp.json()) as Record<string, unknown>);
+    const json = await readBody(resp);
     updateExchange(exchangeId, {
       responseStatus: resp.status,
-      responseHeaders,
+      responseHeaders: {
+        "content-type": resp.headers.get("content-type") ?? "",
+      },
       responseBody: json,
     });
-    return { status: resp.status, json, headers: resp.headers };
+    return { resp, json };
   } catch (err) {
     if (!controller.signal.aborted) {
       updateExchange(exchangeId, { error: (err as Error).message });
@@ -119,6 +102,40 @@ async function mcpPost(
   } finally {
     clearTimeout(timer);
   }
+}
+
+async function mcpPost(
+  conn: McpConnection,
+  body: unknown,
+  session?: McpSession,
+): Promise<{
+  status: number;
+  json: Record<string, unknown>;
+  headers: Headers;
+}> {
+  const requestId = (body as { id?: number }).id;
+  const { resp, json } = await mcpFetch(
+    conn,
+    "POST",
+    session,
+    body,
+    async (resp) => {
+      // 202/204 — notifications JSON-RPC sans corps de réponse
+      if (
+        resp.status === 202 ||
+        resp.status === 204 ||
+        resp.headers.get("content-length") === "0"
+      ) {
+        return null;
+      }
+      return (resp.headers.get("content-type") ?? "").includes(
+        "text/event-stream",
+      )
+        ? await readSSEResponse(resp.body!, requestId)
+        : ((await resp.json()) as Record<string, unknown>);
+    },
+  );
+  return { status: resp.status, json: json ?? {}, headers: resp.headers };
 }
 
 /** Lit le flux SSE jusqu'à la réponse JSON-RPC dont l'id correspond à la requête. */
@@ -211,39 +228,7 @@ async function mcpDelete(
   conn: McpConnection,
   session: McpSession,
 ): Promise<void> {
-  const url = conn.url.replace(/\/$/, "");
-  const exchangeId = genId();
-  const reqHeaders = buildHeaders(session, conn.token);
-  addExchange({
-    id: exchangeId,
-    timestamp: Date.now(),
-    type: "mcp",
-    method: "DELETE",
-    url,
-    requestHeaders: maskAuthorization(reqHeaders),
-    requestBody: null,
-  });
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), MCP_TIMEOUT_MS);
-  try {
-    const resp = await fetch(url, {
-      method: "DELETE",
-      headers: reqHeaders,
-      signal: controller.signal,
-    });
-    updateExchange(exchangeId, {
-      responseStatus: resp.status,
-      responseHeaders: {
-        "content-type": resp.headers.get("content-type") ?? "",
-      },
-      responseBody: null,
-    });
-  } catch (err) {
-    updateExchange(exchangeId, { error: (err as Error).message });
-    throw err;
-  } finally {
-    clearTimeout(timer);
-  }
+  await mcpFetch(conn, "DELETE", session, undefined, async () => null);
 }
 
 export async function disconnectMcp(conn: McpConnection): Promise<void> {

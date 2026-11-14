@@ -43,19 +43,36 @@ export function McpSection() {
     update({ mcpServers: config.mcpServers.filter((s) => s.id !== id) });
   }
 
+  // Exécute une action réseau en gérant l'indicateur de chargement et le message d'erreur du serveur
+  async function runForServer(id: string, action: () => Promise<void>) {
+    setLoadingIds((prev) => new Set(prev).add(id));
+    setErrorIds((prev) => {
+      const m = new Map(prev);
+      m.delete(id);
+      return m;
+    });
+    try {
+      await action();
+    } catch (e) {
+      setErrorIds((prev) =>
+        new Map(prev).set(id, `Erreur : ${(e as Error).message}`),
+      );
+    } finally {
+      setLoadingIds((prev) => {
+        const s = new Set(prev);
+        s.delete(id);
+        return s;
+      });
+    }
+  }
+
   async function toggleServer(server: McpServer) {
     const enabling = !server.enabled;
     if (!server.url) {
       updateServer(server.id, { enabled: enabling });
       return;
     }
-    setLoadingIds((prev) => new Set(prev).add(server.id));
-    setErrorIds((prev) => {
-      const m = new Map(prev);
-      m.delete(server.id);
-      return m;
-    });
-    try {
+    await runForServer(server.id, async () => {
       if (enabling) {
         await connectMcp(server);
         const tools = await fetchMcpTools(server);
@@ -64,41 +81,15 @@ export function McpSection() {
         await disconnectMcp(server);
         updateServer(server.id, { enabled: false, tools: [] });
       }
-    } catch (e) {
-      setErrorIds((prev) =>
-        new Map(prev).set(server.id, `Erreur : ${(e as Error).message}`),
-      );
-    } finally {
-      setLoadingIds((prev) => {
-        const s = new Set(prev);
-        s.delete(server.id);
-        return s;
-      });
-    }
+    });
   }
 
   async function refreshTools(server: McpServer) {
     if (!server.url) return;
-    setLoadingIds((prev) => new Set(prev).add(server.id));
-    setErrorIds((prev) => {
-      const m = new Map(prev);
-      m.delete(server.id);
-      return m;
-    });
-    try {
+    await runForServer(server.id, async () => {
       const tools = await fetchMcpTools(server);
       updateServer(server.id, { tools });
-    } catch (e) {
-      setErrorIds((prev) =>
-        new Map(prev).set(server.id, `Erreur : ${(e as Error).message}`),
-      );
-    } finally {
-      setLoadingIds((prev) => {
-        const s = new Set(prev);
-        s.delete(server.id);
-        return s;
-      });
-    }
+    });
   }
 
   function toggleTool(serverId: string, toolName: string) {

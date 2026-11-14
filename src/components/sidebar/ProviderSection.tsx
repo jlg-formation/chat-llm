@@ -14,6 +14,12 @@ import type { ModelInfo } from "../../services/models";
 import { ApiFormatSelector } from "./ApiFormatSelector";
 import { supportsFormat, modelLabel, isOvhChatModel } from "./modelHelpers";
 
+const DEFAULT_MODEL: Record<Provider, string> = {
+  openai: "gpt-6-luna",
+  ovh: "gpt-oss-20b",
+  lmstudio: "",
+  ollama: "",
+};
 
 export function ProviderSection() {
   const [config, update] = useConfig();
@@ -22,23 +28,14 @@ export function ProviderSection() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const cachedModels = useModelsCache(llm.provider);
 
-  const DEFAULT_MODEL: Record<Provider, string> = {
-    openai: "gpt-6-luna",
-    ovh: "gpt-oss-20b",
-    lmstudio: "",
-    ollama: "",
-  };
-
   function handleProviderChange(provider: Provider) {
+    const keepsCurrentFormat =
+      llm.apiFormat === "lmstudio_chat" || llm.apiFormat === "ollama_chat"
+        ? "responses"
+        : llm.apiFormat;
     const defaultFormat: Record<Provider, ApiFormat> = {
-      openai:
-        llm.apiFormat === "lmstudio_chat" || llm.apiFormat === "ollama_chat"
-          ? "responses"
-          : llm.apiFormat,
-      ovh:
-        llm.apiFormat === "lmstudio_chat" || llm.apiFormat === "ollama_chat"
-          ? "responses"
-          : llm.apiFormat,
+      openai: keepsCurrentFormat,
+      ovh: keepsCurrentFormat,
       lmstudio: "lmstudio_chat",
       ollama: "ollama_chat",
     };
