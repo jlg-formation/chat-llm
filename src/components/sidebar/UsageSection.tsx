@@ -144,6 +144,12 @@ export function UsageSection() {
               <span>Input · {fmtCost(costPrompt!)}</span>
               <span>Output · {fmtCost(costCompletion!)}</span>
             </div>
+            {modelInfo?.longContext && (
+              <div className="mt-1 text-xs text-indigo-300">
+                Palier ≤ {fmt(modelInfo.longContext.threshold)} tokens de prompt
+                appliqué
+              </div>
+            )}
           </div>
         )}
 

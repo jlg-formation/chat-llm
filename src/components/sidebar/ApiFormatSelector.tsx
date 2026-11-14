@@ -20,6 +20,10 @@ const CHAT_COMPLETIONS: FormatOption = {
 
 const FORMAT_OPTIONS: Record<Provider, FormatOption[]> = {
   openai: [RESPONSES, CHAT_COMPLETIONS],
+  anthropic: [
+    { fmt: "anthropic_messages", path: "/v1/messages", name: "API Messages" },
+    { ...CHAT_COMPLETIONS, name: "OpenAI compatible" },
+  ],
   ovh: [RESPONSES, CHAT_COMPLETIONS],
   lmstudio: [
     { fmt: "lmstudio_chat", path: "/api/v1/chat", name: "LM Studio Chat" },

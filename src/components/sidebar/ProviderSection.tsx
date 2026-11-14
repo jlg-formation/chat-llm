@@ -5,6 +5,7 @@ import { type Provider, type ApiFormat, PROVIDER_DEFAULTS } from "../../types";
 import { Accordion } from "./Accordion";
 import { fetchModels } from "../../services/models";
 import {
+  getDefaultAnthropicModels,
   getDefaultOpenAiModels,
   getStaticPricing,
 } from "../../services/pricing";
@@ -16,6 +17,7 @@ import { supportsFormat, modelLabel, isOvhChatModel } from "./modelHelpers";
 
 const DEFAULT_MODEL: Record<Provider, string> = {
   openai: "gpt-6-luna",
+  anthropic: "claude-haiku-5-5",
   ovh: "gpt-oss-20b",
   lmstudio: "",
   ollama: "",
@@ -30,11 +32,14 @@ export function ProviderSection() {
 
   function handleProviderChange(provider: Provider) {
     const keepsCurrentFormat =
-      llm.apiFormat === "lmstudio_chat" || llm.apiFormat === "ollama_chat"
+      llm.apiFormat === "lmstudio_chat" ||
+      llm.apiFormat === "ollama_chat" ||
+      llm.apiFormat === "anthropic_messages"
         ? "responses"
         : llm.apiFormat;
     const defaultFormat: Record<Provider, ApiFormat> = {
       openai: keepsCurrentFormat,
+      anthropic: "anthropic_messages",
       ovh: keepsCurrentFormat,
       lmstudio: "lmstudio_chat",
       ollama: "ollama_chat",
@@ -61,7 +66,7 @@ export function ProviderSection() {
         llm.apiKeys[llm.provider],
       );
       const enriched =
-        llm.provider === "openai"
+        llm.provider === "openai" || llm.provider === "anthropic"
           ? models.map((m) => ({ ...m, ...getStaticPricing(m.id) }))
           : models;
       setCachedModels(llm.provider, enriched);
@@ -93,6 +98,9 @@ export function ProviderSection() {
       }
       return getDefaultOpenAiModels();
     }
+    if (llm.provider === "anthropic") {
+      return cachedModels ?? getDefaultAnthropicModels();
+    }
     if (llm.provider === "ovh") {
       const models = cachedModels ?? [];
       return models.filter(isOvhChatModel);
@@ -103,6 +111,7 @@ export function ProviderSection() {
   const displayModels = getDisplayModels();
   const showDropdown =
     llm.provider === "openai" ||
+    llm.provider === "anthropic" ||
     llm.provider === "ovh" ||
     cachedModels !== undefined;
   const modelInList = displayModels.some((m) => m.id === llm.model);
@@ -258,7 +267,9 @@ export function ProviderSection() {
             className="w-full text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder={
               PROVIDER_DEFAULTS[llm.provider].needsKey
-                ? "sk-..."
+                ? llm.provider === "anthropic"
+                  ? "sk-ant-..."
+                  : "sk-..."
                 : "(optionnel)"
             }
             autoComplete="off"

@@ -1,4 +1,27 @@
-import type { McpTool } from "../../types";
+import type { AppConfig, McpTool } from "../../types";
+import type { SkillRef } from "./types";
+
+export function buildTools(
+  skillRefs: SkillRef[],
+  mcpTools: McpTool[],
+  skillTool: () => unknown,
+  mcpTool: (tool: McpTool) => unknown,
+): unknown[] {
+  return [
+    ...(skillRefs.length > 0 ? [skillTool()] : []),
+    ...mcpTools.filter((t) => t.enabled).map(mcpTool),
+  ];
+}
+
+// Schéma invalide → ignoré
+export function parseJsonSchema(config: AppConfig): unknown {
+  if (!config.jsonSchema) return undefined;
+  try {
+    return JSON.parse(config.jsonSchema);
+  } catch {
+    return undefined;
+  }
+}
 
 const SKILL_DESCRIPTION =
   "Récupère les instructions complètes d'un skill disponible. Appelle cet outil avant de répondre si tu as besoin des détails d'un skill.";
@@ -58,5 +81,22 @@ export function mcpToolForResponsesAPI(tool: McpTool) {
     description: tool.description,
     parameters: mcpParameters(tool),
     strict: false,
+  };
+}
+
+export function skillToolForAnthropic() {
+  return {
+    name: "get_skill_details",
+    description: SKILL_DESCRIPTION,
+    input_schema: SKILL_PARAMS,
+  };
+}
+
+// Anthropic exige `type: "object"` à la racine du schéma.
+export function mcpToolForAnthropic(tool: McpTool) {
+  return {
+    name: tool.name,
+    description: tool.description,
+    input_schema: { type: "object", ...mcpParameters(tool) },
   };
 }

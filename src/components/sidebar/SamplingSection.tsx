@@ -13,12 +13,13 @@ interface SliderFieldProps {
   leftLabel: string
   rightLabel: string
   onChange: (v: number | null) => void
+  disabled?: boolean
 }
 
-function SliderField({ label, hint, min, max, step, defaultValue, value, leftLabel, rightLabel, onChange }: SliderFieldProps) {
-  const enabled = value !== null
+function SliderField({ label, hint, min, max, step, defaultValue, value, leftLabel, rightLabel, onChange, disabled = false }: SliderFieldProps) {
+  const enabled = value !== null && !disabled
   return (
-    <div className={`rounded-md border px-3 py-2 transition-colors ${enabled ? 'border-purple-300 bg-purple-50' : 'border-gray-200 bg-white'}`}>
+    <div className={`rounded-md border px-3 py-2 transition-colors ${enabled ? 'border-purple-300 bg-purple-50' : 'border-gray-200 bg-white'} ${disabled ? 'opacity-50' : ''}`}>
       <div className="flex items-center justify-between gap-2">
         <div>
           <div className={`text-xs font-semibold leading-tight ${enabled ? 'text-purple-700' : 'text-gray-600'}`}>{label}</div>
@@ -26,6 +27,7 @@ function SliderField({ label, hint, min, max, step, defaultValue, value, leftLab
         </div>
         <button
           onClick={() => onChange(enabled ? null : defaultValue)}
+          disabled={disabled}
           role="switch"
           aria-checked={enabled}
           aria-label={`Activer ${label}`}
@@ -58,16 +60,50 @@ function SliderField({ label, hint, min, max, step, defaultValue, value, leftLab
   )
 }
 
+function ThinkingToggle() {
+  const [config, update] = useConfig()
+  const { llm } = config
+  // Le mode compatible OpenAI ne renvoie pas la réflexion
+  const unavailable = llm.apiFormat !== 'anthropic_messages'
+  const on = llm.showThinking && !unavailable
+
+  return (
+    <div className={`rounded-md border px-3 py-2 ${on ? 'border-purple-300 bg-purple-50' : 'border-gray-200 bg-white'} ${unavailable ? 'opacity-50' : ''}`}>
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          <div className={`text-xs font-semibold leading-tight ${on ? 'text-purple-700' : 'text-gray-600'}`}>Afficher la réflexion</div>
+          <div className="text-xs text-gray-400 leading-tight">
+            {unavailable ? 'Indisponible en mode OpenAI compatible' : 'Réflexion adaptative (display: summarized)'}
+          </div>
+        </div>
+        <button
+          onClick={() => update({ llm: { ...llm, showThinking: !llm.showThinking } })}
+          disabled={unavailable}
+          role="switch"
+          aria-checked={on}
+          aria-label="Afficher la réflexion"
+          className={`relative shrink-0 inline-flex h-5 w-9 items-center rounded-full transition-colors ${on ? 'bg-purple-500' : 'bg-gray-300'}`}
+        >
+          <span className={`absolute h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${on ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export function SamplingSection() {
   const [config, update] = useConfig()
   const { llm } = config
+  const isAnthropic = llm.provider === 'anthropic'
+  const unsupportedHint = 'Non supporté par les modèles Claude 5.x'
 
   return (
     <Accordion title="Sampling" icon={<Sliders className="w-4 h-4 text-purple-500" />}>
       <div className="space-y-2">
         <SliderField
           label="Temperature"
-          hint="Créativité aléatoire"
+          hint={isAnthropic ? unsupportedHint : 'Créativité aléatoire'}
+          disabled={isAnthropic}
           min={0} max={2} step={0.01} defaultValue={1}
           leftLabel="0 — déterministe" rightLabel="2 — aléatoire"
           value={llm.temperature}
@@ -75,7 +111,8 @@ export function SamplingSection() {
         />
         <SliderField
           label="Top-P (nucleus)"
-          hint="Masse de probabilité"
+          hint={isAnthropic ? unsupportedHint : 'Masse de probabilité'}
+          disabled={isAnthropic}
           min={0} max={1} step={0.01} defaultValue={0.9}
           leftLabel="0 — concentré" rightLabel="1 — tous les tokens"
           value={llm.topP}
@@ -85,7 +122,9 @@ export function SamplingSection() {
         <div>
           <label htmlFor="max-tokens" className="block text-xs text-gray-500 mb-1">
             Max tokens en sortie
-            <span className="ml-1 text-gray-400">(vide = illimité)</span>
+            <span className="ml-1 text-gray-400">
+              {isAnthropic ? '(vide = 4096, réflexion incluse)' : '(vide = illimité)'}
+            </span>
           </label>
           <input
             id="max-tokens"
@@ -101,6 +140,8 @@ export function SamplingSection() {
             className="w-full text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-purple-400"
           />
         </div>
+
+        {isAnthropic && <ThinkingToggle />}
       </div>
     </Accordion>
   )

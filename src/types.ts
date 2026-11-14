@@ -1,10 +1,11 @@
-export type Provider = "openai" | "ovh" | "lmstudio" | "ollama";
+export type Provider = "openai" | "anthropic" | "ovh" | "lmstudio" | "ollama";
 
 export type ApiFormat =
   | "responses"
   | "chat_completions"
   | "lmstudio_chat"
-  | "ollama_chat";
+  | "ollama_chat"
+  | "anthropic_messages";
 
 export interface LLMConfig {
   provider: Provider;
@@ -15,6 +16,8 @@ export interface LLMConfig {
   temperature: number | null;
   topP: number | null;
   maxTokens: number | null;
+  // Anthropic : demande les résumés de réflexion (display: summarized)
+  showThinking: boolean;
 }
 
 export interface AppConfig {
@@ -73,10 +76,16 @@ export interface ChatMessage {
   isStreaming?: boolean;
   isJson?: boolean;
   isError?: boolean;
+  // Réflexion affichée (Anthropic)
+  thinking?: string;
   // Pour tool_call
   toolCallId?: string;
   toolName?: string;
   toolArgs?: string;
+  // Regroupe les appels d'une même itération de la boucle d'outils
+  toolTurnId?: string;
+  // Blocs thinking/redacted_thinking bruts à rejouer (Anthropic), portés par le 1er tool_call du tour
+  thinkingBlocks?: unknown[];
   // Pour tool_result
   toolCallResultId?: string;
 }
@@ -95,6 +104,8 @@ export interface HttpExchange {
   error?: string;
 }
 
+export const ANTHROPIC_VERSION = "2026-10-21";
+
 export const PROVIDER_DEFAULTS: Record<
   Provider,
   { label: string; baseUrl: string; needsKey: boolean }
@@ -102,6 +113,11 @@ export const PROVIDER_DEFAULTS: Record<
   openai: {
     label: "OpenAI",
     baseUrl: "https://api.openai.com",
+    needsKey: true,
+  },
+  anthropic: {
+    label: "Anthropic",
+    baseUrl: "https://api.anthropic.com",
     needsKey: true,
   },
   ovh: {
@@ -125,12 +141,13 @@ export const DEFAULT_CONFIG: AppConfig = {
   llm: {
     provider: "openai",
     baseUrl: PROVIDER_DEFAULTS.openai.baseUrl,
-    apiKeys: { openai: "", ovh: "", lmstudio: "", ollama: "" },
+    apiKeys: { openai: "", anthropic: "", ovh: "", lmstudio: "", ollama: "" },
     model: "gpt-6-luna",
     apiFormat: "responses",
     temperature: null,
     topP: null,
     maxTokens: null,
+    showThinking: false,
   },
   streamEnabled: true,
   systemPrompt: "",

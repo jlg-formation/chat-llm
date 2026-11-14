@@ -1,12 +1,18 @@
 import type { AppConfig, ChatMessage, McpTool } from "../../types";
 import type { SkillRef } from "./types";
-import { usesResponsesAPI } from "./helpers";
+import { usesResponsesAPI, usesAnthropicNative, isAnthropic } from "./helpers";
 import { safeParseArgs } from "./parsers";
+import {
+  buildAnthropicBody,
+  ANTHROPIC_DEFAULT_MAX_TOKENS,
+} from "./bodyBuildersAnthropic";
 import {
   skillToolForChatCompletions,
   skillToolForResponsesAPI,
   mcpToolForChatCompletions,
   mcpToolForResponsesAPI,
+  buildTools,
+  parseJsonSchema,
 } from "./tools";
 
 // Les noms de champs diffèrent selon le format pour la limite de tokens.
@@ -15,33 +21,16 @@ function applySampling(
   config: AppConfig,
   maxTokensField: string,
 ) {
+  // Anthropic : temperature/top_p jamais envoyés, max_tokens toujours présent
+  if (isAnthropic(config)) {
+    body[maxTokensField] = config.llm.maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS;
+    return;
+  }
   if (config.llm.temperature !== null)
     body.temperature = config.llm.temperature;
   if (config.llm.topP !== null) body.top_p = config.llm.topP;
   if (config.llm.maxTokens !== null)
     body[maxTokensField] = config.llm.maxTokens;
-}
-
-function buildTools(
-  skillRefs: SkillRef[],
-  mcpTools: McpTool[],
-  skillTool: () => unknown,
-  mcpTool: (tool: McpTool) => unknown,
-): unknown[] {
-  return [
-    ...(skillRefs.length > 0 ? [skillTool()] : []),
-    ...mcpTools.filter((t) => t.enabled).map(mcpTool),
-  ];
-}
-
-// Schéma invalide → ignoré
-function parseJsonSchema(config: AppConfig): unknown {
-  if (!config.jsonSchema) return undefined;
-  try {
-    return JSON.parse(config.jsonSchema);
-  } catch {
-    return undefined;
-  }
 }
 
 export function buildChatCompletionsBody(
@@ -118,8 +107,13 @@ export function buildChatCompletionsBody(
   }
 
   const schema = parseJsonSchema(config);
-  if (schema !== undefined)
-    body.response_format = { type: "json_schema", json_schema: schema };
+  if (schema !== undefined) {
+    // Anthropic (mode compatible) n'accepte que json_schema avec strict: true
+    const jsonSchema = isAnthropic(config)
+      ? { ...(schema as Record<string, unknown>), strict: true }
+      : schema;
+    body.response_format = { type: "json_schema", json_schema: jsonSchema };
+  }
 
   return body;
 }
@@ -252,6 +246,15 @@ export function buildBody(
       messages,
       systemPrompt,
       options?.previousResponseId,
+    );
+  }
+  if (usesAnthropicNative(config)) {
+    return buildAnthropicBody(
+      config,
+      messages,
+      systemPrompt,
+      skillRefs,
+      mcpTools,
     );
   }
   return usesResponsesAPI(config)

@@ -37,16 +37,19 @@ Each exposes: `getState()`, `setState()`, `useHook()` — hooks re-render on glo
 
 **Migration Logic**: `configStore` auto-upgrades old formats on load (e.g., flat `mcpUrl` → `mcpServers[]`).
 
-### LLM Service Polymorphism (4 API Formats)
+### LLM Service Polymorphism (5 API Formats)
 
-The app **unifies 4 incompatible LLM APIs** behind `sendMessage()`:
+The app **unifies 5 incompatible LLM APIs** behind `sendMessage()`:
 
-| Provider      | Format             | Endpoint                    | Key Trait                                                              |
-| ------------- | ------------------ | --------------------------- | ---------------------------------------------------------------------- |
-| **OpenAI**    | `responses`        | `POST /v1/responses`        | Custom SSE events (`response.output_text.delta`)                       |
-| **OVH AI**    | `chat_completions` | `POST /v1/chat/completions` | OpenAI-compatible, 2 models only (`gpt-oss-20b`, `-120b`)              |
-| **LM Studio** | `lmstudio_chat`    | `POST /v1/chat`             | Stateful (sends `previous_response_id`), native MCP via `integrations` |
-| **Ollama**    | `ollama_chat`      | `POST /api/chat`            | Native Ollama, `think: false` forced                                   |
+| Provider      | Format               | Endpoint                    | Key Trait                                                              |
+| ------------- | -------------------- | --------------------------- | ---------------------------------------------------------------------- |
+| **OpenAI**    | `responses`          | `POST /v1/responses`        | Custom SSE events (`response.output_text.delta`)                       |
+| **Anthropic** | `anthropic_messages` | `POST /v1/messages`         | `x-api-key`, adaptive thinking, `tool_use`/`tool_result` content blocks |
+| **OVH AI**    | `chat_completions`   | `POST /v1/chat/completions` | OpenAI-compatible, 2 models only (`gpt-oss-20b`, `-120b`)              |
+| **LM Studio** | `lmstudio_chat`      | `POST /v1/chat`             | Stateful (sends `previous_response_id`), native MCP via `integrations` |
+| **Ollama**    | `ollama_chat`        | `POST /api/chat`            | Native Ollama, `think: false` forced                                   |
+
+Anthropic also offers an OpenAI-compatible mode (`chat_completions` on `/v1/chat/completions`), see [ADR 004](docs/adr/004-provider-anthropic-double-format.md).
 
 **Each format has distinct**:
 
@@ -134,6 +137,9 @@ Body builders reuse code; **response parsing differs significantly**. Bug in non
 | **Responses API**    | `{ type: 'function_call', ... }` in `input` | `{ type: 'function_call_output', ... }` in `input`  |
 | **Chat Completions** | `{ role: 'assistant', tool_calls: [...] }`  | `{ role: 'tool', tool_call_id: ..., content: ... }` |
 | **Ollama**           | Same as Chat Completions                    | Same as Chat Completions                            |
+| **Anthropic**        | `tool_use` block in an `assistant` message  | `tool_result` block in a `user` message             |
+
+**Anthropic**: all calls of one loop iteration go into ONE assistant message (preceded by the raw `thinking` / `redacted_thinking` blocks, kept in `ChatMessage.thinkingBlocks`) and all results into ONE user message. Messages of the same iteration share `ChatMessage.toolTurnId`; `bodyBuildersAnthropic.ts` groups on it. Sending `temperature`/`top_p` is a 400 on the 5.x models: they are never sent and `max_tokens` is always set (default 4096).
 
 **Gotcha**: Wrong serialization → tool loop fails silently (LLM doesn't recognize result).
 
@@ -336,18 +342,21 @@ Les commandes `npm run …` fonctionnent aussi, mais préférer `bun run …`.
 | `responses`        | OpenAI, OVH (2 modèles) | `POST /v1/responses`        | SSE events `response.output_text.delta` / `response.completed`, champ `input`, `instructions`                                                 |
 | `chat_completions` | OVH, Ollama (compat.)   | `POST /v1/chat/completions` | Format OpenAI standard, `messages`                                                                                                            |
 | `ollama_chat`      | Ollama                  | `POST /api/chat`            | Format natif Ollama, `think: false` forcé                                                                                                     |
+| `anthropic_messages` | Anthropic             | `POST /v1/messages`         | Headers `x-api-key` + `anthropic-version` + `anthropic-dangerous-direct-browser-access` ; `system` séparé, `max_tokens` obligatoire, `thinking` adaptatif, `output_config.format` pour le structured output |
 | `lmstudio_chat`    | LM Studio               | `POST /api/v1/chat`         | Stateful : envoie seulement le dernier message utilisateur + `previous_response_id` ; MCP via `integrations` (format natif, pas de tool loop) |
 
 `sendMessage()` retourne `LLMResult` :
 
-- `{ type: 'text'; content: string; usage?: TokenUsage; responseId?: string }`
-- `{ type: 'tool_calls'; calls: LLMToolCall[]; responseId?: string; rawAssistantMsg?: unknown; usage?: TokenUsage }`
+- `{ type: 'text'; content: string; usage?: TokenUsage; responseId?: string; thinking?: string }`
+- `{ type: 'tool_calls'; calls: LLMToolCall[]; responseId?: string; rawAssistantMsg?: unknown; usage?: TokenUsage; thinking?: string; thinkingBlocks?: unknown[] }`
+
+`thinking` / `thinkingBlocks` ne sont remplis que par le format `anthropic_messages` (réflexion affichée via `LLMConfig.showThinking` ; `sendMessage()` accepte un callback `onThinking` en dernier paramètre).
 
 **OVH** : seuls `gpt-oss-20b` et `gpt-oss-120b` supportent le format `responses`. `fetchModels()` OVH utilise le header `X-Auth-Token` (pas `Authorization: Bearer`).
 
 ### Service modèles (`src/services/models.ts`)
 
-`fetchModels(provider, baseUrl, apiKey)` récupère la liste de modèles pour chaque provider (endpoints différents, shapes différentes) et normalise vers `ModelInfo`. LM Studio utilise `/api/v1/models` avec une shape propre. Les résultats sont mis en cache dans `modelsStore`. OpenAI a une liste statique de repli (`STATIC_OPENAI_MODELS` dans `ProviderSection.tsx`).
+`fetchModels(provider, baseUrl, apiKey)` récupère la liste de modèles pour chaque provider (endpoints différents, shapes différentes) et normalise vers `ModelInfo`. LM Studio utilise `/api/v1/models` avec une shape propre. Les résultats sont mis en cache dans `modelsStore`. OpenAI et Anthropic ont une liste statique de repli (`getDefaultOpenAiModels()` / `getDefaultAnthropicModels()` dans `src/services/pricing.ts`, tarifs dans `src/data/*-pricing.json`). Anthropic : `GET /v1/models` avec `x-api-key` ; Haiku 5.5 a un palier tarifaire au-delà de 100 000 tokens de prompt, non appliqué dans `UsageSection` (le palier bas est utilisé et signalé).
 
 ### Détails MCP
 
@@ -355,9 +364,9 @@ Protocole MCP 2025-11-25. Sessions maintenues en mémoire (`sessions: Map<string
 
 ### Types centraux (`src/types.ts`)
 
-- `Provider` : `'openai' | 'ovh' | 'lmstudio' | 'ollama'`
-- `ApiFormat` : `'responses' | 'chat_completions' | 'lmstudio_chat' | 'ollama_chat'`
-- `LLMConfig` contient `temperature`, `topP`, `maxTokens` (tous `number | null` — `null` = non envoyé à l'API)
+- `Provider` : `'openai' | 'anthropic' | 'ovh' | 'lmstudio' | 'ollama'`
+- `ApiFormat` : `'responses' | 'chat_completions' | 'lmstudio_chat' | 'ollama_chat' | 'anthropic_messages'`
+- `LLMConfig` contient `temperature`, `topP`, `maxTokens` (tous `number | null` — `null` = non envoyé à l'API) et `showThinking` (Anthropic)
 - `MessageRole` : `'user' | 'assistant' | 'system' | 'tool_call' | 'tool_result'`
 - `McpServer` : `{ id, name, url, enabled, tools: McpTool[] }` — `AppConfig.mcpServers` est un tableau de ces objets
 - `DEFAULT_CONFIG` prépositionne sur `openai` / `gpt-5.4-nano` / format `responses`, `mcpServers: []`

@@ -5,6 +5,7 @@ import { genId } from "../id";
 import {
   usesResponsesAPI,
   usesOllamaNative,
+  usesAnthropicNative,
   getEndpoint,
   getHeaders,
   getPedagogicHeaders,
@@ -19,6 +20,10 @@ import {
   streamLmStudioChat,
   parseLmStudioChatNonStreaming,
 } from "./parsersLmStudio";
+import {
+  streamAnthropicMessages,
+  parseAnthropicNonStreaming,
+} from "./parsersAnthropic";
 
 export type { SkillRef, LLMToolCall, LLMResult } from "./types";
 
@@ -31,8 +36,10 @@ export async function sendMessage(
   onToken: (token: string) => void,
   signal?: AbortSignal,
   previousResponseId?: string,
+  onThinking?: (token: string) => void,
 ): Promise<LLMResult> {
   const isLmStudioChat = config.llm.apiFormat === "lmstudio_chat";
+  const isAnthropicNative = usesAnthropicNative(config);
   const isResponsesAPI = usesResponsesAPI(config);
   const isOllama = usesOllamaNative(config);
 
@@ -67,6 +74,9 @@ export async function sendMessage(
     "x-ratelimit-limit-requests",
     "x-ratelimit-remaining-requests",
     "x-ratelimit-reset-requests",
+    "request-id",
+    "anthropic-ratelimit-requests-remaining",
+    "anthropic-ratelimit-tokens-remaining",
   ]) {
     const v = response.headers.get(k);
     if (v) respHeaders[k] = v;
@@ -86,24 +96,29 @@ export async function sendMessage(
   if (config.streamEnabled) {
     const result = isLmStudioChat
       ? await streamLmStudioChat(response, onToken)
-      : isResponsesAPI
-        ? await streamOpenAIResponses(response, onToken)
-        : await streamChatCompletions(response, isOllama, onToken);
+      : isAnthropicNative
+        ? await streamAnthropicMessages(response, onToken, onThinking)
+        : isResponsesAPI
+          ? await streamOpenAIResponses(response, onToken)
+          : await streamChatCompletions(response, isOllama, onToken);
 
+    const thinking = result.thinking ? { thinking: result.thinking } : {};
     updateExchange(exchangeId, {
       responseStatus: response.status,
       responseHeaders: respHeaders,
       responseBody:
         result.type === "text"
-          ? { streaming_response: result.content }
-          : { tool_calls: result.calls },
+          ? { streaming_response: result.content, ...thinking }
+          : { tool_calls: result.calls, ...thinking },
     });
     return result;
   } else {
     const json = await response.json();
     const result = isLmStudioChat
       ? parseLmStudioChatNonStreaming(json)
-      : parseNonStreamingResponse(json, isResponsesAPI, isOllama);
+      : isAnthropicNative
+        ? parseAnthropicNonStreaming(json)
+        : parseNonStreamingResponse(json, isResponsesAPI, isOllama);
     updateExchange(exchangeId, {
       responseStatus: response.status,
       responseHeaders: respHeaders,

@@ -1,12 +1,23 @@
 import type { ModelInfo } from "./models";
 import openaiPricing from "../data/openai-pricing.json";
+import anthropicPricing from "../data/anthropic-pricing.json";
 
 export type PricingEntry = Pick<
   ModelInfo,
-  "pricingPrompt" | "pricingCompletion" | "contextLength"
+  "pricingPrompt" | "pricingCompletion" | "contextLength" | "longContext"
 >;
 
-const TABLE = openaiPricing as Record<string, PricingEntry>;
+const TABLE = {
+  ...openaiPricing,
+  ...anthropicPricing,
+} as Record<string, PricingEntry>;
+
+const DEFAULT_ANTHROPIC_MODEL_IDS = [
+  "claude-haiku-5-5",
+  "claude-sonnet-5-5",
+  "claude-opus-5-5",
+  "claude-fable-5-2",
+];
 
 // Ids OpenAI proposés dans la liste avant tout appel à l'API (prix tirés de TABLE).
 const DEFAULT_OPENAI_MODEL_IDS = [
@@ -36,6 +47,13 @@ export function getStaticPricing(modelId: string): PricingEntry | undefined {
 
 export function getDefaultOpenAiModels(): ModelInfo[] {
   return DEFAULT_OPENAI_MODEL_IDS.map((id) => ({
+    id,
+    ...getStaticPricing(id),
+  }));
+}
+
+export function getDefaultAnthropicModels(): ModelInfo[] {
+  return DEFAULT_ANTHROPIC_MODEL_IDS.map((id) => ({
     id,
     ...getStaticPricing(id),
   }));

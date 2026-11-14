@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { ChatMessage as ChatMessageType } from "../../types";
 import { User, Bot, Wrench, ChevronDown, ChevronRight } from "lucide-react";
 import { MermaidBlock } from "./MermaidBlock";
+import { ThinkingBlock } from "./ThinkingBlock";
 import { XmlBlock } from "./XmlBlock";
 import { parseXmlBlocks } from "./parseXmlBlocks";
 
@@ -110,6 +111,13 @@ export function ChatMessageView({ message }: Props) {
           </div>
         )}
 
+        {message.thinking && !isUser && (
+          <ThinkingBlock
+            content={message.thinking}
+            isStreaming={message.isStreaming && !message.content}
+          />
+        )}
+
         {message.content && (
           <div
             className={`rounded-2xl px-4 py-2.5 ${
@@ -178,7 +186,7 @@ export function ChatMessageView({ message }: Props) {
           </div>
         )}
 
-        {message.isStreaming && !message.content && (
+        {message.isStreaming && !message.content && !message.thinking && (
           <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
             <div className="flex gap-1">
               <span

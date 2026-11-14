@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import type { ChatMessage as ChatMessageType, MessageImage } from "../types";
 import { ChatMessageView } from "./chat/ChatMessage";
 import { ChatInput } from "./chat/ChatInput";
+import { buildToolMessages } from "./chat/toolMessages";
 import { useConfig } from "../store/configStore";
 import {
   loadSkills,
@@ -122,9 +123,14 @@ export function Chat() {
 
       let apiMessages = [...newMessages];
       let finalContent = "";
+      let thinkingText = "";
       const onToken = (token: string) => {
         finalContent += token;
         updateAssistant(finalContent, true);
+      };
+      const onThinking = (token: string) => {
+        thinkingText += token;
+        patchAssistant({ thinking: thinkingText });
       };
 
       const activeMcpTools = config.mcpServers
@@ -144,6 +150,7 @@ export function Chat() {
           onToken,
           ctrl.signal,
           prevId,
+          onThinking,
         );
         if (res.usage) addUsage(res.usage);
         return res;
@@ -164,23 +171,7 @@ export function Chat() {
         );
 
         // Construire les messages tool_call + tool_result et les ajouter à l'historique
-        const toolMsgs: ChatMessageType[] = [];
-        for (const { call, content } of toolResults) {
-          toolMsgs.push({
-            id: genId(),
-            role: "tool_call",
-            content: call.rawArgs,
-            toolCallId: call.id,
-            toolName: call.name,
-            toolArgs: call.rawArgs,
-          });
-          toolMsgs.push({
-            id: genId(),
-            role: "tool_result",
-            content,
-            toolCallResultId: call.id,
-          });
-        }
+        const toolMsgs = buildToolMessages(toolResults, result.thinkingBlocks);
 
         apiMessages = [...apiMessages, ...toolMsgs];
 
@@ -190,6 +181,8 @@ export function Chat() {
           return [...withoutLast, ...toolMsgs, prev[prev.length - 1]];
         });
 
+        thinkingText = "";
+        patchAssistant({ thinking: undefined });
         updateAssistant("", true);
 
         result = await callLLM();
@@ -211,6 +204,8 @@ export function Chat() {
         })();
 
       updateAssistant(finalContent, false, isJson);
+      // Non-streaming : la réflexion n'arrive qu'avec le résultat final
+      if (result.thinking) patchAssistant({ thinking: result.thinking });
     } catch (err) {
       if ((err as Error).name === "AbortError") {
         // Arrêt demandé par l'utilisateur — on conserve le contenu partiel déjà affiché

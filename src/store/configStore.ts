@@ -20,8 +20,13 @@ function loadConfig(): AppConfig {
     }
     // Migration : si pas d'apiFormat, dériver depuis le provider sauvegardé
     if (saved.llm && !saved.llm.apiFormat) {
+      const p = saved.llm.provider;
       saved.llm.apiFormat =
-        saved.llm.provider === "openai" ? "responses" : "chat_completions";
+        p === "openai"
+          ? "responses"
+          : p === "anthropic"
+            ? "anthropic_messages"
+            : "chat_completions";
     }
     // Migration : champs MCP plats → tableau mcpServers
     if (typeof saved.mcpUrl === "string" && !Array.isArray(saved.mcpServers)) {

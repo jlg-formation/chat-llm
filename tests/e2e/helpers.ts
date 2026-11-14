@@ -6,7 +6,13 @@ export const BASE_CONFIG = {
   llm: {
     provider: "openai",
     baseUrl: "https://api.openai.com",
-    apiKeys: { openai: "sk-test-key", ovh: "", lmstudio: "", ollama: "" },
+    apiKeys: {
+      openai: "sk-test-key",
+      anthropic: "",
+      ovh: "",
+      lmstudio: "",
+      ollama: "",
+    },
     model: "gpt-5.4-nano",
     apiFormat: "responses",
     temperature: null,
