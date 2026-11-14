@@ -1,14 +1,14 @@
-import { defineConfig } from '@playwright/test'
+import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
-  testDir: './tests',
+  testDir: "./tests",
   use: {
-    baseURL: 'http://localhost:5173/chat-llm/',
+    baseURL: "http://localhost:5173/chat-llm/",
     headless: true,
   },
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173/chat-llm/',
+    command: "bun run dev",
+    url: "http://localhost:5173/chat-llm/",
     reuseExistingServer: true,
   },
-})
+});
