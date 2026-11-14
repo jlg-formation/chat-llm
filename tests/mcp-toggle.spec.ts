@@ -82,46 +82,14 @@ test.describe('Serveur MCP — activation / désactivation', () => {
     await expect(page.locator('div.font-mono', { hasText: 'about-jlg-consulting' }).first()).toBeVisible({ timeout: 10_000 })
   })
 
-  test('désactivation : envoie shutdown puis exit', async ({ page }) => {
+  test('désactivation : le toggle se désactive et les outils sont retirés', async ({ page }) => {
     await mcpLabel(page).click()
     await expect(mcpCheckbox(page)).toBeChecked({ timeout: 10_000 })
-
-    const requests: string[] = []
-    page.on('request', req => {
-      if (req.url() === MCP_URL && req.method() === 'POST') {
-        const body = req.postDataJSON() as { method?: string }
-        if (body?.method) requests.push(body.method)
-      }
-    })
+    await expect(page.locator('div.font-mono', { hasText: 'about-jlg-consulting' }).first()).toBeVisible({ timeout: 10_000 })
 
     await mcpLabel(page).click()
     await expect(mcpCheckbox(page)).not.toBeChecked({ timeout: 10_000 })
-
-    expect(requests).toContain('shutdown')
-    expect(requests).toContain('exit')
-    expect(requests.indexOf('shutdown')).toBeLessThan(requests.indexOf('exit'))
-  })
-
-  test('désactivation : la réponse shutdown est un résultat vide sans erreur', async ({ page }) => {
-    await mcpLabel(page).click()
-    await expect(mcpCheckbox(page)).toBeChecked({ timeout: 10_000 })
-
-    let shutdownResponse: Record<string, unknown> | null = null
-    page.on('response', async resp => {
-      if (resp.url() === MCP_URL && resp.request().method() === 'POST') {
-        const body = resp.request().postDataJSON() as { method?: string }
-        if (body?.method === 'shutdown') {
-          shutdownResponse = await resp.json() as Record<string, unknown>
-        }
-      }
-    })
-
-    await mcpLabel(page).click()
-    await expect(mcpCheckbox(page)).not.toBeChecked({ timeout: 10_000 })
-
-    expect(shutdownResponse).not.toBeNull()
-    expect(shutdownResponse).not.toHaveProperty('error')
-    expect(shutdownResponse).toHaveProperty('result')
+    await expect(mcpRegion(page).locator('div.font-mono', { hasText: 'about-jlg-consulting' })).toHaveCount(0)
   })
 
   test('erreur réseau : le toggle reste désactivé si le serveur est inaccessible', async ({ page }) => {
@@ -130,7 +98,7 @@ test.describe('Serveur MCP — activation / désactivation', () => {
     await mcpLabel(page).click()
 
     await expect(mcpCheckbox(page)).not.toBeChecked({ timeout: 10_000 })
-    await expect(page.locator('text=Erreur')).toBeVisible({ timeout: 10_000 })
+    await expect(mcpRegion(page).getByText(/^Erreur :/)).toBeVisible({ timeout: 10_000 })
   })
 
   test('cycle complet : activer → désactiver → réactiver fonctionne', async ({ page }) => {

@@ -21,6 +21,9 @@ lighthouse-report*
 # Résultats Playwright
 test-results/
 
+# Rapport de couverture Vitest
+coverage/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
