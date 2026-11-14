@@ -2,7 +2,7 @@
 
 Ce dossier contient les ADR (_Architecture Decision Records_) du projet **Chat Pédagogique IA**.
 
-Un ADR documente une décision technique significative : son contexte, la décision retenue et ses conséquences. Il ne remplace pas les commentaires de code ni le CLAUDE.md — il capture le _pourquoi_ d'un choix qui ne se lit pas dans le code.
+Un ADR documente une décision technique significative : son contexte, la décision retenue et ses conséquences. Il ne remplace pas les commentaires de code ni le AGENTS.md — il capture le _pourquoi_ d'un choix qui ne se lit pas dans le code.
 
 ## Format
 

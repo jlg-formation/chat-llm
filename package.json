@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "lint": "oxlint",
+    "format": "oxfmt",
     "preview": "vite preview",
     "test": "playwright test",
     "test:unit": "vitest run",
@@ -32,16 +33,7 @@
     "remark-gfm": "^4.0.1",
     "tailwindcss": "^4.3.5"
   },
-  "overrides": {
-    "baseline-browser-mapping": "^2.11.37",
-    "brace-expansion": "^5.0.13",
-    "browserslist": "^4.29.5",
-    "minimatch": "^11.0.8",
-    "source-map-js": "^1.2.2",
-    "zod": "^4.6.7"
-  },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.65.1",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",
@@ -53,14 +45,11 @@
     "@vitejs/plugin-react": "^6.3.0",
     "@vitest/coverage-v8": "^5.1.0",
     "chrome-launcher": "^1.2.3",
-    "eslint": "^10.15.0",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-react-refresh": "^0.5.7",
-    "globals": "^17.14.0",
     "jsdom": "^31.0.1",
     "lighthouse": "^13.6.0",
-    "typescript": "~6.0.3",
-    "typescript-eslint": "^8.72.2",
+    "oxfmt": "^0.78.0",
+    "oxlint": "^1.93.0",
+    "typescript": "^7.0.2",
     "vite": "^8.3.8",
     "vitest": "^5.1.0"
   }

@@ -10,7 +10,7 @@
 bun install              # Install deps (uses bun.lock)
 bun run dev              # Dev server → http://localhost:5173/chat-llm/
 bun run build            # Type-check + build → dist/
-bun run lint             # ESLint check
+bun run lint             # oxlint check
 bun run test             # Playwright E2E (headless)
 bun run test:ui          # Playwright interactive mode
 ```
@@ -25,13 +25,13 @@ bun run test:ui          # Playwright interactive mode
 
 **No Redux, Zustand, or Context API.** Instead, 5 lightweight stores with observer subscriptions:
 
-| Store | Purpose | Persistence |
-|-------|---------|------------|
+| Store         | Purpose                                                    | Persistence                             |
+| ------------- | ---------------------------------------------------------- | --------------------------------------- |
 | `configStore` | LLM config, API keys, system prompt, MCP servers, sampling | localStorage: `chat_pedagogique_config` |
-| `httpStore` | HTTP exchange log (LLM + MCP) | None (in-memory, cleared on reset) |
-| `skillsStore` | Skill CRUD (ZIP files) | IndexedDB: `chat_pedagogique/skills` |
-| `usageStore` | Token counter (prompt + completion) | None (in-memory) |
-| `modelsStore` | Provider model lists cache | None (in-memory cache) |
+| `httpStore`   | HTTP exchange log (LLM + MCP)                              | None (in-memory, cleared on reset)      |
+| `skillsStore` | Skill CRUD (ZIP files)                                     | IndexedDB: `chat_pedagogique/skills`    |
+| `usageStore`  | Token counter (prompt + completion)                        | None (in-memory)                        |
+| `modelsStore` | Provider model lists cache                                 | None (in-memory cache)                  |
 
 Each exposes: `getState()`, `setState()`, `useHook()` — hooks re-render on global update via listener notification.
 
@@ -41,21 +41,22 @@ Each exposes: `getState()`, `setState()`, `useHook()` — hooks re-render on glo
 
 The app **unifies 4 incompatible LLM APIs** behind `sendMessage()`:
 
-| Provider | Format | Endpoint | Key Trait |
-|----------|--------|----------|-----------|
-| **OpenAI** | `responses` | `POST /v1/responses` | Custom SSE events (`response.output_text.delta`) |
-| **OVH AI** | `chat_completions` | `POST /v1/chat/completions` | OpenAI-compatible, 2 models only (`gpt-oss-20b`, `-120b`) |
-| **LM Studio** | `lmstudio_chat` | `POST /v1/chat` | Stateful (sends `previous_response_id`), native MCP via `integrations` |
-| **Ollama** | `ollama_chat` | `POST /api/chat` | Native Ollama, `think: false` forced |
+| Provider      | Format             | Endpoint                    | Key Trait                                                              |
+| ------------- | ------------------ | --------------------------- | ---------------------------------------------------------------------- |
+| **OpenAI**    | `responses`        | `POST /v1/responses`        | Custom SSE events (`response.output_text.delta`)                       |
+| **OVH AI**    | `chat_completions` | `POST /v1/chat/completions` | OpenAI-compatible, 2 models only (`gpt-oss-20b`, `-120b`)              |
+| **LM Studio** | `lmstudio_chat`    | `POST /v1/chat`             | Stateful (sends `previous_response_id`), native MCP via `integrations` |
+| **Ollama**    | `ollama_chat`      | `POST /api/chat`            | Native Ollama, `think: false` forced                                   |
 
 **Each format has distinct**:
+
 - Message/tool serialization (Responses uses `input` field; Chat Completions uses `messages` array)
 - Streaming parse logic (event types differ)
 - Sampling parameter handling (placement and naming)
 
 **Format Detection**: Via `config.llm.apiFormat` (explicit) or heuristic fallback (OpenAI → `responses`, others → `chat_completions`).
 
-See [CLAUDE.md](CLAUDE.md#service-llm-srcservicesllm) for detailed format specs.
+See [Detailed Reference](#detailed-reference) for detailed format specs.
 
 ### Agentic Tool Loop
 
@@ -115,7 +116,7 @@ Unlike other providers, LM Studio maintains context via `previous_response_id` p
 ### Tool Iteration Silent Ceiling
 
 ```typescript
-const MAX_TOOL_ITERATIONS = 100
+const MAX_TOOL_ITERATIONS = 100;
 ```
 
 If LLM recursively calls tools, loop stops at 100 **with no error message**. Users see 100 tool_call messages but no "limit reached" notification.
@@ -128,11 +129,11 @@ Body builders reuse code; **response parsing differs significantly**. Bug in non
 
 ### Tool Message Serialization Variance
 
-| Format | Tool Call | Tool Result |
-|--------|-----------|-------------|
-| **Responses API** | `{ type: 'function_call', ... }` in `input` | `{ type: 'function_call_output', ... }` in `input` |
-| **Chat Completions** | `{ role: 'assistant', tool_calls: [...] }` | `{ role: 'tool', tool_call_id: ..., content: ... }` |
-| **Ollama** | Same as Chat Completions | Same as Chat Completions |
+| Format               | Tool Call                                   | Tool Result                                         |
+| -------------------- | ------------------------------------------- | --------------------------------------------------- |
+| **Responses API**    | `{ type: 'function_call', ... }` in `input` | `{ type: 'function_call_output', ... }` in `input`  |
+| **Chat Completions** | `{ role: 'assistant', tool_calls: [...] }`  | `{ role: 'tool', tool_call_id: ..., content: ... }` |
+| **Ollama**           | Same as Chat Completions                    | Same as Chat Completions                            |
 
 **Gotcha**: Wrong serialization → tool loop fails silently (LLM doesn't recognize result).
 
@@ -149,6 +150,7 @@ Body builders reuse code; **response parsing differs significantly**. Bug in non
 ### MCP Session Expiration (404 Handling)
 
 When MCP server returns 404, it signals session expired. Custom client:
+
 1. Auto-deletes session from in-memory `sessions: Map`
 2. Next tool call forces re-initialize (`initialize` request)
 3. Retries transparently
@@ -194,11 +196,10 @@ When MCP server returns 404, it signals session expired. Custom client:
 ### Testing
 
 - **[tests/helpers.ts](tests/helpers.ts)**: Shared test utilities (fetch interception, config injection)
-- **[tests/tc*.spec.ts](tests/)**: E2E tests organized by feature (tcXX = test case XX)
+- **[tests/tc\*.spec.ts](tests/)**: E2E tests organized by feature (tcXX = test case XX)
 
 ### Documentation
 
-- **[CLAUDE.md](CLAUDE.md)**: Comprehensive architecture deep-dive (stores, formats, MCP, skills)
 - **[docs/adr/](docs/adr/)**: Architectural decision records (numbered NNNNN-kebab-case.md)
 - **[docs/adr/README.md](docs/adr/README.md)**: ADR index and format guide
 
@@ -229,7 +230,7 @@ When MCP server returns 404, it signals session expired. Custom client:
 1. Add to `LLMConfig` in [src/types.ts](src/types.ts) (e.g., `frequencyPenalty?: number | null`)
 2. Add UI slider in [src/components/sidebar/SamplingSection.tsx](src/components/sidebar/SamplingSection.tsx)
 3. Inject into body in [src/services/llm/bodyBuilders.ts](src/services/llm/bodyBuilders.ts) — **format-specific field names differ**
-4. Document in CLAUDE.md (if non-obvious)
+4. Document in AGENTS.md (if non-obvious)
 5. Add test in [tests/tc05-sampling.spec.ts](tests/tc05-sampling.spec.ts)
 
 ### ✅ Handle a New MCP Tool Error
@@ -270,7 +271,7 @@ When MCP server returns 404, it signals session expired. Custom client:
 ## Performance & Constraints
 
 - **Max tool iterations**: 100 (hardcoded, silent stop)
-- **Max file size (ESLint)**: 300 lines per file (warning, not error)
+- **Max file size (oxlint)**: 300 lines per file (warning, not error)
 - **IndexedDB size**: Browser-dependent (typically 50+ MB); skills stored as text
 - **localStorage key**: `chat_pedagogique_config` (~50KB typical)
 - **SSE timeout**: 15s in tests; prod may vary
@@ -301,7 +302,7 @@ Consider creating domain-specific agent instructions (`/create-agent ...`) if:
 - **Skills System**: Large-scale skill management UI, ZIP extraction optimization, or frontmatter parser rewrite
 - **E2E Testing**: Writing extensive test suites or fixing flaky tests with environment-specific issues
 
-Otherwise, this file + [CLAUDE.md](CLAUDE.md) + [ADRs](docs/adr/) provide sufficient context.
+Otherwise, this file + [ADRs](docs/adr/) provide sufficient context.
 
 ---
 
@@ -313,3 +314,83 @@ Otherwise, this file + [CLAUDE.md](CLAUDE.md) + [ADRs](docs/adr/) provide suffic
 - **Deployment**: GitHub Pages (Vite, base: `/chat-llm/`)
 - **Package Manager**: **bun** (via `bun.lock`)
 - **Key ADR**: [001-mcp-client-pas-de-sdk-officiel.md](docs/adr/001-mcp-client-pas-de-sdk-officiel.md) — why custom MCP client instead of official SDK
+
+---
+
+## Detailed Reference
+
+### Commandes complémentaires
+
+```bash
+npx tsc --noEmit # Vérification TypeScript sans compilation
+bun run preview  # Prévisualise le build dist/ en local
+```
+
+Les commandes `npm run …` fonctionnent aussi, mais préférer `bun run …`.
+
+### Formats d'API (`ApiFormat` dans `src/types.ts`)
+
+| `apiFormat`        | Provider                | Endpoint                    | Particularités                                                                                                                                |
+| ------------------ | ----------------------- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `responses`        | OpenAI, OVH (2 modèles) | `POST /v1/responses`        | SSE events `response.output_text.delta` / `response.completed`, champ `input`, `instructions`                                                 |
+| `chat_completions` | OVH, Ollama (compat.)   | `POST /v1/chat/completions` | Format OpenAI standard, `messages`                                                                                                            |
+| `ollama_chat`      | Ollama                  | `POST /api/chat`            | Format natif Ollama, `think: false` forcé                                                                                                     |
+| `lmstudio_chat`    | LM Studio               | `POST /api/v1/chat`         | Stateful : envoie seulement le dernier message utilisateur + `previous_response_id` ; MCP via `integrations` (format natif, pas de tool loop) |
+
+`sendMessage()` retourne `LLMResult` :
+
+- `{ type: 'text'; content: string; usage?: TokenUsage; responseId?: string }`
+- `{ type: 'tool_calls'; calls: LLMToolCall[]; responseId?: string; rawAssistantMsg?: unknown; usage?: TokenUsage }`
+
+**OVH** : seuls `gpt-oss-20b` et `gpt-oss-120b` supportent le format `responses`. `fetchModels()` OVH utilise le header `X-Auth-Token` (pas `Authorization: Bearer`).
+
+### Service modèles (`src/services/models.ts`)
+
+`fetchModels(provider, baseUrl, apiKey)` récupère la liste de modèles pour chaque provider (endpoints différents, shapes différentes) et normalise vers `ModelInfo`. LM Studio utilise `/api/v1/models` avec une shape propre. Les résultats sont mis en cache dans `modelsStore`. OpenAI a une liste statique de repli (`STATIC_OPENAI_MODELS` dans `ProviderSection.tsx`).
+
+### Détails MCP
+
+Protocole MCP 2025-11-25. Sessions maintenues en mémoire (`sessions: Map<string, McpSession>`), déjà multi-serveur (clé = URL). `buildLmStudioChatBody()` dans `bodyBuilders.ts` génère une entrée `integrations` par serveur actif. `resolveToolCall` dans `Chat.tsx` itère les serveurs actifs pour dispatcher l'appel au bon (first-match-wins).
+
+### Types centraux (`src/types.ts`)
+
+- `Provider` : `'openai' | 'ovh' | 'lmstudio' | 'ollama'`
+- `ApiFormat` : `'responses' | 'chat_completions' | 'lmstudio_chat' | 'ollama_chat'`
+- `LLMConfig` contient `temperature`, `topP`, `maxTokens` (tous `number | null` — `null` = non envoyé à l'API)
+- `MessageRole` : `'user' | 'assistant' | 'system' | 'tool_call' | 'tool_result'`
+- `McpServer` : `{ id, name, url, enabled, tools: McpTool[] }` — `AppConfig.mcpServers` est un tableau de ces objets
+- `DEFAULT_CONFIG` prépositionne sur `openai` / `gpt-5.4-nano` / format `responses`, `mcpServers: []`
+
+### Layout
+
+```
+App
+├── Header          — provider actif, modèle, stream on/off, lien GitHub
+├── LeftSidebar     — accordéons de configuration (8 sections)
+│   └── sidebar/    — ProviderSection, StreamSection, SamplingSection,
+│                     SystemPromptSection, JsonSchemaSection, SkillsSection,
+│                     McpSection, UsageSection (visible seulement si total > 0)
+│                     Accordion.tsx — composant accordéon réutilisable
+│                     Toggle.tsx — composant interrupteur CSS réutilisable
+├── Chat            — historique + ChatInput (textarea auto-resize, paste image)
+│   └── chat/       — ChatMessage.tsx (composant ChatMessageView : Markdown via
+│                     react-markdown + highlight.js, tool_call/tool_result dépliables,
+│                     zoom Mermaid en modale), ChatInput
+├── RightSidebar    — inspecteur HTTP redimensionnable (drag sur la poignée gauche),
+│                     ordre chronologique + auto-scroll vers le bas, JsonTree.tsx
+└── Footer
+```
+
+- **SamplingSection** : sliders Temperature (0–2), Top-P (0–1), champ Max tokens — tous désactivables (valeur `null`)
+- **UsageSection** : donut SVG prompt/completion tokens, coût estimé en USD (pricing live depuis `modelsStore` ou statique de repli), bouton reset. Se masque quand `total === 0`.
+- **McpSection** : liste de cartes de serveurs MCP (toggle enable, alias, URL + rafraîchir, outils avec toggle par outil). Bouton "Ajouter un serveur". Cartes expand/collapse indépendantes.
+- La sidebar droite a une largeur réglable par drag (200–800 px), état local non persisté.
+- La sidebar gauche a un bouton "Reset" avec confirmation (2 clics, timeout 3 s) qui vide localStorage + IndexedDB.
+
+### Structured Output
+
+Activé via le champ JSON Schema dans la sidebar gauche. Envoyé dans `text.format` (Responses API) ou `response_format` (Chat Completions) avec `strict: false`.
+
+### Documentation des décisions
+
+Les décisions architecturales significatives sont tracées dans `docs/adr/` au format ADR (un fichier par décision, numérotés `NNN-titre-kebab-case.md`). Voir [`docs/adr/README.md`](docs/adr/README.md). Toute nouvelle décision technique importante (choix de librairie, refactoring structurant, abandon d'une approche) doit y être documentée.

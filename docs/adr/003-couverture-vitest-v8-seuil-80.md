@@ -26,5 +26,5 @@ Le projet ne disposait que de tests E2E Playwright. L'évolution 03 exige un tes
 
 - Le déploiement GitHub Pages est bloqué si la couverture passe sous 80 %.
 - Les tests de composants utilisent jsdom : certaines APIs navigateur (scrollIntoView, clipboard, object URLs) sont stubées dans les tests.
-- `tsconfig.app.json` exclut les fichiers de test du type-check de l'application ; ils restent couverts par ESLint.
+- `tsconfig.app.json` exclut les fichiers de test du type-check de l'application ; ils restent couverts par oxlint.
 - Le seuil doit être relevé et non abaissé si la couverture progresse.
