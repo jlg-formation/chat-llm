@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { AppConfig, McpServer, McpTool } from '../types'
-import { DEFAULT_CONFIG } from '../types'
+import { DEFAULT_CONFIG, PROVIDER_DEFAULTS } from '../types'
 
 const LS_KEY = 'chat_pedagogique_config'
 
@@ -35,6 +35,12 @@ function loadConfig(): AppConfig {
       delete saved.mcpName
       delete saved.mcpEnabled
       delete saved.mcpTools
+    }
+    // Provider inconnu (ex. valeur obsolète en localStorage) → retour au défaut
+    if (saved.llm && !(saved.llm.provider in PROVIDER_DEFAULTS)) {
+      saved.llm.provider = DEFAULT_CONFIG.llm.provider
+      saved.llm.apiFormat = DEFAULT_CONFIG.llm.apiFormat
+      saved.llm.baseUrl = DEFAULT_CONFIG.llm.baseUrl
     }
     return {
       ...DEFAULT_CONFIG,
