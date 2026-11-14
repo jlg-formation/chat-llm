@@ -48,7 +48,12 @@ function resultFromBlocks(blocks: Block[], usage?: TokenUsage): LLMResult {
       thinkingBlocks,
     };
   }
-  return { type: "text", content: text, usage, thinking: thinking || undefined };
+  return {
+    type: "text",
+    content: text,
+    usage,
+    thinking: thinking || undefined,
+  };
 }
 
 export async function streamAnthropicMessages(
@@ -98,7 +103,8 @@ export async function streamAnthropicMessages(
           block.thinking = ((block.thinking as string) ?? "") + delta.thinking;
           onThinking?.(delta.thinking as string);
         } else if (delta.type === "signature_delta") {
-          block.signature = ((block.signature as string) ?? "") + delta.signature;
+          block.signature =
+            ((block.signature as string) ?? "") + delta.signature;
         } else if (delta.type === "input_json_delta") {
           toolJson.set(index, (toolJson.get(index) ?? "") + delta.partial_json);
         }

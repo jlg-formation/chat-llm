@@ -16,7 +16,13 @@ describe("currentApiKey", () => {
       {},
       {
         provider: "ovh",
-        apiKeys: { openai: "", anthropic: "", ovh: "k-ovh", lmstudio: "", ollama: "" },
+        apiKeys: {
+          openai: "",
+          anthropic: "",
+          ovh: "k-ovh",
+          lmstudio: "",
+          ollama: "",
+        },
       },
     );
     expect(currentApiKey(config)).toBe("k-ovh");
@@ -77,7 +83,15 @@ describe("getHeaders", () => {
   it("adds a bearer token when a key is set", () => {
     const config = makeConfig(
       {},
-      { apiKeys: { openai: "sk-abc", anthropic: "", ovh: "", lmstudio: "", ollama: "" } },
+      {
+        apiKeys: {
+          openai: "sk-abc",
+          anthropic: "",
+          ovh: "",
+          lmstudio: "",
+          ollama: "",
+        },
+      },
     );
     expect(getHeaders(config).Authorization).toBe("Bearer sk-abc");
   });
@@ -92,7 +106,13 @@ describe("getPedagogicHeaders", () => {
     const config = makeConfig(
       {},
       {
-        apiKeys: { openai: "sk-1234567890", anthropic: "", ovh: "", lmstudio: "", ollama: "" },
+        apiKeys: {
+          openai: "sk-1234567890",
+          anthropic: "",
+          ovh: "",
+          lmstudio: "",
+          ollama: "",
+        },
       },
     );
     const result = getPedagogicHeaders(

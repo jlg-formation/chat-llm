@@ -5,6 +5,7 @@ Application web pédagogique destinée aux **stagiaires en formation IA pour dé
 ## Finalité pédagogique
 
 L'objectif est de rendre visible ce qui se passe "sous le capot" lors d'une conversation avec un LLM :
+
 - Les requêtes et réponses HTTP entre le navigateur et le serveur LLM sont affichées dans l'**Inspecteur HTTP** (sidebar droite)
 - Le mode **Stream (SSE)** permet de visualiser le flux de tokens en temps réel
 - Le **Structured Output** montre comment forcer le LLM à répondre en JSON via un schema
@@ -14,19 +15,20 @@ L'application est **100 % front-end** — aucun backend. Les clés API sont stoc
 
 ## Providers LLM supportés
 
-| Provider | API | Endpoint |
-|----------|-----|----------|
-| **OpenAI** | API Responses (dernière version) | `POST /v1/responses` |
-| **Anthropic** | API Messages native (ou mode compatible OpenAI) | `POST /v1/messages` (ou `POST /v1/chat/completions`) |
-| **OVH AI Endpoints** | Chat Completions (compatible OpenAI) | `POST /v1/chat/completions` |
-| **LM Studio** | Chat Completions (compatible OpenAI) | `POST /v1/chat/completions` |
-| **Ollama** | API native Ollama | `POST /api/chat` |
+| Provider             | API                                             | Endpoint                                             |
+| -------------------- | ----------------------------------------------- | ---------------------------------------------------- |
+| **OpenAI**           | API Responses (dernière version)                | `POST /v1/responses`                                 |
+| **Anthropic**        | API Messages native (ou mode compatible OpenAI) | `POST /v1/messages` (ou `POST /v1/chat/completions`) |
+| **OVH AI Endpoints** | Chat Completions (compatible OpenAI)            | `POST /v1/chat/completions`                          |
+| **LM Studio**        | Chat Completions (compatible OpenAI)            | `POST /v1/chat/completions`                          |
+| **Ollama**           | API native Ollama                               | `POST /api/chat`                                     |
 
 ## Skills (spec agentskills.io)
 
 Les skills sont des modules de contexte injectés dans le prompt système. Ils suivent la spécification [agentskills.io](https://agentskills.io/home).
 
 Un skill est un fichier `.zip` contenant un répertoire portant le nom du skill, avec :
+
 - `SKILL.md` (obligatoire) : description du skill, instructions, exemples
 - Fichiers additionnels optionnels (référencés dans `SKILL.md`)
 

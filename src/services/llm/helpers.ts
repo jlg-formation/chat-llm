@@ -58,7 +58,10 @@ export function getPedagogicHeaders(
     result["Authorization"] = `Bearer ${sanitizeKey(currentApiKey(config))}`;
   if (headers["x-api-key"])
     result["x-api-key"] = sanitizeKey(currentApiKey(config));
-  for (const k of ["anthropic-version", "anthropic-dangerous-direct-browser-access"])
+  for (const k of [
+    "anthropic-version",
+    "anthropic-dangerous-direct-browser-access",
+  ])
     if (headers[k]) result[k] = headers[k];
   if (headers["Content-Type"]) result["Content-Type"] = headers["Content-Type"];
   if (headers["Accept"]) result["Accept"] = headers["Accept"];

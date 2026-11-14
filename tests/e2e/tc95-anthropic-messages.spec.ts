@@ -26,10 +26,9 @@ test.describe("TC-95 · Provider Anthropic — sélection et configuration", () 
       .getByRole("combobox", { name: "Provider" })
       .selectOption("anthropic");
 
-    await expect(page.getByRole("radio", { name: /API Messages/ })).toHaveAttribute(
-      "aria-checked",
-      "true",
-    );
+    await expect(
+      page.getByRole("radio", { name: /API Messages/ }),
+    ).toHaveAttribute("aria-checked", "true");
     await expect(
       page.getByRole("radio", { name: /OpenAI compatible/ }),
     ).toBeVisible();
@@ -80,9 +79,10 @@ test.describe("TC-95 · Provider Anthropic — sélection et configuration", () 
     await page.getByLabel(/Clé API/).fill("sk-ant-load");
     await page.getByRole("button", { name: /Charger/ }).click();
 
-    await expect(
-      page.locator('option[value="claude-nouveau-9"]'),
-    ).toHaveCount(1, { timeout: 5_000 });
+    await expect(page.locator('option[value="claude-nouveau-9"]')).toHaveCount(
+      1,
+      { timeout: 5_000 },
+    );
     expect(headers["x-api-key"]).toBe("sk-ant-load");
     expect(headers["anthropic-version"]).toBe("2026-10-21");
   });
@@ -102,7 +102,9 @@ test.describe("TC-95 · Provider Anthropic — sélection et configuration", () 
       page.getByRole("switch", { name: "Activer Top-P (nucleus)" }),
     ).toBeDisabled();
 
-    const thinking = page.getByRole("switch", { name: "Afficher la réflexion" });
+    const thinking = page.getByRole("switch", {
+      name: "Afficher la réflexion",
+    });
     await expect(thinking).toBeEnabled();
     await page.getByRole("radio", { name: /OpenAI compatible/ }).click();
     await expect(thinking).toBeDisabled();
@@ -121,9 +123,12 @@ test.describe("TC-95b · Provider Anthropic — API Messages", () => {
       await page.goto("/");
       await send(page, "Salut");
 
-      await expect(page.locator("main")).toContainText("Bonjour depuis Claude", {
-        timeout: 10_000,
-      });
+      await expect(page.locator("main")).toContainText(
+        "Bonjour depuis Claude",
+        {
+          timeout: 10_000,
+        },
+      );
       const { headers, body } = requests[0];
       expect(headers["x-api-key"]).toBe("sk-ant-test-key");
       expect(headers["anthropic-version"]).toBe("2026-10-21");
@@ -167,11 +172,15 @@ test.describe("TC-95b · Provider Anthropic — API Messages", () => {
     ]);
     await page.goto("/");
     await send(page, "Salut");
-    await expect(page.locator("main")).toContainText("Arr", { timeout: 10_000 });
+    await expect(page.locator("main")).toContainText("Arr", {
+      timeout: 10_000,
+    });
     expect(requests[0].body.system).toBe("Tu es un pirate.");
   });
 
-  test("le structured output utilise output_config.format", async ({ page }) => {
+  test("le structured output utilise output_config.format", async ({
+    page,
+  }) => {
     const schema = {
       type: "object",
       properties: { a: { type: "string" } },
@@ -188,13 +197,17 @@ test.describe("TC-95b · Provider Anthropic — API Messages", () => {
     ]);
     await page.goto("/");
     await send(page, "JSON");
-    await expect(page.locator("main")).toContainText('"a"', { timeout: 10_000 });
+    await expect(page.locator("main")).toContainText('"a"', {
+      timeout: 10_000,
+    });
     expect(requests[0].body.output_config).toEqual({
       format: { type: "json_schema", schema },
     });
   });
 
-  test("une image collée est envoyée en bloc image base64", async ({ page }) => {
+  test("une image collée est envoyée en bloc image base64", async ({
+    page,
+  }) => {
     await setConfig(page, { ...ANTHROPIC_CONFIG, streamEnabled: false });
     const requests = await interceptAnthropic(page, () => [
       { type: "text", text: "Vu" },
@@ -281,7 +294,9 @@ test.describe("TC-95c · Provider Anthropic — mode compatible OpenAI", () => {
         contentType: "application/json",
         headers: { "Access-Control-Allow-Origin": "*" },
         body: JSON.stringify({
-          choices: [{ finish_reason: "stop", message: { content: "Compat OK" } }],
+          choices: [
+            { finish_reason: "stop", message: { content: "Compat OK" } },
+          ],
           usage: { prompt_tokens: 3, completion_tokens: 2 },
         }),
       });

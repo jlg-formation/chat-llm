@@ -41,13 +41,13 @@ Each exposes: `getState()`, `setState()`, `useHook()` — hooks re-render on glo
 
 The app **unifies 5 incompatible LLM APIs** behind `sendMessage()`:
 
-| Provider      | Format               | Endpoint                    | Key Trait                                                              |
-| ------------- | -------------------- | --------------------------- | ---------------------------------------------------------------------- |
-| **OpenAI**    | `responses`          | `POST /v1/responses`        | Custom SSE events (`response.output_text.delta`)                       |
+| Provider      | Format               | Endpoint                    | Key Trait                                                               |
+| ------------- | -------------------- | --------------------------- | ----------------------------------------------------------------------- |
+| **OpenAI**    | `responses`          | `POST /v1/responses`        | Custom SSE events (`response.output_text.delta`)                        |
 | **Anthropic** | `anthropic_messages` | `POST /v1/messages`         | `x-api-key`, adaptive thinking, `tool_use`/`tool_result` content blocks |
-| **OVH AI**    | `chat_completions`   | `POST /v1/chat/completions` | OpenAI-compatible, 2 models only (`gpt-oss-20b`, `-120b`)              |
-| **LM Studio** | `lmstudio_chat`      | `POST /v1/chat`             | Stateful (sends `previous_response_id`), native MCP via `integrations` |
-| **Ollama**    | `ollama_chat`        | `POST /api/chat`            | Native Ollama, `think: false` forced                                   |
+| **OVH AI**    | `chat_completions`   | `POST /v1/chat/completions` | OpenAI-compatible, 2 models only (`gpt-oss-20b`, `-120b`)               |
+| **LM Studio** | `lmstudio_chat`      | `POST /v1/chat`             | Stateful (sends `previous_response_id`), native MCP via `integrations`  |
+| **Ollama**    | `ollama_chat`        | `POST /api/chat`            | Native Ollama, `think: false` forced                                    |
 
 Anthropic also offers an OpenAI-compatible mode (`chat_completions` on `/v1/chat/completions`), see [ADR 004](docs/adr/004-provider-anthropic-double-format.md).
 
@@ -337,13 +337,13 @@ Les commandes `npm run …` fonctionnent aussi, mais préférer `bun run …`.
 
 ### Formats d'API (`ApiFormat` dans `src/types.ts`)
 
-| `apiFormat`        | Provider                | Endpoint                    | Particularités                                                                                                                                |
-| ------------------ | ----------------------- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `responses`        | OpenAI, OVH (2 modèles) | `POST /v1/responses`        | SSE events `response.output_text.delta` / `response.completed`, champ `input`, `instructions`                                                 |
-| `chat_completions` | OVH, Ollama (compat.)   | `POST /v1/chat/completions` | Format OpenAI standard, `messages`                                                                                                            |
-| `ollama_chat`      | Ollama                  | `POST /api/chat`            | Format natif Ollama, `think: false` forcé                                                                                                     |
-| `anthropic_messages` | Anthropic             | `POST /v1/messages`         | Headers `x-api-key` + `anthropic-version` + `anthropic-dangerous-direct-browser-access` ; `system` séparé, `max_tokens` obligatoire, `thinking` adaptatif, `output_config.format` pour le structured output |
-| `lmstudio_chat`    | LM Studio               | `POST /api/v1/chat`         | Stateful : envoie seulement le dernier message utilisateur + `previous_response_id` ; MCP via `integrations` (format natif, pas de tool loop) |
+| `apiFormat`          | Provider                | Endpoint                    | Particularités                                                                                                                                                                                              |
+| -------------------- | ----------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `responses`          | OpenAI, OVH (2 modèles) | `POST /v1/responses`        | SSE events `response.output_text.delta` / `response.completed`, champ `input`, `instructions`                                                                                                               |
+| `chat_completions`   | OVH, Ollama (compat.)   | `POST /v1/chat/completions` | Format OpenAI standard, `messages`                                                                                                                                                                          |
+| `ollama_chat`        | Ollama                  | `POST /api/chat`            | Format natif Ollama, `think: false` forcé                                                                                                                                                                   |
+| `anthropic_messages` | Anthropic               | `POST /v1/messages`         | Headers `x-api-key` + `anthropic-version` + `anthropic-dangerous-direct-browser-access` ; `system` séparé, `max_tokens` obligatoire, `thinking` adaptatif, `output_config.format` pour le structured output |
+| `lmstudio_chat`      | LM Studio               | `POST /api/v1/chat`         | Stateful : envoie seulement le dernier message utilisateur + `previous_response_id` ; MCP via `integrations` (format natif, pas de tool loop)                                                               |
 
 `sendMessage()` retourne `LLMResult` :
 

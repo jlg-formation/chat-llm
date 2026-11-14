@@ -13,7 +13,12 @@ const MCP_CONFIG = {
   mcpName: "Test MCP",
   mcpEnabled: true,
   mcpTools: [
-    { name: "recherche", description: "Recherche", enabled: true, inputSchema: {} },
+    {
+      name: "recherche",
+      description: "Recherche",
+      enabled: true,
+      inputSchema: {},
+    },
   ],
 };
 
@@ -43,10 +48,15 @@ test.describe("TC-96 · Anthropic — boucle d'outils MCP", () => {
       await page.goto("/");
       await send(page, "Cherche");
 
-      await expect(page.locator("main")).toContainText("Voici le résultat final", {
-        timeout: 15_000,
-      });
-      await expect(page.locator("main").getByText("Appel outil :")).toBeVisible();
+      await expect(page.locator("main")).toContainText(
+        "Voici le résultat final",
+        {
+          timeout: 15_000,
+        },
+      );
+      await expect(
+        page.locator("main").getByText("Appel outil :"),
+      ).toBeVisible();
 
       const first = requests[0].body;
       expect(first.tools[0]).toMatchObject({
@@ -59,7 +69,12 @@ test.describe("TC-96 · Anthropic — boucle d'outils MCP", () => {
       expect(second[1]).toEqual({
         role: "assistant",
         content: [
-          { type: "tool_use", id: "toolu_1", name: "recherche", input: { q: "chats" } },
+          {
+            type: "tool_use",
+            id: "toolu_1",
+            name: "recherche",
+            input: { q: "chats" },
+          },
         ],
       });
       expect(second[2]).toEqual({
@@ -88,7 +103,11 @@ test.describe("TC-96 · Anthropic — boucle d'outils MCP", () => {
     const requests = await interceptAnthropic(page, (_body, n) =>
       n === 1
         ? [
-            { type: "thinking", thinking: "Je dois chercher", signature: "SIG123" },
+            {
+              type: "thinking",
+              thinking: "Je dois chercher",
+              signature: "SIG123",
+            },
             { type: "redacted_thinking", data: "ENCRYPTED" },
             { type: "tool_use", id: "toolu_1", name: "recherche", input: {} },
           ]
@@ -96,7 +115,9 @@ test.describe("TC-96 · Anthropic — boucle d'outils MCP", () => {
     );
     await page.goto("/");
     await send(page, "Cherche");
-    await expect(page.locator("main")).toContainText("Fini", { timeout: 15_000 });
+    await expect(page.locator("main")).toContainText("Fini", {
+      timeout: 15_000,
+    });
 
     expect(requests[0].body.thinking).toEqual({
       type: "adaptive",
@@ -121,19 +142,28 @@ test.describe("TC-97 · Anthropic — affichage de la réflexion", () => {
         streamEnabled: stream,
       });
       await interceptAnthropic(page, () => [
-        { type: "thinking", thinking: "Analyse de la question", signature: "S" },
+        {
+          type: "thinking",
+          thinking: "Analyse de la question",
+          signature: "S",
+        },
         { type: "text", text: "Réponse après réflexion" },
       ]);
       await page.goto("/");
       await send(page, "Pourquoi ?");
 
-      await expect(page.locator("main")).toContainText("Réponse après réflexion", {
-        timeout: 10_000,
-      });
+      await expect(page.locator("main")).toContainText(
+        "Réponse après réflexion",
+        {
+          timeout: 10_000,
+        },
+      );
       const toggle = page.getByRole("button", { name: /Réflexion/ });
       await expect(toggle).toBeVisible();
       await toggle.click();
-      await expect(page.locator("main")).toContainText("Analyse de la question");
+      await expect(page.locator("main")).toContainText(
+        "Analyse de la question",
+      );
     });
   }
 
@@ -166,7 +196,9 @@ test.describe("TC-97 · Anthropic — affichage de la réflexion", () => {
     ]);
     await page.goto("/");
     await send(page, "Test");
-    await expect(page.locator("main")).toContainText("Fin", { timeout: 10_000 });
+    await expect(page.locator("main")).toContainText("Fin", {
+      timeout: 10_000,
+    });
     await expect(
       page.getByRole("complementary", { name: "Inspecteur HTTP" }),
     ).toContainText("Pensée visible");

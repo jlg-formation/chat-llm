@@ -39,9 +39,9 @@ Ce que ça implique à court et long terme.
 
 ## Index
 
-| #                                            | Titre                                                                  | Statut  | Date       |
-| -------------------------------------------- | ---------------------------------------------------------------------- | ------- | ---------- |
-| [001](001-mcp-client-pas-de-sdk-officiel.md) | Client MCP : ne pas utiliser le SDK TypeScript officiel                | accepté | 2026-06-21 |
-| [002](002-mcp-streamable-http.md)            | Client MCP : support de la réponse text/event-stream (Streamable HTTP) | accepté | 2026-06-21 |
-| [003](003-couverture-vitest-v8-seuil-80.md)  | Couverture de tests : Vitest + V8 avec seuil à 80 %                    | accepté | 2026-06-22 |
-| [004](004-provider-anthropic-double-format.md) | Provider Anthropic : API Messages native et mode compatible OpenAI   | accepté | 2026-11-14 |
+| #                                              | Titre                                                                  | Statut  | Date       |
+| ---------------------------------------------- | ---------------------------------------------------------------------- | ------- | ---------- |
+| [001](001-mcp-client-pas-de-sdk-officiel.md)   | Client MCP : ne pas utiliser le SDK TypeScript officiel                | accepté | 2026-06-21 |
+| [002](002-mcp-streamable-http.md)              | Client MCP : support de la réponse text/event-stream (Streamable HTTP) | accepté | 2026-06-21 |
+| [003](003-couverture-vitest-v8-seuil-80.md)    | Couverture de tests : Vitest + V8 avec seuil à 80 %                    | accepté | 2026-06-22 |
+| [004](004-provider-anthropic-double-format.md) | Provider Anthropic : API Messages native et mode compatible OpenAI     | accepté | 2026-11-14 |

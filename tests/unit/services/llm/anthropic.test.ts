@@ -30,8 +30,10 @@ const native = (llm: Partial<LLMConfig> = {}, top = {}) =>
   });
 
 type Body = Record<string, unknown>;
-const build = (config = native(), messages = [makeMessage({ role: "user", content: "Salut" })]) =>
-  buildAnthropicBody(config, messages, "", [], []) as Body;
+const build = (
+  config = native(),
+  messages = [makeMessage({ role: "user", content: "Salut" })],
+) => buildAnthropicBody(config, messages, "", [], []) as Body;
 
 describe("anthropic helpers", () => {
   it("targets /v1/messages for the native format", () => {
@@ -99,7 +101,9 @@ describe("buildAnthropicBody", () => {
       makeMessage({
         role: "user",
         content: "Décris",
-        images: [{ dataUrl: "data:image/png;base64,AAAA", mimeType: "image/png" }],
+        images: [
+          { dataUrl: "data:image/png;base64,AAAA", mimeType: "image/png" },
+        ],
       }),
     ]);
     expect(body.messages).toEqual([
@@ -126,8 +130,15 @@ describe("buildAnthropicBody", () => {
   });
 
   it("extracts the inner schema into output_config", () => {
-    const schema = { type: "object", properties: {}, additionalProperties: false };
-    const wrapped = native({}, { jsonSchema: JSON.stringify({ name: "x", schema }) });
+    const schema = {
+      type: "object",
+      properties: {},
+      additionalProperties: false,
+    };
+    const wrapped = native(
+      {},
+      { jsonSchema: JSON.stringify({ name: "x", schema }) },
+    );
     expect(build(wrapped).output_config).toEqual({
       format: { type: "json_schema", schema },
     });
@@ -138,8 +149,12 @@ describe("buildAnthropicBody", () => {
   });
 
   it("ignores an invalid or null schema", () => {
-    expect(build(native({}, { jsonSchema: "{oops" }))).not.toHaveProperty("output_config");
-    expect(build(native({}, { jsonSchema: "null" }))).not.toHaveProperty("output_config");
+    expect(build(native({}, { jsonSchema: "{oops" }))).not.toHaveProperty(
+      "output_config",
+    );
+    expect(build(native({}, { jsonSchema: "null" }))).not.toHaveProperty(
+      "output_config",
+    );
   });
 
   it("exposes tools in Anthropic format with tool_choice auto", () => {
@@ -148,10 +163,20 @@ describe("buildAnthropicBody", () => {
       [],
       "",
       [{ name: "s", description: "d" }],
-      [{ name: "recherche", description: "Cherche", enabled: true, inputSchema: {} }],
+      [
+        {
+          name: "recherche",
+          description: "Cherche",
+          enabled: true,
+          inputSchema: {},
+        },
+      ],
     ) as Body;
     const tools = body.tools as Array<Record<string, unknown>>;
-    expect(tools.map((t) => t.name)).toEqual(["get_skill_details", "recherche"]);
+    expect(tools.map((t) => t.name)).toEqual([
+      "get_skill_details",
+      "recherche",
+    ]);
     expect(tools[1].input_schema).toEqual({ type: "object" });
     expect(body.tool_choice).toEqual({ type: "auto" });
   });
@@ -168,11 +193,38 @@ describe("buildAnthropicBody", () => {
         toolTurnId: "A",
         thinkingBlocks: thinking,
       }),
-      makeMessage({ role: "tool_result", toolCallResultId: "t1", content: "r1", toolTurnId: "A" }),
-      makeMessage({ role: "tool_call", toolCallId: "t2", toolName: "b", toolArgs: "{}", toolTurnId: "A" }),
-      makeMessage({ role: "tool_result", toolCallResultId: "t2", content: "r2", toolTurnId: "A" }),
-      makeMessage({ role: "tool_call", toolCallId: "t3", toolName: "c", toolArgs: "{}", toolTurnId: "B" }),
-      makeMessage({ role: "tool_result", toolCallResultId: "t3", content: "r3", toolTurnId: "B" }),
+      makeMessage({
+        role: "tool_result",
+        toolCallResultId: "t1",
+        content: "r1",
+        toolTurnId: "A",
+      }),
+      makeMessage({
+        role: "tool_call",
+        toolCallId: "t2",
+        toolName: "b",
+        toolArgs: "{}",
+        toolTurnId: "A",
+      }),
+      makeMessage({
+        role: "tool_result",
+        toolCallResultId: "t2",
+        content: "r2",
+        toolTurnId: "A",
+      }),
+      makeMessage({
+        role: "tool_call",
+        toolCallId: "t3",
+        toolName: "c",
+        toolArgs: "{}",
+        toolTurnId: "B",
+      }),
+      makeMessage({
+        role: "tool_result",
+        toolCallResultId: "t3",
+        content: "r3",
+        toolTurnId: "B",
+      }),
     ]);
     expect(body.messages).toEqual([
       { role: "user", content: [{ type: "text", text: "go" }] },
