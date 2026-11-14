@@ -30,5 +30,5 @@ Le client MCP ([ADR 001](001-mcp-client-pas-de-sdk-officiel.md)) appelait `resp.
 - **Contraintes CORS** : le serveur distant doit exposer `Mcp-Session-Id` (`Access-Control-Expose-Headers`), sinon le navigateur ne peut pas lire la session et la déconnexion n'envoie pas de `DELETE`.
 - Les serveurs doivent aussi autoriser `Authorization`, `Mcp-Session-Id` et `MCP-Protocol-Version` dans les en-têtes CORS.
 - Un serveur qui ne répond jamais bloque l'appel au plus 15 s, puis une erreur est affichée.
-- Tests : `tests/tc50-53-mcp.spec.ts` (mock mis à jour, déconnexion en `DELETE`) et `tests/tc94-mcp-streamable-http.spec.ts` (réponses SSE, inspecteur, timeout, appel d'outil).
+- Tests : `tests/e2e/tc50-53-mcp.spec.ts` (mock mis à jour, déconnexion en `DELETE`) et `tests/e2e/tc94-mcp-streamable-http.spec.ts` (réponses SSE, inspecteur, timeout, appel d'outil).
 - Hors périmètre : l'intégration LM Studio (`integrations` dans `bodyBuilders.ts`) n'est pas modifiée.

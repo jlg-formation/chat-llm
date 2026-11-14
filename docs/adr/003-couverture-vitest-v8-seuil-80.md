@@ -12,7 +12,7 @@ Le projet ne disposait que de tests E2E Playwright. L'évolution 03 exige un tes
 
 - Tests unitaires et de composants avec **Vitest** (`bun run test:unit`), environnement **jsdom**, **Testing Library** pour les composants.
 - Couverture avec **@vitest/coverage-v8** (`bun run test:coverage`), seuils à 80 % sur lignes, branches, fonctions et instructions (`vitest.config.ts`).
-- Périmètre de tests restreint à `src/**/*.test.{ts,tsx}` pour exclure les specs Playwright.
+- Périmètre de tests restreint à `tests/unit/**/*.test.{ts,tsx}` pour exclure les specs Playwright (`tests/e2e/`).
 - Les tests Playwright (`bun run test`) restent inchangés.
 - Le job `test` de `.github/workflows/deploy.yml` exécute `bun run test:coverage` ; le job `build` dépend de `test`.
 

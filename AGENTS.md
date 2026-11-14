@@ -195,8 +195,9 @@ When MCP server returns 404, it signals session expired. Custom client:
 
 ### Testing
 
-- **[tests/helpers.ts](tests/helpers.ts)**: Shared test utilities (fetch interception, config injection)
-- **[tests/tc\*.spec.ts](tests/)**: E2E tests organized by feature (tcXX = test case XX)
+- **[tests/e2e/helpers.ts](tests/e2e/helpers.ts)**: Shared E2E utilities (fetch interception, config injection)
+- **[tests/e2e/tc\*.spec.ts](tests/e2e/)**: E2E tests organized by feature (tcXX = test case XX)
+- **[tests/unit/](tests/unit/)**: Vitest unit tests, mirroring `src/` (`@/` alias → `src/`); shared setup/fixtures in `tests/unit/setup.ts` and `tests/unit/fixtures.ts`
 
 ### Documentation
 
@@ -231,7 +232,7 @@ When MCP server returns 404, it signals session expired. Custom client:
 2. Add UI slider in [src/components/sidebar/SamplingSection.tsx](src/components/sidebar/SamplingSection.tsx)
 3. Inject into body in [src/services/llm/bodyBuilders.ts](src/services/llm/bodyBuilders.ts) — **format-specific field names differ**
 4. Document in AGENTS.md (if non-obvious)
-5. Add test in [tests/tc05-sampling.spec.ts](tests/tc05-sampling.spec.ts)
+5. Add test in [tests/e2e/tc05-sampling.spec.ts](tests/e2e/tc05-sampling.spec.ts)
 
 ### ✅ Handle a New MCP Tool Error
 
@@ -239,7 +240,7 @@ When MCP server returns 404, it signals session expired. Custom client:
 2. If 404: session auto-expires, next call re-initializes
 3. If other error: add to `httpStore` for visibility
 4. Tool resolution in [src/components/Chat.tsx](src/components/Chat.tsx) (`resolveToolCall()`)
-5. Test with [tests/tc50-53-mcp.spec.ts](tests/tc50-53-mcp.spec.ts)
+5. Test with [tests/e2e/tc50-53-mcp.spec.ts](tests/e2e/tc50-53-mcp.spec.ts)
 
 ### ✅ Add a New Config Field
 
@@ -259,11 +260,11 @@ When MCP server returns 404, it signals session expired. Custom client:
 
 ### ✅ Create a New E2E Test
 
-1. Use [tests/helpers.ts](tests/helpers.ts) for common patterns: `interceptLLM()`, `setConfig()`, etc.
+1. Use [tests/e2e/helpers.ts](tests/e2e/helpers.ts) for common patterns: `interceptLLM()`, `setConfig()`, etc.
 2. Use `page.route()` for fetch mocking (order matters: register before navigate)
 3. Use `addInitScript()` to pre-populate localStorage before `goto()`
 4. Mock LLM responses with realistic SSE or JSON
-5. Name file: `tcXX-description.spec.ts` (check last tcXX number in tests/ folder)
+5. Name file: `tcXX-description.spec.ts` (check last tcXX number in tests/e2e/ folder)
 6. Run: `bun run test:ui` for interactive debugging
 
 ---

@@ -31,7 +31,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-01 · Sélection du provider et du modèle `[P0]`
 
-**Script :** [`tc01-provider-selection.spec.ts`](../tests/tc01-provider-selection.spec.ts)
+**Script :** [`tc01-provider-selection.spec.ts`](../tests/e2e/tc01-provider-selection.spec.ts)
 
 **Objectif :** Vérifier que le changement de provider met à jour cohéremment l'URL de base, la liste de modèles et le format API.
 
@@ -53,7 +53,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-02 · Injection et masquage de la clé API `[P0]`
 
-**Script :** [`tc02-api-key.spec.ts`](../tests/tc02-api-key.spec.ts)
+**Script :** [`tc02-api-key.spec.ts`](../tests/e2e/tc02-api-key.spec.ts)
 
 **Préconditions :** `OPENAI_API_KEY` définie dans l'environnement.
 
@@ -71,7 +71,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-03 · Chargement dynamique des modèles `[P1]`
 
-**Script :** [`tc03-model-loading.spec.ts`](../tests/tc03-model-loading.spec.ts)
+**Script :** [`tc03-model-loading.spec.ts`](../tests/e2e/tc03-model-loading.spec.ts)
 
 **Préconditions :** Serveur Ollama ou LM Studio accessible localement, ou mocker la réponse réseau.
 
@@ -88,7 +88,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-04 · Avertissement format API incompatible `[P1]`
 
-**Script :** [`tc04-api-format-compat.spec.ts`](../tests/tc04-api-format-compat.spec.ts)
+**Script :** [`tc04-api-format-compat.spec.ts`](../tests/e2e/tc04-api-format-compat.spec.ts)
 
 **Étapes :**
 1. Sélectionner provider **OVH**, modèle `gpt-oss-20b`.
@@ -100,7 +100,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-05 · Paramètres de sampling `[P1]`
 
-**Script :** [`tc05-sampling.spec.ts`](../tests/tc05-sampling.spec.ts)
+**Script :** [`tc05-sampling.spec.ts`](../tests/e2e/tc05-sampling.spec.ts)
 
 **Étapes :**
 1. Ouvrir la section « Sampling ».
@@ -116,7 +116,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-06 · Reset complet de la configuration `[P1]`
 
-**Script :** [`tc06-reset-config.spec.ts`](../tests/tc06-reset-config.spec.ts)
+**Script :** [`tc06-reset-config.spec.ts`](../tests/e2e/tc06-reset-config.spec.ts)
 
 **Étapes :**
 1. Configurer un provider, une clé API, un prompt système et activer le streaming.
@@ -133,7 +133,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-10 · Envoi d'un message simple `[P0]`
 
-**Script :** [`tc10-send-message.spec.ts`](../tests/tc10-send-message.spec.ts)
+**Script :** [`tc10-send-message.spec.ts`](../tests/e2e/tc10-send-message.spec.ts)
 
 **Préconditions :** `OPENAI_API_KEY` définie dans l'environnement. Setup injecte la clé et configure le provider OpenAI en localStorage avant chargement de la page.
 
@@ -150,7 +150,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-11 · Saut de ligne dans l'input `[P1]`
 
-**Script :** [`tc11-13-input.spec.ts`](../tests/tc11-13-input.spec.ts)
+**Script :** [`tc11-13-input.spec.ts`](../tests/e2e/tc11-13-input.spec.ts)
 
 **Étapes :**
 1. Placer le curseur dans l'input.
@@ -163,7 +163,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-12 · Auto-expansion du textarea `[P1]`
 
-**Script :** [`tc11-13-input.spec.ts`](../tests/tc11-13-input.spec.ts) · [`tc12-textarea-max.spec.ts`](../tests/tc12-textarea-max.spec.ts)
+**Script :** [`tc11-13-input.spec.ts`](../tests/e2e/tc11-13-input.spec.ts) · [`tc12-textarea-max.spec.ts`](../tests/e2e/tc12-textarea-max.spec.ts)
 
 **Étapes :**
 1. Coller un texte long (> 5 lignes) dans l'input.
@@ -176,7 +176,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-13 · Bouton Envoyer désactivé si vide `[P1]`
 
-**Script :** [`tc11-13-input.spec.ts`](../tests/tc11-13-input.spec.ts)
+**Script :** [`tc11-13-input.spec.ts`](../tests/e2e/tc11-13-input.spec.ts)
 
 **Étapes :**
 1. Vider l'input (aucun texte, aucune image).
@@ -188,7 +188,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-14 · Nouvelle discussion `[P0]`
 
-**Script :** [`tc14-new-chat.spec.ts`](../tests/tc14-new-chat.spec.ts)
+**Script :** [`tc14-new-chat.spec.ts`](../tests/e2e/tc14-new-chat.spec.ts)
 
 **Étapes :**
 1. Envoyer au moins un message et obtenir une réponse.
@@ -202,7 +202,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-15 · Arrêt de la génération `[P0]`
 
-**Script :** [`tc15-stop-generation.spec.ts`](../tests/tc15-stop-generation.spec.ts)
+**Script :** [`tc15-stop-generation.spec.ts`](../tests/e2e/tc15-stop-generation.spec.ts)
 
 **Préconditions :** Streaming activé, réponse longue en cours.
 
@@ -218,7 +218,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-16 · Streaming vs mode complet `[P1]`
 
-**Script :** [`tc16-streaming.spec.ts`](../tests/tc16-streaming.spec.ts) · [`tc16b-streaming-chat-completions.spec.ts`](../tests/tc16b-streaming-chat-completions.spec.ts)
+**Script :** [`tc16-streaming.spec.ts`](../tests/e2e/tc16-streaming.spec.ts) · [`tc16b-streaming-chat-completions.spec.ts`](../tests/e2e/tc16b-streaming-chat-completions.spec.ts)
 
 **Étapes :**
 1. Activer le streaming → envoyer un message → vérifier l'affichage progressif (curseur clignotant).
@@ -232,7 +232,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-20 · Ajout d'image via le bouton « + » `[P1]`
 
-**Script :** [`tc20-22-images.spec.ts`](../tests/tc20-22-images.spec.ts)
+**Script :** [`tc20-22-images.spec.ts`](../tests/e2e/tc20-22-images.spec.ts)
 
 **Étapes :**
 1. Cliquer sur le bouton « + » dans l'input.
@@ -247,7 +247,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-21 · Ajout d'image par copier-coller `[P1]`
 
-**Script :** [`tc21-image-paste.spec.ts`](../tests/tc21-image-paste.spec.ts)
+**Script :** [`tc21-image-paste.spec.ts`](../tests/e2e/tc21-image-paste.spec.ts)
 
 **Étapes :**
 1. Copier une image dans le presse-papier.
@@ -262,7 +262,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-22 · Rejet des formats non supportés `[P2]`
 
-**Script :** [`tc20-22-images.spec.ts`](../tests/tc20-22-images.spec.ts)
+**Script :** [`tc20-22-images.spec.ts`](../tests/e2e/tc20-22-images.spec.ts)
 
 **Étapes :**
 1. Tenter d'ajouter un fichier PDF ou SVG.
@@ -276,7 +276,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-30 · Injection du prompt système `[P0]`
 
-**Script :** [`tc30-system-prompt.spec.ts`](../tests/tc30-system-prompt.spec.ts) · [`tc30b-chat-completions.spec.ts`](../tests/tc30b-chat-completions.spec.ts)
+**Script :** [`tc30-system-prompt.spec.ts`](../tests/e2e/tc30-system-prompt.spec.ts) · [`tc30b-chat-completions.spec.ts`](../tests/e2e/tc30b-chat-completions.spec.ts)
 
 **Préconditions :** `OPENAI_API_KEY` injectée en localStorage par le setup. Réseau mocké (Playwright `page.route`) pour intercepter la requête sortante sans consommer de quota.
 
@@ -291,7 +291,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-31 · Structured Output — validation du schéma JSON `[P1]`
 
-**Script :** [`tc31-32-json-schema.spec.ts`](../tests/tc31-32-json-schema.spec.ts)
+**Script :** [`tc31-32-json-schema.spec.ts`](../tests/e2e/tc31-32-json-schema.spec.ts)
 
 **Étapes :**
 1. Ouvrir la section « Structured Output ».
@@ -306,7 +306,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-32 · Structured Output — transmission dans la requête `[P1]`
 
-**Script :** [`tc31-32-json-schema.spec.ts`](../tests/tc31-32-json-schema.spec.ts)
+**Script :** [`tc31-32-json-schema.spec.ts`](../tests/e2e/tc31-32-json-schema.spec.ts)
 
 **Préconditions :** Schéma JSON valide saisi, réseau mocké.
 
@@ -323,7 +323,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-40 · Import d'un skill ZIP `[P1]`
 
-**Script :** [`tc40-43-skills.spec.ts`](../tests/tc40-43-skills.spec.ts)
+**Script :** [`tc40-43-skills.spec.ts`](../tests/e2e/tc40-43-skills.spec.ts)
 
 **Préconditions :** Fichier `.zip` contenant un `SKILL.md` avec frontmatter valide disponible.
 
@@ -341,7 +341,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-41 · Activation/désactivation d'un skill `[P1]`
 
-**Script :** [`tc40-43-skills.spec.ts`](../tests/tc40-43-skills.spec.ts)
+**Script :** [`tc40-43-skills.spec.ts`](../tests/e2e/tc40-43-skills.spec.ts)
 
 **Étapes :**
 1. Avoir un skill importé.
@@ -356,7 +356,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-42 · Appel de l'outil `get_skill_details` `[P1]`
 
-**Script :** [`tc40-43-skills.spec.ts`](../tests/tc40-43-skills.spec.ts)
+**Script :** [`tc40-43-skills.spec.ts`](../tests/e2e/tc40-43-skills.spec.ts)
 
 **Préconditions :** Skill activé, réseau mocké pour simuler la réponse tool_call du LLM.
 
@@ -371,7 +371,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-43 · Suppression d'un skill `[P2]`
 
-**Script :** [`tc40-43-skills.spec.ts`](../tests/tc40-43-skills.spec.ts)
+**Script :** [`tc40-43-skills.spec.ts`](../tests/e2e/tc40-43-skills.spec.ts)
 
 **Étapes :**
 1. Avoir au moins un skill importé.
@@ -387,7 +387,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-50 · Connexion à un serveur MCP `[P1]`
 
-**Script :** [`tc50-53-mcp.spec.ts`](../tests/tc50-53-mcp.spec.ts)
+**Script :** [`tc50-53-mcp.spec.ts`](../tests/e2e/tc50-53-mcp.spec.ts)
 
 **Préconditions :** Serveur MCP local disponible (ou mocker les requêtes JSON-RPC).
 
@@ -405,7 +405,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-51 · Activation sélective des outils MCP `[P1]`
 
-**Script :** [`tc50-53-mcp.spec.ts`](../tests/tc50-53-mcp.spec.ts)
+**Script :** [`tc50-53-mcp.spec.ts`](../tests/e2e/tc50-53-mcp.spec.ts)
 
 **Étapes :**
 1. Charger au moins deux outils MCP.
@@ -419,7 +419,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-52 · Boucle tool calling MCP `[P1]`
 
-**Script :** [`tc50-53-mcp.spec.ts`](../tests/tc50-53-mcp.spec.ts)
+**Script :** [`tc50-53-mcp.spec.ts`](../tests/e2e/tc50-53-mcp.spec.ts)
 
 **Préconditions :** Réseau mocké pour simuler tool_call → tool_result.
 
@@ -436,7 +436,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-53 · Déconnexion MCP `[P2]`
 
-**Script :** [`tc50-53-mcp.spec.ts`](../tests/tc50-53-mcp.spec.ts)
+**Script :** [`tc50-53-mcp.spec.ts`](../tests/e2e/tc50-53-mcp.spec.ts)
 
 **Étapes :**
 1. Connecter un serveur MCP.
@@ -452,7 +452,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-60 · Affichage d'un échange LLM `[P0]`
 
-**Script :** [`tc60-http-inspector.spec.ts`](../tests/tc60-http-inspector.spec.ts)
+**Script :** [`tc60-http-inspector.spec.ts`](../tests/e2e/tc60-http-inspector.spec.ts)
 
 **Étapes :**
 1. Envoyer un message.
@@ -468,7 +468,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-61 · Redimensionnement de la sidebar droite `[P2]`
 
-**Script :** [`tc61-62-sidebar.spec.ts`](../tests/tc61-62-sidebar.spec.ts)
+**Script :** [`tc61-62-sidebar.spec.ts`](../tests/e2e/tc61-62-sidebar.spec.ts)
 
 **Étapes :**
 1. Localiser la poignée de drag sur le bord gauche de la sidebar droite.
@@ -482,7 +482,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-62 · Réduction et expansion de la sidebar droite `[P2]`
 
-**Script :** [`tc61-62-sidebar.spec.ts`](../tests/tc61-62-sidebar.spec.ts)
+**Script :** [`tc61-62-sidebar.spec.ts`](../tests/e2e/tc61-62-sidebar.spec.ts)
 
 **Étapes :**
 1. Cliquer sur le chevron de la sidebar droite pour la replier.
@@ -495,7 +495,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-63 · Vider l'historique HTTP `[P1]`
 
-**Script :** [`tc60-http-inspector.spec.ts`](../tests/tc60-http-inspector.spec.ts)
+**Script :** [`tc60-http-inspector.spec.ts`](../tests/e2e/tc60-http-inspector.spec.ts)
 
 **Étapes :**
 1. Envoyer plusieurs messages pour générer des échanges.
@@ -508,7 +508,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-64 · Auto-scroll vers le dernier échange `[P2]`
 
-**Script :** [`tc64-autoscroll.spec.ts`](../tests/tc64-autoscroll.spec.ts)
+**Script :** [`tc64-autoscroll.spec.ts`](../tests/e2e/tc64-autoscroll.spec.ts)
 
 **Étapes :**
 1. Générer au moins 5 échanges HTTP.
@@ -524,7 +524,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-70 · Affichage des tokens et du coût `[P1]`
 
-**Script :** [`tc70-71-usage.spec.ts`](../tests/tc70-71-usage.spec.ts)
+**Script :** [`tc70-71-usage.spec.ts`](../tests/e2e/tc70-71-usage.spec.ts)
 
 **Préconditions :** `OPENAI_API_KEY` injectée en localStorage. Provider OpenAI avec modèle ayant un pricing défini (famille GPT-5.x).
 
@@ -541,7 +541,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-71 · Réinitialisation des compteurs `[P1]`
 
-**Script :** [`tc70-71-usage.spec.ts`](../tests/tc70-71-usage.spec.ts)
+**Script :** [`tc70-71-usage.spec.ts`](../tests/e2e/tc70-71-usage.spec.ts)
 
 **Étapes :**
 1. Accumuler des tokens via plusieurs messages.
@@ -556,7 +556,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-80 · Rendu Markdown `[P1]`
 
-**Script :** [`tc80-82-display.spec.ts`](../tests/tc80-82-display.spec.ts)
+**Script :** [`tc80-82-display.spec.ts`](../tests/e2e/tc80-82-display.spec.ts)
 
 **Préconditions :** Réseau mocké pour retourner une réponse Markdown.
 
@@ -570,7 +570,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-81 · Blocs XML pliables `[P2]`
 
-**Script :** [`tc81-xml-blocks.spec.ts`](../tests/tc81-xml-blocks.spec.ts)
+**Script :** [`tc81-xml-blocks.spec.ts`](../tests/e2e/tc81-xml-blocks.spec.ts)
 
 **Préconditions :** Réseau mocké pour retourner une réponse avec balises `<think>` et `<answer>`.
 
@@ -585,7 +585,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-82 · Affichage JSON structuré `[P1]`
 
-**Script :** [`tc80-82-display.spec.ts`](../tests/tc80-82-display.spec.ts)
+**Script :** [`tc80-82-display.spec.ts`](../tests/e2e/tc80-82-display.spec.ts)
 
 **Préconditions :** JSON Schema configuré, réseau mocké pour retourner du JSON.
 
@@ -600,7 +600,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-83 · Messages tool_call et tool_result pliables `[P2]`
 
-**Script :** [`tc83-tool-messages.spec.ts`](../tests/tc83-tool-messages.spec.ts)
+**Script :** [`tc83-tool-messages.spec.ts`](../tests/e2e/tc83-tool-messages.spec.ts)
 
 **Préconditions :** Réseau mocké pour déclencher un tool calling.
 
@@ -617,7 +617,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-90 · Persistance de la configuration entre rechargements `[P0]`
 
-**Script :** [`tc90-config-persistence.spec.ts`](../tests/tc90-config-persistence.spec.ts)
+**Script :** [`tc90-config-persistence.spec.ts`](../tests/e2e/tc90-config-persistence.spec.ts)
 
 **Étapes :**
 1. Configurer un provider, une clé API, un prompt système, activer le streaming et le JSON Schema.
@@ -630,7 +630,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-91 · Boucle agentique — limite de 5 itérations `[P2]`
 
-**Script :** [`tc91-agentic-loop.spec.ts`](../tests/tc91-agentic-loop.spec.ts)
+**Script :** [`tc91-agentic-loop.spec.ts`](../tests/e2e/tc91-agentic-loop.spec.ts)
 
 **Préconditions :** Réseau mocké pour retourner indéfiniment des `tool_calls`.
 
@@ -646,7 +646,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-92 · Gestion d'erreur réseau `[P1]`
 
-**Script :** [`tc92-network-error.spec.ts`](../tests/tc92-network-error.spec.ts)
+**Script :** [`tc92-network-error.spec.ts`](../tests/e2e/tc92-network-error.spec.ts)
 
 **Étapes :**
 1. Couper la connexion réseau ou configurer un mock retournant `500`.
@@ -660,7 +660,7 @@ Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier 
 
 ### TC-93 · En-tête reflète la configuration active `[P0]`
 
-**Script :** [`tc93-header.spec.ts`](../tests/tc93-header.spec.ts)
+**Script :** [`tc93-header.spec.ts`](../tests/e2e/tc93-header.spec.ts)
 
 **Étapes :**
 1. Changer de provider et de modèle.
