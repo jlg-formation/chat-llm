@@ -138,11 +138,6 @@ export function UsageSection() {
               <span>Input · {fmtCost(costPrompt!)}</span>
               <span>Output · {fmtCost(costCompletion!)}</span>
             </div>
-            {modelInfo?.longContext && (
-              <div className="mt-1 text-xs text-indigo-300">
-                Palier ≤ {fmt(modelInfo.longContext.threshold)} tokens de prompt appliqué
-              </div>
-            )}
           </div>
         )}
 
@@ -188,18 +183,6 @@ export function UsageSection() {
                 {images.costUnknown ? 'non estimé' : fmtCost(images.costUsd)}
               </span>
             </div>
-          </div>
-        )}
-
-        {modelInfo?.contextLength && (
-          <div className="text-xs text-gray-400 flex items-center gap-1">
-            <span>Fenêtre de contexte :</span>
-            <span className="font-mono font-medium text-gray-600">
-              {fmt(modelInfo.contextLength)} tokens
-            </span>
-            <span className="ml-auto text-gray-300">
-              ({Math.round((total / modelInfo.contextLength) * 100)}% utilisé)
-            </span>
           </div>
         )}
 
