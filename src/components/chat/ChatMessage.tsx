@@ -2,7 +2,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import type { ChatMessage as ChatMessageType } from "../../types";
 import {
   User,
@@ -16,6 +16,8 @@ import { MermaidBlock } from "./MermaidBlock";
 import { ThinkingBlock } from "./ThinkingBlock";
 import { XmlBlock } from "./XmlBlock";
 import { parseXmlBlocks } from "./parseXmlBlocks";
+import { splitSvgSegments } from "./svgSegments";
+import { SvgImage } from "./SvgImage";
 
 interface Props {
   message: ChatMessageType;
@@ -139,51 +141,66 @@ export function ChatMessageView({ message }: Props) {
               <p className="text-sm whitespace-pre-wrap">{message.content}</p>
             ) : (
               <div className="prose-chat text-sm">
-                {parseXmlBlocks(message.content).map((seg, i) =>
-                  seg.type === "xml" ? (
-                    <XmlBlock
-                      key={i}
-                      tag={seg.tag!}
-                      content={seg.content}
-                      unclosed={seg.unclosed}
-                    />
-                  ) : (
-                    <ReactMarkdown
-                      key={i}
-                      remarkPlugins={[remarkGfm]}
-                      rehypePlugins={[
-                        [rehypeHighlight, { ignoreMissing: true }],
-                      ]}
-                      components={{
-                        code({ className, children }) {
-                          const lang = /language-(\w+)/.exec(
-                            className ?? "",
-                          )?.[1];
-                          if (lang === "mermaid" && !message.isStreaming) {
-                            return (
-                              <MermaidBlock code={String(children).trimEnd()} />
-                            );
-                          }
-                          return <code className={className}>{children}</code>;
-                        },
-                        a({ href, children }) {
-                          return (
-                            <a
-                              href={href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 underline hover:text-blue-800 break-all"
-                            >
-                              {children}
-                            </a>
-                          );
-                        },
-                      }}
-                    >
-                      {seg.content}
-                    </ReactMarkdown>
-                  ),
-                )}
+                {splitSvgSegments(message.content).map((part, p) => (
+                  <Fragment key={p}>
+                    {part.type === "svg" ? (
+                      <SvgImage svg={part.content} />
+                    ) : (
+                      parseXmlBlocks(part.content).map((seg, i) =>
+                        seg.type === "xml" ? (
+                          <XmlBlock
+                            key={i}
+                            tag={seg.tag!}
+                            content={seg.content}
+                            unclosed={seg.unclosed}
+                          />
+                        ) : (
+                          <ReactMarkdown
+                            key={i}
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[
+                              [rehypeHighlight, { ignoreMissing: true }],
+                            ]}
+                            components={{
+                              code({ className, children }) {
+                                const lang = /language-(\w+)/.exec(
+                                  className ?? "",
+                                )?.[1];
+                                if (
+                                  lang === "mermaid" &&
+                                  !message.isStreaming
+                                ) {
+                                  return (
+                                    <MermaidBlock
+                                      code={String(children).trimEnd()}
+                                    />
+                                  );
+                                }
+                                return (
+                                  <code className={className}>{children}</code>
+                                );
+                              },
+                              a({ href, children }) {
+                                return (
+                                  <a
+                                    href={href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 underline hover:text-blue-800 break-all"
+                                  >
+                                    {children}
+                                  </a>
+                                );
+                              },
+                            }}
+                          >
+                            {seg.content}
+                          </ReactMarkdown>
+                        ),
+                      )
+                    )}
+                  </Fragment>
+                ))}
                 {message.isStreaming &&
                   !message.content.match(/<\w+>[\s\S]*$/) && (
                     <span className="inline-block w-1.5 h-4 bg-gray-400 animate-pulse ml-0.5 align-text-bottom" />
