@@ -12,6 +12,11 @@ export function currentApiKey(config: AppConfig): string {
 
 export const usesResponsesAPI = (c: AppConfig) => c.llm.apiFormat === 'responses'
 
+export const webSearchAvailable = (c: AppConfig) =>
+  c.llm.provider === 'openai' && usesResponsesAPI(c)
+
+export const webSearchActive = (c: AppConfig) => c.hostedTools.webSearch && webSearchAvailable(c)
+
 export const usesOllamaNative = (c: AppConfig) => c.llm.apiFormat === 'ollama_chat'
 
 export const usesAnthropicNative = (c: AppConfig) => c.llm.apiFormat === 'anthropic_messages'

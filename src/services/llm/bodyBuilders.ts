@@ -1,6 +1,12 @@
 import type { AppConfig, ChatMessage, McpTool } from '../../types'
 import type { SkillRef } from './types'
-import { usesResponsesAPI, usesAnthropicNative, isAnthropic, isMistral } from './helpers'
+import {
+  usesResponsesAPI,
+  usesAnthropicNative,
+  isAnthropic,
+  isMistral,
+  webSearchActive,
+} from './helpers'
 import { safeParseArgs } from './parsers'
 import { buildAnthropicBody, ANTHROPIC_DEFAULT_MAX_TOKENS } from './bodyBuildersAnthropic'
 import {
@@ -158,7 +164,11 @@ export function buildOpenAIResponsesBody(
 
   applySampling(body, config, 'max_output_tokens')
 
-  const allTools = buildTools(skillRefs, mcpTools, skillToolForResponsesAPI, mcpToolForResponsesAPI)
+  const hostedTools = webSearchActive(config) ? [{ type: 'web_search' }] : []
+  const allTools = [
+    ...buildTools(skillRefs, mcpTools, skillToolForResponsesAPI, mcpToolForResponsesAPI),
+    ...hostedTools,
+  ]
   if (allTools.length > 0) body.tools = allTools
 
   const schema = parseJsonSchema(config)

@@ -4,7 +4,7 @@ import rehypeHighlight from 'rehype-highlight'
 import 'highlight.js/styles/github.css'
 import { useState } from 'react'
 import type { ChatMessage as ChatMessageType } from '../../types'
-import { User, Bot, Wrench, ChevronDown, ChevronRight } from 'lucide-react'
+import { User, Bot, Wrench, ChevronDown, ChevronRight, Globe } from 'lucide-react'
 import { MermaidBlock } from './MermaidBlock'
 import { ThinkingBlock } from './ThinkingBlock'
 import { XmlBlock } from './XmlBlock'
@@ -170,6 +170,33 @@ export function ChatMessageView({ message }: Props) {
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {!isUser && message.webSearches && message.webSearches.length > 0 && (
+          <p className="text-xs text-gray-500 flex items-center gap-1.5">
+            <Globe className="w-3 h-3 shrink-0 text-indigo-500" />
+            Recherche web : {message.webSearches.join(' · ')}
+          </p>
+        )}
+
+        {!isUser && message.sources && message.sources.length > 0 && (
+          <div className="text-xs text-gray-500">
+            <p className="font-medium mb-0.5">Sources</p>
+            <ul className="space-y-0.5">
+              {message.sources.map((s) => (
+                <li key={s.url}>
+                  <a
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline hover:text-blue-800 break-all"
+                  >
+                    {s.title || s.url}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 

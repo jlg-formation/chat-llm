@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react'
-import type { ChatMessage as ChatMessageType, MessageImage } from '../types'
+import type { ChatMessage as ChatMessageType, HostedActivity, MessageImage } from '../types'
 import { ChatMessageView } from './chat/ChatMessage'
 import { ChatInput } from './chat/ChatInput'
 import { buildToolMessages } from './chat/toolMessages'
@@ -119,6 +119,7 @@ export function Chat() {
         .flatMap((s) => s.tools.filter((t) => t.enabled))
       const prevId =
         config.llm.apiFormat === 'lmstudio_chat' ? lmStudioResponseIdRef.current : undefined
+      const hosted: HostedActivity = { searches: [], sources: [] }
       const callLLM = async () => {
         const res = await sendMessage(
           config,
@@ -132,6 +133,10 @@ export function Chat() {
           onThinking,
         )
         if (res.usage) addUsage(res.usage)
+        if (res.hosted) {
+          hosted.searches.push(...res.hosted.searches)
+          hosted.sources.push(...res.hosted.sources)
+        }
         return res
       }
       let result = await callLLM()
@@ -185,6 +190,12 @@ export function Chat() {
       updateAssistant(finalContent, false, isJson)
       // Non-streaming : la réflexion n'arrive qu'avec le résultat final
       if (result.thinking) patchAssistant({ thinking: result.thinking })
+
+      const sources = hosted.sources.filter(
+        (s, i, all) => all.findIndex((o) => o.url === s.url) === i,
+      )
+      if (hosted.searches.length > 0 || sources.length > 0)
+        patchAssistant({ webSearches: hosted.searches, sources })
     } catch (err) {
       if ((err as Error).name === 'AbortError') {
         // Arrêt demandé par l'utilisateur — on conserve le contenu partiel déjà affiché

@@ -1,4 +1,4 @@
-import type { TokenUsage } from '../../types'
+import type { HostedActivity, TokenUsage } from '../../types'
 
 export interface SkillRef {
   name: string
@@ -19,6 +19,7 @@ export type LLMResult =
       usage?: TokenUsage
       responseId?: string
       thinking?: string
+      hosted?: HostedActivity
     }
   | {
       type: 'tool_calls'
@@ -29,4 +30,5 @@ export type LLMResult =
       thinking?: string
       // Blocs thinking/redacted_thinking bruts (Anthropic) à rejouer avec les tool_use
       thinkingBlocks?: unknown[]
+      hosted?: HostedActivity
     }

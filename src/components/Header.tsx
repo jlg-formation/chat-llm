@@ -1,6 +1,7 @@
-import { Radio, Wifi, WifiOff } from 'lucide-react'
+import { Globe, Radio, Wifi, WifiOff } from 'lucide-react'
 import { useConfig } from '../store/configStore'
 import { PROVIDER_DEFAULTS } from '../types'
+import { webSearchActive } from '../services/llm/helpers'
 
 export function Header() {
   const [config] = useConfig()
@@ -18,6 +19,12 @@ export function Header() {
           <span className="font-medium">{providerLabel}</span>
           {config.llm.model && <span className="text-blue-500 text-xs">/ {config.llm.model}</span>}
         </div>
+
+        {webSearchActive(config) && (
+          <div className="flex items-center gap-1.5 bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-medium">
+            <Globe className="w-3.5 h-3.5" /> Web
+          </div>
+        )}
 
         <div
           className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${

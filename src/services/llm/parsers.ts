@@ -1,5 +1,5 @@
 import type { LLMResult, LLMToolCall } from './types'
-import type { TokenUsage } from '../../types'
+import type { HostedActivity, TokenUsage, WebSource } from '../../types'
 import { parseSSEEvents, readLines } from '../sse'
 
 /** Payloads `data:` d'un flux SSE, jusqu'au sentinel `[DONE]`. */
@@ -45,6 +45,32 @@ function extractUsage(obj: Record<string, unknown>): TokenUsage | undefined {
   }
 }
 
+// Recherche web hébergée : requêtes (web_search_call) et sources (url_citation) d'une réponse
+function collectHosted(output: unknown[] | undefined): HostedActivity | undefined {
+  const searches: string[] = []
+  const sources: WebSource[] = []
+  for (const item of output ?? []) {
+    const it = item as Record<string, unknown>
+    if (it.type === 'web_search_call') {
+      const query = (it.action as Record<string, unknown> | undefined)?.query
+      if (typeof query === 'string') searches.push(query)
+    } else if (it.type === 'message') {
+      for (const part of (it.content as unknown[]) ?? []) {
+        for (const ann of ((part as Record<string, unknown>).annotations as unknown[]) ?? []) {
+          const a = ann as Record<string, unknown>
+          if (a.type === 'url_citation' && typeof a.url === 'string')
+            sources.push({ url: a.url, title: a.title as string | undefined })
+        }
+      }
+    }
+  }
+  return searches.length > 0 || sources.length > 0 ? { searches, sources } : undefined
+}
+
+function withHosted(hosted: HostedActivity | undefined) {
+  return hosted ? { hosted } : {}
+}
+
 export async function streamOpenAIResponses(
   response: Response,
   onToken: (t: string) => void,
@@ -52,6 +78,7 @@ export async function streamOpenAIResponses(
   let fullText = ''
   let responseId = ''
   let usage: TokenUsage | undefined
+  let hosted: HostedActivity | undefined
   const pendingCalls = new Map<string, { call_id: string; name: string; argsBuffer: string }>()
 
   for await (const rawData of parseSSEStream(response)) {
@@ -82,6 +109,7 @@ export async function streamOpenAIResponses(
           const resp = json.response as Record<string, unknown>
           responseId = (resp?.id as string) ?? ''
           usage = extractUsage(resp ?? {}) ?? usage
+          hosted = collectHosted(resp?.output as unknown[] | undefined) ?? hosted
           break
         }
       }
@@ -96,9 +124,10 @@ export async function streamOpenAIResponses(
       calls: [...pendingCalls.values()].map((c) => toolCall(c.call_id, c.name, c.argsBuffer)),
       responseId,
       usage,
+      ...withHosted(hosted),
     }
   }
-  return { type: 'text', content: fullText, usage }
+  return { type: 'text', content: fullText, usage, ...withHosted(hosted) }
 }
 
 async function* parseNdjsonStream(response: Response): AsyncGenerator<string> {
@@ -219,8 +248,10 @@ export function parseNonStreamingResponse(
       }
     }
 
-    if (calls.length > 0) return { type: 'tool_calls', calls, responseId, usage }
-    return { type: 'text', content: text, usage }
+    const hosted = collectHosted(outputs)
+    if (calls.length > 0)
+      return { type: 'tool_calls', calls, responseId, usage, ...withHosted(hosted) }
+    return { type: 'text', content: text, usage, ...withHosted(hosted) }
   }
 
   if (isOllama) {

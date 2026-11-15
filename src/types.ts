@@ -26,6 +26,18 @@ export interface AppConfig {
   systemPrompt: string
   jsonSchema: string
   mcpServers: McpServer[]
+  // Outils exécutés côté OpenAI (Responses API uniquement)
+  hostedTools: { webSearch: boolean }
+}
+
+export interface WebSource {
+  url: string
+  title?: string
+}
+
+export interface HostedActivity {
+  searches: string[]
+  sources: WebSource[]
 }
 
 export interface McpTool {
@@ -83,6 +95,9 @@ export interface ChatMessage {
   thinkingBlocks?: unknown[]
   // Pour tool_result
   toolCallResultId?: string
+  // Recherche web hébergée (OpenAI) : requêtes et sources de la réponse
+  webSearches?: string[]
+  sources?: WebSource[]
 }
 
 export interface HttpExchange {
@@ -160,4 +175,5 @@ export const DEFAULT_CONFIG: AppConfig = {
   systemPrompt: '',
   jsonSchema: '',
   mcpServers: [],
+  hostedTools: { webSearch: false },
 }
