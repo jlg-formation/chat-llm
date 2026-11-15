@@ -170,7 +170,7 @@ describe('UsageSection', () => {
     expect(screen.getAllByText('2.0M').length).toBeGreaterThan(0)
   })
 
-  it('estimates the cost and context usage from loaded model pricing', async () => {
+  it('estimates the cost from loaded model pricing without context window', async () => {
     updateConfig(makeConfig({}, { provider: 'openai', model: 'gpt-x' }))
     setCachedModels('openai', [
       {
@@ -185,7 +185,7 @@ describe('UsageSection', () => {
     expect(screen.getByText('$0.002500')).toBeInTheDocument()
     expect(screen.getByText('Input · $0.001500')).toBeInTheDocument()
     expect(screen.getByText('Output · $0.001000')).toBeInTheDocument()
-    expect(screen.getByText('128.0k tokens')).toBeInTheDocument()
+    expect(screen.queryByText(/Fenêtre de contexte/)).not.toBeInTheDocument()
   })
 
   it('draws a donut that handles zero prompt or completion tokens', async () => {

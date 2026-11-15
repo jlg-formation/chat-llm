@@ -133,12 +133,12 @@ describe('SamplingSection with Anthropic', () => {
 })
 
 describe('UsageSection with Anthropic', () => {
-  it('estimates the cost and notes the Haiku low tier', async () => {
+  it('estimates the cost without showing the pricing tier', async () => {
     updateConfig(anthropic())
     addUsage({ promptTokens: 1_000_000, completionTokens: 1_000_000 })
     render(<UsageSection />)
     expect(screen.getByText('$0.600000')).toBeInTheDocument()
-    expect(screen.getByText(/Palier ≤ 100\.0k tokens/)).toBeInTheDocument()
+    expect(screen.queryByText(/Palier/)).not.toBeInTheDocument()
   })
 
   it('shows no cost for a model absent from the pricing file', () => {
