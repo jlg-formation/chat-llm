@@ -22,6 +22,7 @@ const native = (llm: Partial<LLMConfig> = {}, top = {}) =>
     apiKeys: {
       openai: "",
       anthropic: "sk-ant-1234567890",
+      mistral: "",
       ovh: "",
       lmstudio: "",
       ollama: "",
@@ -57,7 +58,14 @@ describe("anthropic helpers", () => {
 
   it("omits x-api-key when no key is set", () => {
     const config = native({
-      apiKeys: { openai: "", anthropic: "", ovh: "", lmstudio: "", ollama: "" },
+      apiKeys: {
+        openai: "",
+        anthropic: "",
+        mistral: "",
+        ovh: "",
+        lmstudio: "",
+        ollama: "",
+      },
     });
     expect(getHeaders(config)["x-api-key"]).toBeUndefined();
   });

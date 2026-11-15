@@ -1,0 +1,10 @@
+{
+  "mistral-small-latest": {
+    "pricingPrompt": 1.5e-7,
+    "pricingCompletion": 6e-7
+  },
+  "mistral-large-latest": {
+    "pricingPrompt": 7e-7,
+    "pricingCompletion": 0.0000021
+  }
+}

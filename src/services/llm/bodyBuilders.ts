@@ -1,6 +1,11 @@
 import type { AppConfig, ChatMessage, McpTool } from "../../types";
 import type { SkillRef } from "./types";
-import { usesResponsesAPI, usesAnthropicNative, isAnthropic } from "./helpers";
+import {
+  usesResponsesAPI,
+  usesAnthropicNative,
+  isAnthropic,
+  isMistral,
+} from "./helpers";
 import { safeParseArgs } from "./parsers";
 import {
   buildAnthropicBody,
@@ -87,13 +92,18 @@ export function buildChatCompletionsBody(
     stream: config.streamEnabled,
   };
 
-  if (config.streamEnabled) {
+  // Mistral rejette les champs inconnus : pas de stream_options, usage dans le dernier chunk
+  if (config.streamEnabled && !isMistral(config)) {
     body.stream_options = { include_usage: true };
   }
 
   if (config.llm.apiFormat === "ollama_chat") body.think = false;
 
-  applySampling(body, config, "max_completion_tokens");
+  applySampling(
+    body,
+    config,
+    isMistral(config) ? "max_tokens" : "max_completion_tokens",
+  );
 
   const allTools = buildTools(
     skillRefs,

@@ -19,6 +19,7 @@ describe("currentApiKey", () => {
         apiKeys: {
           openai: "",
           anthropic: "",
+          mistral: "",
           ovh: "k-ovh",
           lmstudio: "",
           ollama: "",
@@ -87,6 +88,7 @@ describe("getHeaders", () => {
         apiKeys: {
           openai: "sk-abc",
           anthropic: "",
+          mistral: "",
           ovh: "",
           lmstudio: "",
           ollama: "",
@@ -109,6 +111,7 @@ describe("getPedagogicHeaders", () => {
         apiKeys: {
           openai: "sk-1234567890",
           anthropic: "",
+          mistral: "",
           ovh: "",
           lmstudio: "",
           ollama: "",

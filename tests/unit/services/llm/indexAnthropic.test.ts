@@ -36,6 +36,7 @@ const config = (streamEnabled: boolean) =>
       apiKeys: {
         openai: "",
         anthropic: "sk-ant-secret-key",
+        mistral: "",
         ovh: "",
         lmstudio: "",
         ollama: "",

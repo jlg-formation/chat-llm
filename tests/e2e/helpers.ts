@@ -9,6 +9,7 @@ export const BASE_CONFIG = {
     apiKeys: {
       openai: "sk-test-key",
       anthropic: "",
+      mistral: "",
       ovh: "",
       lmstudio: "",
       ollama: "",

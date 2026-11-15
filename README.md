@@ -19,6 +19,7 @@ L'application est **100 % front-end** — aucun backend. Les clés API sont stoc
 | -------------------- | ----------------------------------------------- | ---------------------------------------------------- |
 | **OpenAI**           | API Responses (dernière version)                | `POST /v1/responses`                                 |
 | **Anthropic**        | API Messages native (ou mode compatible OpenAI) | `POST /v1/messages` (ou `POST /v1/chat/completions`) |
+| **Mistral AI**       | Chat Completions (ou API Responses)             | `POST /v1/chat/completions` (ou `POST /v1/responses`) |
 | **OVH AI Endpoints** | Chat Completions (compatible OpenAI)            | `POST /v1/chat/completions`                          |
 | **LM Studio**        | Chat Completions (compatible OpenAI)            | `POST /v1/chat/completions`                          |
 | **Ollama**           | API native Ollama                               | `POST /api/chat`                                     |

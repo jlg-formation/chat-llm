@@ -21,8 +21,13 @@ export const usesAnthropicNative = (c: AppConfig) =>
 
 export const isAnthropic = (c: AppConfig) => c.llm.provider === "anthropic";
 
+export const isMistral = (c: AppConfig) => c.llm.provider === "mistral";
+
 export function getEndpoint(config: AppConfig): string {
   const base = config.llm.baseUrl.replace(/\/$/, "");
+  // La base Mistral inclut déjà /v1
+  if (isMistral(config))
+    return `${base}/${config.llm.apiFormat === "responses" ? "responses" : "chat/completions"}`;
   if (config.llm.apiFormat === "anthropic_messages")
     return `${base}/v1/messages`;
   if (config.llm.apiFormat === "ollama_chat") return `${base}/api/chat`;

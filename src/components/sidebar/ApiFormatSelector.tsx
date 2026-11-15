@@ -25,6 +25,10 @@ const FORMAT_OPTIONS: Record<Provider, FormatOption[]> = {
     { ...CHAT_COMPLETIONS, name: "OpenAI compatible" },
   ],
   ovh: [RESPONSES, CHAT_COMPLETIONS],
+  mistral: [
+    { ...CHAT_COMPLETIONS, path: "/chat/completions" },
+    { ...RESPONSES, path: "/responses" },
+  ],
   lmstudio: [
     { fmt: "lmstudio_chat", path: "/api/v1/chat", name: "LM Studio Chat" },
     CHAT_COMPLETIONS,

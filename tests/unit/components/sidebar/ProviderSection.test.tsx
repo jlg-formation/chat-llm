@@ -10,7 +10,7 @@ import type { ModelInfo } from '@/services/models'
 
 vi.mock('@/services/models', () => ({ fetchModels: vi.fn() }))
 
-const PROVIDERS = ['openai', 'ovh', 'lmstudio', 'ollama'] as const
+const PROVIDERS = ['openai', 'anthropic', 'mistral', 'ovh', 'lmstudio', 'ollama'] as const
 
 // Remet à zéro le cache des modèles (pas de méthode de purge exportée)
 function resetModelsCache() {
@@ -97,6 +97,38 @@ describe('ProviderSection provider selection', () => {
     expect(screen.getByRole('option', { name: 'llama3' })).toBeInTheDocument()
     await user.click(screen.getByRole('radio', { name: /OpenAI compatible/ }))
     expect(getConfig().llm.apiFormat).toBe('chat_completions')
+  })
+})
+
+describe('ProviderSection Mistral', () => {
+  it('applies Mistral defaults, fallback models and both formats', async () => {
+    render(<ProviderSection />)
+    await user.selectOptions(screen.getByLabelText('Provider'), 'mistral')
+    const cfg = getConfig().llm
+    expect(cfg.apiFormat).toBe('chat_completions')
+    expect(cfg.model).toBe('mistral-small-latest')
+    expect(cfg.baseUrl).toBe('https://api.mistral.ai/v1')
+    expect(screen.getByLabelText('URL de base')).toBeEnabled()
+    expect(screen.getByRole('option', { name: /mistral-large-latest/ })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: /API Chat Completions/ })).toHaveAttribute('aria-checked', 'true')
+    await user.click(screen.getByRole('radio', { name: /API Responses/ }))
+    expect(getConfig().llm.apiFormat).toBe('responses')
+  })
+
+  it('resets the format to chat_completions when switching from Ollama', async () => {
+    updateConfig(makeConfig({}, { provider: 'ollama', apiFormat: 'ollama_chat', model: 'llama3' }))
+    render(<ProviderSection />)
+    await user.selectOptions(screen.getByLabelText('Provider'), 'mistral')
+    expect(getConfig().llm.apiFormat).toBe('chat_completions')
+  })
+
+  it('enriches loaded models with static pricing', async () => {
+    updateConfig(makeConfig({}, { provider: 'mistral', apiFormat: 'chat_completions', model: 'mistral-small-latest', baseUrl: 'https://api.mistral.ai/v1' }))
+    vi.mocked(fetchModels).mockResolvedValue([{ id: 'mistral-large-latest' } as ModelInfo])
+    render(<ProviderSection />)
+    await user.click(screen.getByRole('button', { name: /Charger/ }))
+    expect(await screen.findByRole('option', { name: /mistral-large-latest — \$0\.70\/\$2\.10/ })).toBeInTheDocument()
+    expect(fetchModels).toHaveBeenCalledWith('mistral', 'https://api.mistral.ai/v1', '')
   })
 })
 

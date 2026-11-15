@@ -6,6 +6,7 @@ import { Accordion } from "./Accordion";
 import { fetchModels } from "../../services/models";
 import {
   getDefaultAnthropicModels,
+  getDefaultMistralModels,
   getDefaultOpenAiModels,
   getStaticPricing,
 } from "../../services/pricing";
@@ -18,6 +19,7 @@ import { supportsFormat, modelLabel, isOvhChatModel } from "./modelHelpers";
 const DEFAULT_MODEL: Record<Provider, string> = {
   openai: "gpt-6-luna",
   anthropic: "claude-haiku-5-5",
+  mistral: "mistral-small-latest",
   ovh: "gpt-oss-20b",
   lmstudio: "",
   ollama: "",
@@ -40,6 +42,7 @@ export function ProviderSection() {
     const defaultFormat: Record<Provider, ApiFormat> = {
       openai: keepsCurrentFormat,
       anthropic: "anthropic_messages",
+      mistral: "chat_completions",
       ovh: keepsCurrentFormat,
       lmstudio: "lmstudio_chat",
       ollama: "ollama_chat",
@@ -66,7 +69,9 @@ export function ProviderSection() {
         llm.apiKeys[llm.provider],
       );
       const enriched =
-        llm.provider === "openai" || llm.provider === "anthropic"
+        llm.provider === "openai" ||
+        llm.provider === "anthropic" ||
+        llm.provider === "mistral"
           ? models.map((m) => ({ ...m, ...getStaticPricing(m.id) }))
           : models;
       setCachedModels(llm.provider, enriched);
@@ -101,6 +106,9 @@ export function ProviderSection() {
     if (llm.provider === "anthropic") {
       return cachedModels ?? getDefaultAnthropicModels();
     }
+    if (llm.provider === "mistral") {
+      return cachedModels ?? getDefaultMistralModels();
+    }
     if (llm.provider === "ovh") {
       const models = cachedModels ?? [];
       return models.filter(isOvhChatModel);
@@ -112,6 +120,7 @@ export function ProviderSection() {
   const showDropdown =
     llm.provider === "openai" ||
     llm.provider === "anthropic" ||
+    llm.provider === "mistral" ||
     llm.provider === "ovh" ||
     cachedModels !== undefined;
   const modelInList = displayModels.some((m) => m.id === llm.model);

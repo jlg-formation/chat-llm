@@ -45,11 +45,14 @@ The app **unifies 5 incompatible LLM APIs** behind `sendMessage()`:
 | ------------- | -------------------- | --------------------------- | ----------------------------------------------------------------------- |
 | **OpenAI**    | `responses`          | `POST /v1/responses`        | Custom SSE events (`response.output_text.delta`)                        |
 | **Anthropic** | `anthropic_messages` | `POST /v1/messages`         | `x-api-key`, adaptive thinking, `tool_use`/`tool_result` content blocks |
+| **Mistral**   | `chat_completions` / `responses` | `POST {base}/chat/completions` / `POST {base}/responses` | Base URL includes `/v1`; `max_tokens`, no `stream_options` |
 | **OVH AI**    | `chat_completions`   | `POST /v1/chat/completions` | OpenAI-compatible, 2 models only (`gpt-oss-20b`, `-120b`)               |
 | **LM Studio** | `lmstudio_chat`      | `POST /v1/chat`             | Stateful (sends `previous_response_id`), native MCP via `integrations`  |
 | **Ollama**    | `ollama_chat`        | `POST /api/chat`            | Native Ollama, `think: false` forced                                    |
 
 Anthropic also offers an OpenAI-compatible mode (`chat_completions` on `/v1/chat/completions`), see [ADR 004](docs/adr/004-provider-anthropic-double-format.md).
+
+Mistral reuses `chat_completions` (default) and `responses` with local tool loop, see [ADR 005](docs/adr/005-provider-mistral-deux-formats.md).
 
 **Each format has distinct**:
 
@@ -364,7 +367,7 @@ Protocole MCP 2025-11-25. Sessions maintenues en mémoire (`sessions: Map<string
 
 ### Types centraux (`src/types.ts`)
 
-- `Provider` : `'openai' | 'anthropic' | 'ovh' | 'lmstudio' | 'ollama'`
+- `Provider` : `'openai' | 'anthropic' | 'mistral' | 'ovh' | 'lmstudio' | 'ollama'`
 - `ApiFormat` : `'responses' | 'chat_completions' | 'lmstudio_chat' | 'ollama_chat' | 'anthropic_messages'`
 - `LLMConfig` contient `temperature`, `topP`, `maxTokens` (tous `number | null` — `null` = non envoyé à l'API) et `showThinking` (Anthropic)
 - `MessageRole` : `'user' | 'assistant' | 'system' | 'tool_call' | 'tool_result'`

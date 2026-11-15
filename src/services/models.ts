@@ -67,6 +67,22 @@ export async function fetchModels(
     return (json.data ?? []).map((m) => ({ id: m.id }));
   }
 
+  if (provider === "mistral") {
+    const json = await getJson<{
+      data?: Array<{
+        id: string;
+        max_context_length?: number;
+        capabilities?: { completion_chat?: boolean };
+      }>;
+    }>(`${base}/models`, headers);
+    return (json.data ?? [])
+      .filter((m) => m.capabilities?.completion_chat !== false)
+      .map((m) => ({
+        id: m.id,
+        contextLength: m.max_context_length || undefined,
+      }));
+  }
+
   if (provider === "lmstudio") {
     const json = await getJson<{
       models?: Array<{

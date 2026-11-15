@@ -1,6 +1,7 @@
 import type { ModelInfo } from "./models";
 import openaiPricing from "../data/openai-pricing.json";
 import anthropicPricing from "../data/anthropic-pricing.json";
+import mistralPricing from "../data/mistral-pricing.json";
 
 export type PricingEntry = Pick<
   ModelInfo,
@@ -10,7 +11,13 @@ export type PricingEntry = Pick<
 const TABLE = {
   ...openaiPricing,
   ...anthropicPricing,
+  ...mistralPricing,
 } as Record<string, PricingEntry>;
+
+const DEFAULT_MISTRAL_MODEL_IDS = [
+  "mistral-small-latest",
+  "mistral-large-latest",
+];
 
 const DEFAULT_ANTHROPIC_MODEL_IDS = [
   "claude-haiku-5-5",
@@ -54,6 +61,13 @@ export function getDefaultOpenAiModels(): ModelInfo[] {
 
 export function getDefaultAnthropicModels(): ModelInfo[] {
   return DEFAULT_ANTHROPIC_MODEL_IDS.map((id) => ({
+    id,
+    ...getStaticPricing(id),
+  }));
+}
+
+export function getDefaultMistralModels(): ModelInfo[] {
+  return DEFAULT_MISTRAL_MODEL_IDS.map((id) => ({
     id,
     ...getStaticPricing(id),
   }));
