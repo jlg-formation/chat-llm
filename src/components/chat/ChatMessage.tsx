@@ -1,51 +1,44 @@
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
-import "highlight.js/styles/github.css";
-import { Fragment, useState } from "react";
-import type { ChatMessage as ChatMessageType } from "../../types";
-import {
-  User,
-  Bot,
-  Wrench,
-  ChevronDown,
-  ChevronRight,
-  Globe,
-} from "lucide-react";
-import { MermaidBlock } from "./MermaidBlock";
-import { ThinkingBlock } from "./ThinkingBlock";
-import { XmlBlock } from "./XmlBlock";
-import { parseXmlBlocks } from "./parseXmlBlocks";
-import { splitSvgSegments } from "./svgSegments";
-import { SvgImage } from "./SvgImage";
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import rehypeHighlight from 'rehype-highlight'
+import 'highlight.js/styles/github.css'
+import { Fragment, useState } from 'react'
+import type { ChatMessage as ChatMessageType } from '../../types'
+import { User, Bot, Wrench, ChevronDown, ChevronRight, Globe } from 'lucide-react'
+import { MermaidBlock } from './MermaidBlock'
+import { ThinkingBlock } from './ThinkingBlock'
+import { XmlBlock } from './XmlBlock'
+import { parseXmlBlocks } from './parseXmlBlocks'
+import { splitSvgSegments } from './svgSegments'
+import { SvgImage } from './SvgImage'
 
 interface Props {
-  message: ChatMessageType;
+  message: ChatMessageType
 }
 
 function prettyJson(content: string): string | null {
   try {
-    return JSON.stringify(JSON.parse(content), null, 2);
+    return JSON.stringify(JSON.parse(content), null, 2)
   } catch {
-    return null;
+    return null
   }
 }
 
 function JsonDisplay({ content }: { content: string }) {
-  const formatted = prettyJson(content);
+  const formatted = prettyJson(content)
   if (formatted !== null) {
     return (
       <pre className="bg-gray-100 border border-gray-200 rounded-md p-3 text-xs font-mono overflow-x-auto whitespace-pre-wrap">
         {formatted}
       </pre>
-    );
+    )
   }
-  return <span className="text-gray-700">{content}</span>;
+  return <span className="text-gray-700">{content}</span>
 }
 
 function ToolMessageView({ message }: Props) {
-  const [open, setOpen] = useState(false);
-  const isCall = message.role === "tool_call";
+  const [open, setOpen] = useState(false)
+  const isCall = message.role === 'tool_call'
 
   return (
     <div className="flex justify-center">
@@ -57,10 +50,8 @@ function ToolMessageView({ message }: Props) {
           <Wrench className="w-3 h-3 shrink-0 text-amber-500" />
           {isCall ? (
             <span>
-              Appel outil :{" "}
-              <span className="font-mono font-semibold text-amber-700">
-                {message.toolName}
-              </span>
+              Appel outil :{' '}
+              <span className="font-mono font-semibold text-amber-700">{message.toolName}</span>
             </span>
           ) : (
             <span className="text-green-700 font-medium">Résultat outil</span>
@@ -73,28 +64,26 @@ function ToolMessageView({ message }: Props) {
         </button>
         {open && (
           <pre className="px-3 pb-2 font-mono text-gray-600 whitespace-pre-wrap break-all border-t border-gray-200 bg-white max-h-48 overflow-y-auto">
-            {isCall
-              ? (prettyJson(message.content) ?? message.content)
-              : message.content}
+            {isCall ? (prettyJson(message.content) ?? message.content) : message.content}
           </pre>
         )}
       </div>
     </div>
-  );
+  )
 }
 
 export function ChatMessageView({ message }: Props) {
-  if (message.role === "tool_call" || message.role === "tool_result") {
-    return <ToolMessageView message={message} />;
+  if (message.role === 'tool_call' || message.role === 'tool_result') {
+    return <ToolMessageView message={message} />
   }
 
-  const isUser = message.role === "user";
+  const isUser = message.role === 'user'
 
   return (
-    <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
+    <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
       <div
         className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-          isUser ? "bg-blue-500" : "bg-gray-200"
+          isUser ? 'bg-blue-500' : 'bg-gray-200'
         }`}
       >
         {isUser ? (
@@ -104,9 +93,7 @@ export function ChatMessageView({ message }: Props) {
         )}
       </div>
 
-      <div
-        className={`max-w-[75%] ${isUser ? "items-end" : "items-start"} flex flex-col gap-2`}
-      >
+      <div className={`max-w-[75%] ${isUser ? 'items-end' : 'items-start'} flex flex-col gap-2`}>
         {message.images && message.images.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {message.images.map((img, i) => (
@@ -131,8 +118,8 @@ export function ChatMessageView({ message }: Props) {
           <div
             className={`rounded-2xl px-4 py-2.5 ${
               isUser
-                ? "bg-blue-500 text-white rounded-tr-sm"
-                : "bg-white border border-gray-200 text-gray-800 rounded-tl-sm shadow-sm"
+                ? 'bg-blue-500 text-white rounded-tr-sm'
+                : 'bg-white border border-gray-200 text-gray-800 rounded-tl-sm shadow-sm'
             }`}
           >
             {message.isJson && !isUser ? (
@@ -143,11 +130,11 @@ export function ChatMessageView({ message }: Props) {
               <div className="prose-chat text-sm">
                 {splitSvgSegments(message.content).map((part, p) => (
                   <Fragment key={p}>
-                    {part.type === "svg" ? (
+                    {part.type === 'svg' ? (
                       <SvgImage svg={part.content} />
                     ) : (
                       parseXmlBlocks(part.content).map((seg, i) =>
-                        seg.type === "xml" ? (
+                        seg.type === 'xml' ? (
                           <XmlBlock
                             key={i}
                             tag={seg.tag!}
@@ -158,27 +145,14 @@ export function ChatMessageView({ message }: Props) {
                           <ReactMarkdown
                             key={i}
                             remarkPlugins={[remarkGfm]}
-                            rehypePlugins={[
-                              [rehypeHighlight, { ignoreMissing: true }],
-                            ]}
+                            rehypePlugins={[[rehypeHighlight, { ignoreMissing: true }]]}
                             components={{
                               code({ className, children }) {
-                                const lang = /language-(\w+)/.exec(
-                                  className ?? "",
-                                )?.[1];
-                                if (
-                                  lang === "mermaid" &&
-                                  !message.isStreaming
-                                ) {
-                                  return (
-                                    <MermaidBlock
-                                      code={String(children).trimEnd()}
-                                    />
-                                  );
+                                const lang = /language-(\w+)/.exec(className ?? '')?.[1]
+                                if (lang === 'mermaid' && !message.isStreaming) {
+                                  return <MermaidBlock code={String(children).trimEnd()} />
                                 }
-                                return (
-                                  <code className={className}>{children}</code>
-                                );
+                                return <code className={className}>{children}</code>
                               },
                               a({ href, children }) {
                                 return (
@@ -190,7 +164,7 @@ export function ChatMessageView({ message }: Props) {
                                   >
                                     {children}
                                   </a>
-                                );
+                                )
                               },
                             }}
                           >
@@ -201,34 +175,31 @@ export function ChatMessageView({ message }: Props) {
                     )}
                   </Fragment>
                 ))}
-                {message.isStreaming &&
-                  !message.content.match(/<\w+>[\s\S]*$/) && (
-                    <span className="inline-block w-1.5 h-4 bg-gray-400 animate-pulse ml-0.5 align-text-bottom" />
-                  )}
+                {message.isStreaming && !message.content.match(/<\w+>[\s\S]*$/) && (
+                  <span className="inline-block w-1.5 h-4 bg-gray-400 animate-pulse ml-0.5 align-text-bottom" />
+                )}
               </div>
             )}
           </div>
         )}
 
-        {!isUser &&
-          message.generatedImages &&
-          message.generatedImages.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {message.generatedImages.map((img, i) => (
-                <img
-                  key={i}
-                  src={img.dataUrl}
-                  alt="image générée"
-                  className="max-h-96 rounded-md border border-gray-200 object-contain"
-                />
-              ))}
-            </div>
-          )}
+        {!isUser && message.generatedImages && message.generatedImages.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {message.generatedImages.map((img, i) => (
+              <img
+                key={i}
+                src={img.dataUrl}
+                alt="image générée"
+                className="max-h-96 rounded-md border border-gray-200 object-contain"
+              />
+            ))}
+          </div>
+        )}
 
         {!isUser && message.webSearches && message.webSearches.length > 0 && (
           <p className="text-xs text-gray-500 flex items-center gap-1.5">
             <Globe className="w-3 h-3 shrink-0 text-indigo-500" />
-            Recherche web : {message.webSearches.join(" · ")}
+            Recherche web : {message.webSearches.join(' · ')}
           </p>
         )}
 
@@ -257,20 +228,20 @@ export function ChatMessageView({ message }: Props) {
             <div className="flex gap-1">
               <span
                 className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                style={{ animationDelay: "0ms" }}
+                style={{ animationDelay: '0ms' }}
               />
               <span
                 className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                style={{ animationDelay: "150ms" }}
+                style={{ animationDelay: '150ms' }}
               />
               <span
                 className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                style={{ animationDelay: "300ms" }}
+                style={{ animationDelay: '300ms' }}
               />
             </div>
           </div>
         )}
       </div>
     </div>
-  );
+  )
 }
