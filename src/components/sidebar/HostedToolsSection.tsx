@@ -18,7 +18,7 @@ export function HostedToolsSection() {
           <div>
             <p className="text-sm text-gray-700">Recherche web</p>
             <p className="text-xs text-gray-400">
-              Exécutée par OpenAI. Facturée à chaque recherche.
+              Exécutée par le fournisseur. Facturée à chaque recherche.
             </p>
           </div>
           <Toggle
@@ -33,7 +33,7 @@ export function HostedToolsSection() {
         </div>
         {!available && (
           <p className="text-xs text-amber-600">
-            Disponible uniquement avec OpenAI en API Responses.
+            Disponible avec OpenAI (API Responses) et Anthropic (API Messages).
           </p>
         )}
       </div>

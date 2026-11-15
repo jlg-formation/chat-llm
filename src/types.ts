@@ -26,7 +26,7 @@ export interface AppConfig {
   systemPrompt: string
   jsonSchema: string
   mcpServers: McpServer[]
-  // Outils exécutés côté OpenAI (Responses API uniquement)
+  // Outils exécutés côté fournisseur (OpenAI Responses, Anthropic Messages)
   hostedTools: { webSearch: boolean }
 }
 
@@ -93,6 +93,8 @@ export interface ChatMessage {
   toolTurnId?: string
   // Blocs thinking/redacted_thinking bruts à rejouer (Anthropic), portés par le 1er tool_call du tour
   thinkingBlocks?: unknown[]
+  // Blocs assistant bruts à rejouer tels quels (Anthropic pause_turn)
+  rawContent?: unknown[]
   // Pour tool_result
   toolCallResultId?: string
   // Recherche web hébergée (OpenAI) : requêtes et sources de la réponse

@@ -143,9 +143,24 @@ export function Chat() {
       if (result.responseId) lmStudioResponseIdRef.current = result.responseId
 
       let iterations = 0
-      while (result.type === 'tool_calls' && iterations < MAX_TOOL_ITERATIONS) {
+      let partialText = ''
+      while (
+        (result.type === 'tool_calls' || (result.type === 'text' && result.pausedContent)) &&
+        iterations < MAX_TOOL_ITERATIONS
+      ) {
         iterations++
+        if (result.type === 'text') {
+          // Hors streaming, le texte partiel n'est pas émis par onToken
+          if (!config.streamEnabled) partialText += result.content
+          apiMessages = [
+            ...apiMessages,
+            { id: genId(), role: 'assistant', content: '', rawContent: result.pausedContent },
+          ]
+          result = await callLLM()
+          continue
+        }
         finalContent = ''
+        partialText = ''
 
         const toolResults = await Promise.all(
           result.calls.map(async (call) => ({
@@ -173,7 +188,7 @@ export function Chat() {
       }
 
       if (!config.streamEnabled && result.type === 'text') {
-        finalContent = result.content
+        finalContent = partialText + result.content
       }
 
       const isJson =

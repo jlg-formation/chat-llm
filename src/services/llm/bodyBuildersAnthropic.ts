@@ -2,6 +2,7 @@ import type { AppConfig, ChatMessage, McpTool, MessageImage } from '../../types'
 import type { SkillRef } from './types'
 import { safeParseArgs } from './parsers'
 import { skillToolForAnthropic, mcpToolForAnthropic, buildTools, parseJsonSchema } from './tools'
+import { webSearchActive } from './helpers'
 
 /** Anthropic impose max_tokens ; valeur utilisée quand l'utilisateur n'en fixe pas. */
 export const ANTHROPIC_DEFAULT_MAX_TOKENS = 4096
@@ -67,6 +68,8 @@ function buildMessages(messages: ChatMessage[]): unknown[] {
       const content: unknown[] = (m.images ?? []).map(imageBlock)
       if (m.content) content.push({ type: 'text', text: m.content })
       out.push({ role: 'user', content })
+    } else if (m.role === 'assistant' && m.rawContent) {
+      out.push({ role: 'assistant', content: m.rawContent })
     } else if (m.role === 'assistant' && m.content) {
       out.push({ role: 'assistant', content: m.content })
     }
@@ -95,7 +98,13 @@ export function buildAnthropicBody(
 
   if (systemPrompt) body.system = systemPrompt
 
-  const tools = buildTools(skillRefs, mcpTools, skillToolForAnthropic, mcpToolForAnthropic)
+  const tools: unknown[] = buildTools(
+    skillRefs,
+    mcpTools,
+    skillToolForAnthropic,
+    mcpToolForAnthropic,
+  )
+  if (webSearchActive(config)) tools.push({ type: 'web_search_20250305', name: 'web_search' })
   if (tools.length > 0) {
     body.tools = tools
     // Opus/Sonnet/Fable 5.x rejettent tool_choice forcé

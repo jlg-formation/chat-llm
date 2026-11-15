@@ -1,5 +1,5 @@
 import type { LLMResult, LLMToolCall } from './types'
-import type { TokenUsage } from '../../types'
+import type { HostedActivity, TokenUsage, WebSource } from '../../types'
 import { parseSSEEvents } from '../sse'
 
 type Block = Record<string, unknown>
@@ -12,8 +12,34 @@ function usageOf(u: Record<string, unknown> | undefined): TokenUsage | undefined
   }
 }
 
+// Blocs rejoués tels quels au tour suivant (web_search côté serveur inclus)
+const REPLAYED_TYPES = [
+  'thinking',
+  'redacted_thinking',
+  'server_tool_use',
+  'web_search_tool_result',
+]
+
+// Requêtes et sources de la recherche web hébergée
+function collectHosted(blocks: Block[]): HostedActivity | undefined {
+  const searches: string[] = []
+  const sources: WebSource[] = []
+  for (const b of blocks) {
+    if (b.type === 'server_tool_use' && b.name === 'web_search') {
+      const query = (b.input as Record<string, unknown> | undefined)?.query
+      if (typeof query === 'string') searches.push(query)
+    } else if (b.type === 'web_search_tool_result' && Array.isArray(b.content)) {
+      for (const r of b.content as Block[]) {
+        if (r.type === 'web_search_result' && typeof r.url === 'string')
+          sources.push({ url: r.url, title: r.title as string | undefined })
+      }
+    }
+  }
+  return searches.length > 0 || sources.length > 0 ? { searches, sources } : undefined
+}
+
 // Commun au streaming (blocs assemblés) et au non-streaming (content de la réponse).
-function resultFromBlocks(blocks: Block[], usage?: TokenUsage): LLMResult {
+function resultFromBlocks(blocks: Block[], usage?: TokenUsage, stopReason?: string): LLMResult {
   const text = blocks
     .filter((b) => b.type === 'text')
     .map((b) => (b.text as string) ?? '')
@@ -22,9 +48,7 @@ function resultFromBlocks(blocks: Block[], usage?: TokenUsage): LLMResult {
     .filter((b) => b.type === 'thinking')
     .map((b) => (b.thinking as string) ?? '')
     .join('')
-  const thinkingBlocks = blocks.filter(
-    (b) => b.type === 'thinking' || b.type === 'redacted_thinking',
-  )
+  const thinkingBlocks = blocks.filter((b) => REPLAYED_TYPES.includes(b.type as string))
   const calls: LLMToolCall[] = blocks
     .filter((b) => b.type === 'tool_use')
     .map((b) => {
@@ -37,6 +61,7 @@ function resultFromBlocks(blocks: Block[], usage?: TokenUsage): LLMResult {
       }
     })
 
+  const hosted = collectHosted(blocks)
   if (calls.length > 0) {
     return {
       type: 'tool_calls',
@@ -44,6 +69,7 @@ function resultFromBlocks(blocks: Block[], usage?: TokenUsage): LLMResult {
       usage,
       thinking: thinking || undefined,
       thinkingBlocks,
+      hosted,
     }
   }
   return {
@@ -51,6 +77,9 @@ function resultFromBlocks(blocks: Block[], usage?: TokenUsage): LLMResult {
     content: text,
     usage,
     thinking: thinking || undefined,
+    hosted,
+    // pause_turn : la réponse doit être renvoyée telle quelle pour que le serveur reprenne
+    pausedContent: stopReason === 'pause_turn' ? blocks : undefined,
   }
 }
 
@@ -64,6 +93,7 @@ export async function streamAnthropicMessages(
   let inputTokens = 0
   let outputTokens = 0
   let hasUsage = false
+  let stopReason: string | undefined
 
   for await (const { data } of parseSSEEvents(response.body!)) {
     let json: Record<string, unknown>
@@ -86,7 +116,8 @@ export async function streamAnthropicMessages(
       }
       case 'content_block_start':
         blocks[index] = { ...(json.content_block as Block) }
-        if (blocks[index].type === 'tool_use') toolJson.set(index, '')
+        if (blocks[index].type === 'tool_use' || blocks[index].type === 'server_tool_use')
+          toolJson.set(index, '')
         break
       case 'content_block_delta': {
         const delta = json.delta as Block
@@ -106,6 +137,8 @@ export async function streamAnthropicMessages(
         break
       }
       case 'message_delta': {
+        stopReason =
+          ((json.delta as Block | undefined)?.stop_reason as string | undefined) ?? stopReason
         const u = json.usage as Record<string, unknown> | undefined
         if (u) {
           hasUsage = true
@@ -132,6 +165,7 @@ export async function streamAnthropicMessages(
   return resultFromBlocks(
     blocks.filter(Boolean),
     hasUsage ? { promptTokens: inputTokens, completionTokens: outputTokens } : undefined,
+    stopReason,
   )
 }
 
@@ -140,5 +174,6 @@ export function parseAnthropicNonStreaming(json: unknown): LLMResult {
   return resultFromBlocks(
     (obj.content as Block[]) ?? [],
     usageOf(obj.usage as Record<string, unknown> | undefined),
+    obj.stop_reason as string | undefined,
   )
 }

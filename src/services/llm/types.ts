@@ -20,6 +20,8 @@ export type LLMResult =
       responseId?: string
       thinking?: string
       hosted?: HostedActivity
+      // Contenu brut à renvoyer tel quel quand le serveur met la réponse en pause (Anthropic)
+      pausedContent?: unknown[]
     }
   | {
       type: 'tool_calls'
@@ -28,7 +30,7 @@ export type LLMResult =
       rawAssistantMsg?: unknown
       usage?: TokenUsage
       thinking?: string
-      // Blocs thinking/redacted_thinking bruts (Anthropic) à rejouer avec les tool_use
+      // Blocs bruts (thinking, recherche web serveur) à rejouer avec les tool_use (Anthropic)
       thinkingBlocks?: unknown[]
       hosted?: HostedActivity
     }
