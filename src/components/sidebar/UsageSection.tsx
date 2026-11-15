@@ -1,47 +1,36 @@
-import { BarChart2 } from "lucide-react";
-import { useImageUsage, useUsage } from "../../store/usageStore";
-import { useModelsCache } from "../../store/modelsStore";
-import { useConfig } from "../../store/configStore";
-import { getStaticPricing } from "../../services/pricing";
-import { Accordion } from "./Accordion";
+import { BarChart2 } from 'lucide-react'
+import { useImageUsage, useUsage } from '../../store/usageStore'
+import { useModelsCache } from '../../store/modelsStore'
+import { useConfig } from '../../store/configStore'
+import { getStaticPricing } from '../../services/pricing'
+import { Accordion } from './Accordion'
 
-function polarToCart(
-  cx: number,
-  cy: number,
-  r: number,
-  angleDeg: number,
-): [number, number] {
-  const rad = ((angleDeg - 90) * Math.PI) / 180;
-  return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
+function polarToCart(cx: number, cy: number, r: number, angleDeg: number): [number, number] {
+  const rad = ((angleDeg - 90) * Math.PI) / 180
+  return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)]
 }
 
-function slicePath(
-  cx: number,
-  cy: number,
-  r: number,
-  startDeg: number,
-  endDeg: number,
-): string {
-  if (Math.abs(endDeg - startDeg) >= 360) endDeg = startDeg + 359.9;
-  const [x1, y1] = polarToCart(cx, cy, r, startDeg);
-  const [x2, y2] = polarToCart(cx, cy, r, endDeg);
-  const large = endDeg - startDeg > 180 ? 1 : 0;
-  return `M ${cx} ${cy} L ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 ${large} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`;
+function slicePath(cx: number, cy: number, r: number, startDeg: number, endDeg: number): string {
+  if (Math.abs(endDeg - startDeg) >= 360) endDeg = startDeg + 359.9
+  const [x1, y1] = polarToCart(cx, cy, r, startDeg)
+  const [x2, y2] = polarToCart(cx, cy, r, endDeg)
+  const large = endDeg - startDeg > 180 ? 1 : 0
+  return `M ${cx} ${cy} L ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 ${large} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`
 }
 
 function fmt(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
-  return String(n);
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`
+  return String(n)
 }
 
 function fmtCost(usd: number): string {
-  return `$${usd.toFixed(6)}`;
+  return `$${usd.toFixed(6)}`
 }
 
 function ImageTokenDonut({ input, output }: { input: number; output: number }) {
-  const total = input + output;
-  const inputDeg = (input / total) * 360;
+  const total = input + output
+  const inputDeg = (input / total) * 360
   return (
     <svg viewBox="0 0 100 100" className="w-14 h-14 shrink-0">
       {input === 0 ? (
@@ -55,49 +44,40 @@ function ImageTokenDonut({ input, output }: { input: number; output: number }) {
         </>
       )}
       <circle cx="50" cy="50" r="22" fill="white" />
-      <text
-        x="50"
-        y="54"
-        textAnchor="middle"
-        fontSize="11"
-        fontWeight="600"
-        fill="#374151"
-      >
+      <text x="50" y="54" textAnchor="middle" fontSize="11" fontWeight="600" fill="#374151">
         {fmt(total)}
       </text>
     </svg>
-  );
+  )
 }
 
 export function UsageSection() {
-  const [usage, reset] = useUsage();
-  const images = useImageUsage();
-  const [config] = useConfig();
-  const models = useModelsCache(config.llm.provider);
+  const [usage, reset] = useUsage()
+  const images = useImageUsage()
+  const [config] = useConfig()
+  const models = useModelsCache(config.llm.provider)
 
-  const { promptTokens, completionTokens } = usage;
-  const total = promptTokens + completionTokens;
-  const imageTotal = images.imageInputTokens + images.imageOutputTokens;
+  const { promptTokens, completionTokens } = usage
+  const total = promptTokens + completionTokens
+  const imageTotal = images.imageInputTokens + images.imageOutputTokens
 
   const modelInfo =
     models?.find((m) => m.id === config.llm.model) ??
-    getStaticPricing(config.llm.model, config.llm.provider);
+    getStaticPricing(config.llm.model, config.llm.provider)
   const costPrompt =
-    modelInfo?.pricingPrompt !== undefined
-      ? promptTokens * modelInfo.pricingPrompt
-      : undefined;
+    modelInfo?.pricingPrompt !== undefined ? promptTokens * modelInfo.pricingPrompt : undefined
   const costCompletion =
     modelInfo?.pricingCompletion !== undefined
       ? completionTokens * modelInfo.pricingCompletion
-      : undefined;
+      : undefined
   const costTotal =
     costPrompt !== undefined && costCompletion !== undefined
       ? costPrompt + costCompletion
-      : undefined;
+      : undefined
 
-  if (total === 0 && images.count === 0) return null;
+  if (total === 0 && images.count === 0) return null
 
-  const promptDeg = (promptTokens / total) * 360;
+  const promptDeg = (promptTokens / total) * 360
 
   return (
     <Accordion
@@ -116,22 +96,12 @@ export function UsageSection() {
             ) : (
               <>
                 <path d={slicePath(50, 50, 40, 0, promptDeg)} fill="#93c5fd" />
-                <path
-                  d={slicePath(50, 50, 40, promptDeg, 360)}
-                  fill="#86efac"
-                />
+                <path d={slicePath(50, 50, 40, promptDeg, 360)} fill="#86efac" />
               </>
             )}
             {/* Trou central (donut) */}
             <circle cx="50" cy="50" r="22" fill="white" />
-            <text
-              x="50"
-              y="54"
-              textAnchor="middle"
-              fontSize="11"
-              fontWeight="600"
-              fill="#374151"
-            >
+            <text x="50" y="54" textAnchor="middle" fontSize="11" fontWeight="600" fill="#374151">
               {fmt(total)}
             </text>
           </svg>
@@ -139,20 +109,14 @@ export function UsageSection() {
           {/* Légende */}
           <div className="flex-1 space-y-1.5 text-xs">
             <div className="flex items-center gap-1.5">
-              <span
-                className="w-2.5 h-2.5 rounded-sm shrink-0"
-                style={{ background: "#93c5fd" }}
-              />
+              <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: '#93c5fd' }} />
               <span className="text-gray-600">Input</span>
               <span className="ml-auto font-mono font-semibold text-gray-800">
                 {fmt(promptTokens)}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span
-                className="w-2.5 h-2.5 rounded-sm shrink-0"
-                style={{ background: "#86efac" }}
-              />
+              <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: '#86efac' }} />
               <span className="text-gray-600">Output</span>
               <span className="ml-auto font-mono font-semibold text-gray-800">
                 {fmt(completionTokens)}
@@ -165,9 +129,7 @@ export function UsageSection() {
         {costTotal !== undefined && (
           <div className="rounded-lg bg-indigo-50 border border-indigo-100 px-3 py-2">
             <div className="flex items-baseline justify-between">
-              <span className="text-xs text-indigo-500 font-medium">
-                Coût total estimé
-              </span>
+              <span className="text-xs text-indigo-500 font-medium">Coût total estimé</span>
               <span className="text-base font-bold font-mono text-indigo-700">
                 {fmtCost(costTotal)}
               </span>
@@ -178,8 +140,7 @@ export function UsageSection() {
             </div>
             {modelInfo?.longContext && (
               <div className="mt-1 text-xs text-indigo-300">
-                Palier ≤ {fmt(modelInfo.longContext.threshold)} tokens de prompt
-                appliqué
+                Palier ≤ {fmt(modelInfo.longContext.threshold)} tokens de prompt appliqué
               </div>
             )}
           </div>
@@ -189,9 +150,7 @@ export function UsageSection() {
           <div className="rounded-lg bg-white border border-gray-200 px-3 py-2 text-xs">
             <div className="flex justify-between text-gray-600">
               <span>Images générées</span>
-              <span className="font-mono font-semibold text-gray-800">
-                {images.count}
-              </span>
+              <span className="font-mono font-semibold text-gray-800">{images.count}</span>
             </div>
             {imageTotal > 0 && (
               <div className="mt-2 flex items-center gap-3">
@@ -203,7 +162,7 @@ export function UsageSection() {
                   <div className="flex items-center gap-1.5">
                     <span
                       className="w-2.5 h-2.5 rounded-sm shrink-0"
-                      style={{ background: "#93c5fd" }}
+                      style={{ background: '#93c5fd' }}
                     />
                     <span className="text-gray-600">Input</span>
                     <span className="ml-auto font-mono font-semibold text-gray-800">
@@ -213,7 +172,7 @@ export function UsageSection() {
                   <div className="flex items-center gap-1.5">
                     <span
                       className="w-2.5 h-2.5 rounded-sm shrink-0"
-                      style={{ background: "#86efac" }}
+                      style={{ background: '#86efac' }}
                     />
                     <span className="text-gray-600">Output</span>
                     <span className="ml-auto font-mono font-semibold text-gray-800">
@@ -226,7 +185,7 @@ export function UsageSection() {
             <div className="mt-1 flex justify-between text-gray-500">
               <span>Coût image estimé</span>
               <span className="font-mono">
-                {images.costUnknown ? "non estimé" : fmtCost(images.costUsd)}
+                {images.costUnknown ? 'non estimé' : fmtCost(images.costUsd)}
               </span>
             </div>
           </div>
@@ -252,5 +211,5 @@ export function UsageSection() {
         </button>
       </div>
     </Accordion>
-  );
+  )
 }

@@ -35,24 +35,41 @@ Un skill est un fichier `.zip` contenant un répertoire portant le nom du skill,
 
 Les skills sont stockés en IndexedDB via `localforage` pour supporter de grands volumes.
 
+## Prérequis
+
+- [Bun](https://bun.sh/) 1.3.14
+- Node.js 24.22.3
+
+Les versions sont fixées dans [mise.toml](mise.toml). Avec [mise](https://mise.jdx.dev/) : `mise install`.
+
 ## Lancer le projet en local
 
 ```bash
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 L'application sera accessible sur `http://localhost:5173`.
 
+## Tests, lint et format
+
+```bash
+bun run test:unit   # tests unitaires (Vitest)
+bun run test        # tests E2E (Playwright)
+bun run lint        # oxlint
+bun run format      # oxfmt
+bun run build       # vérification TypeScript + build
+```
+
 ## Déployer sur GitHub Pages
 
 ```bash
-npm run build
+bun run build
 ```
 
 Le contenu du dossier `dist/` est prêt à être déployé. La configuration Vite inclut `base: '/chat-llm/'` pour GitHub Pages.
 
-Pour déployer automatiquement via GitHub Actions, ajoutez un workflow qui build et publie `dist/` sur la branche `gh-pages`.
+Le déploiement est automatisé par `.github/workflows/deploy.yml` : à chaque push sur `main`, l'application est buildée puis publiée via GitHub Pages.
 
 ## Stack technique
 

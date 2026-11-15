@@ -11,6 +11,8 @@ bun install              # Install deps (uses bun.lock)
 bun run dev              # Dev server → http://localhost:5173/chat-llm/
 bun run build            # Type-check + build → dist/
 bun run lint             # oxlint check
+bun run test:unit        # Vitest unit tests
+bun run format           # oxfmt
 bun run test             # Playwright E2E (headless)
 bun run test:ui          # Playwright interactive mode
 ```
@@ -122,7 +124,7 @@ Unlike other providers, LM Studio maintains context via `previous_response_id` p
 ### Tool Iteration Silent Ceiling
 
 ```typescript
-const MAX_TOOL_ITERATIONS = 100
+const MAX_TOOL_ITERATIONS = 100;
 ```
 
 If LLM recursively calls tools, loop stops at 100 **with no error message**. Users see 100 tool_call messages but no "limit reached" notification.
@@ -319,7 +321,7 @@ Otherwise, this file + [ADRs](docs/adr/) provide sufficient context.
 ## Reference
 
 - **Codebase**: React 19 + TypeScript + Tailwind CSS
-- **Testing**: Playwright E2E (no unit tests)
+- **Testing**: Vitest (unit tests in `tests/unit/`) + Playwright E2E (`tests/e2e/`)
 - **State**: Custom observer stores (5 independent stores)
 - **Deployment**: GitHub Pages (Vite, base: `/chat-llm/`)
 - **Package Manager**: **bun** (via `bun.lock`)

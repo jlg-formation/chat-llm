@@ -4,7 +4,7 @@ import { createObservable } from "./observable";
 import { getStaticPricing } from "../services/pricing";
 import { estimateImageCost, getImagePricing } from "../services/imagePricing";
 
-export const DEFAULT_SPEND_LIMIT_USD = 0.15;
+const DEFAULT_SPEND_LIMIT_USD = 0.15;
 export const SPEND_STORAGE_KEY = "chat_pedagogique_spend";
 export const SPEND_LIMIT_STORAGE_KEY = "chat_pedagogique_spend_limit";
 

@@ -3,7 +3,7 @@ import type { TokenUsage } from "../types";
 import { createObservable } from "./observable";
 import { estimateImageCost } from "../services/imagePricing";
 
-export interface ImageUsage {
+interface ImageUsage {
   count: number;
   costUsd: number;
   // Vrai si au moins une image n'a pas de coût estimable

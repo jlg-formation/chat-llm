@@ -2,33 +2,20 @@ import { useRef, useEffect, useState } from "react";
 import type {
   AppConfig,
   ChatMessage as ChatMessageType,
-  HostedActivity,
   MessageImage,
 } from "../types";
 import { ChatMessageView } from "./chat/ChatMessage";
 import { ChatInput } from "./chat/ChatInput";
-import { buildToolMessages } from "./chat/toolMessages";
+import { buildSystemAndSkills, runAgentLoop } from "./chat/agentLoop";
 import { useConfig } from "../store/configStore";
-import {
-  loadSkills,
-  getSkillContent,
-  parseSkillFrontmatter,
-} from "../store/skillsStore";
-import { sendMessage } from "../services/llm";
-import { callMcpTool } from "../services/mcp";
 import { genId } from "../services/id";
-import type { SkillRef, LLMToolCall } from "../services/llm";
 import { SquarePen } from "lucide-react";
-import { addUsage, addImageUsage, resetUsage } from "../store/usageStore";
+import { resetUsage } from "../store/usageStore";
 import {
-  addSpend,
-  estimateCallCostUsd,
   getSpendLimitUsd,
   isSpendLimitReached,
   useSpentUsd,
 } from "../store/spendGuard";
-
-const MAX_TOOL_ITERATIONS = 100;
 
 export function Chat() {
   const [config] = useConfig();
@@ -43,63 +30,6 @@ export function Chat() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  async function buildSystemAndSkills(): Promise<{
-    systemPrompt: string;
-    skillRefs: SkillRef[];
-  }> {
-    const skills = await loadSkills();
-    const active = skills.filter((s) => s.enabled);
-    let systemPrompt = config.systemPrompt ?? "";
-
-    if (active.length === 0) {
-      return { systemPrompt, skillRefs: [] };
-    }
-
-    const skillRefs: SkillRef[] = active.map((s) => parseSkillFrontmatter(s));
-
-    const skillList = skillRefs
-      .map(
-        (r) => `- **${r.name}**${r.description ? ` : ${r.description}` : ""}`,
-      )
-      .join("\n");
-
-    systemPrompt +=
-      `\n\n## Skills disponibles\n\n` +
-      `Utilise l'outil \`get_skill_details\` pour obtenir les instructions complètes d'un skill si tu en as besoin avant de répondre.\n\n` +
-      skillList;
-
-    return { systemPrompt, skillRefs };
-  }
-
-  async function resolveToolCall(
-    call: LLMToolCall,
-    mcpServers: AppConfig["mcpServers"],
-  ): Promise<string> {
-    if (call.name !== "get_skill_details") {
-      for (const server of mcpServers) {
-        if (!server.enabled) continue;
-        const tool = server.tools.find(
-          (t) => t.name === call.name && t.enabled,
-        );
-        if (tool)
-          return callMcpTool(
-            server,
-            call.name,
-            call.args as Record<string, unknown>,
-          );
-      }
-    }
-
-    const skillName = (call.args.name as string) ?? "";
-    const skills = await loadSkills();
-    const skill = skills.find(
-      (s) =>
-        s.name === skillName || parseSkillFrontmatter(s).name === skillName,
-    );
-    if (!skill) return `Skill "${skillName}" non trouvé.`;
-    return getSkillContent(skill);
-  }
 
   async function handleSend(text: string, images: MessageImage[]) {
     // Plafond atteint : pas d'images ni de MCP pour cet envoi
@@ -144,112 +74,43 @@ export function Chat() {
     ) => patchAssistant({ content, isStreaming, isJson });
 
     try {
-      const { systemPrompt, skillRefs } = await buildSystemAndSkills();
+      const { systemPrompt, skillRefs } = await buildSystemAndSkills(runConfig);
 
-      let apiMessages = [...newMessages];
-      let finalContent = "";
       let thinkingText = "";
-      const onToken = (token: string) => {
-        finalContent += token;
-        updateAssistant(finalContent, true);
-      };
       const onThinking = (token: string) => {
         thinkingText += token;
         patchAssistant({ thinking: thinkingText });
       };
-
-      const activeMcpTools = runConfig.mcpServers
-        .filter((s) => s.enabled)
-        .flatMap((s) => s.tools.filter((t) => t.enabled));
       const prevId =
         config.llm.apiFormat === "lmstudio_chat"
           ? lmStudioResponseIdRef.current
           : undefined;
-      const hosted: HostedActivity = { searches: [], sources: [], images: [] };
-      const callLLM = async () => {
-        const res = await sendMessage(
-          runConfig,
-          apiMessages,
-          systemPrompt,
-          skillRefs,
-          activeMcpTools,
-          onToken,
-          ctrl.signal,
-          prevId,
-          onThinking,
-        );
-        if (res.usage) addUsage(res.usage);
-        addSpend(estimateCallCostUsd(runConfig, res.usage));
-        addImageUsage(
-          res.hosted?.images.length ?? 0,
-          config.hostedTools.imageModel,
-          res.usage?.imageOutputTokens,
-          res.usage?.imageInputTokens,
-        );
-        if (res.hosted) {
-          hosted.searches.push(...res.hosted.searches);
-          hosted.sources.push(...res.hosted.sources);
-          hosted.images.push(...res.hosted.images);
-        }
-        return res;
-      };
-      let result = await callLLM();
-      if (result.responseId) lmStudioResponseIdRef.current = result.responseId;
 
-      let iterations = 0;
-      let partialText = "";
-      while (
-        (result.type === "tool_calls" ||
-          (result.type === "text" && result.pausedContent)) &&
-        iterations < MAX_TOOL_ITERATIONS
-      ) {
-        iterations++;
-        if (result.type === "text") {
-          // Hors streaming, le texte partiel n'est pas émis par onToken
-          if (!config.streamEnabled) partialText += result.content;
-          apiMessages = [
-            ...apiMessages,
-            {
-              id: genId(),
-              role: "assistant",
-              content: "",
-              rawContent: result.pausedContent,
-            },
-          ];
-          result = await callLLM();
-          continue;
-        }
-        finalContent = "";
-        partialText = "";
-
-        const toolResults = await Promise.all(
-          result.calls.map(async (call) => ({
-            call,
-            content: await resolveToolCall(call, runConfig.mcpServers),
-          })),
-        );
-
-        // Construire les messages tool_call + tool_result et les ajouter à l'historique
-        const toolMsgs = buildToolMessages(toolResults, result.thinkingBlocks);
-
-        apiMessages = [...apiMessages, ...toolMsgs];
-
-        // Mettre à jour l'UI : insérer les messages tool avant le message assistant en cours
-        setMessages((prev) => {
-          const withoutLast = prev.slice(0, -1);
-          return [...withoutLast, ...toolMsgs, prev[prev.length - 1]];
-        });
-
-        thinkingText = "";
-        patchAssistant({ thinking: undefined });
-        updateAssistant("", true);
-
-        result = await callLLM();
-      }
-
-      if (!config.streamEnabled && result.type === "text") {
-        finalContent = partialText + result.content;
-      }
+      const { result, finalContent, hosted } = await runAgentLoop({
+        config: runConfig,
+        systemPrompt,
+        skillRefs,
+        messages: newMessages,
+        prevId,
+        signal: ctrl.signal,
+        onContent: updateAssistant,
+        onThinking,
+        onToolMessages: (toolMsgs) => {
+          // Insérer les messages tool avant le message assistant en cours
+          setMessages((prev) => {
+            const withoutLast = prev.slice(0, -1);
+            return [...withoutLast, ...toolMsgs, prev[prev.length - 1]];
+          });
+        },
+        onResetAssistant: () => {
+          thinkingText = "";
+          patchAssistant({ thinking: undefined });
+          updateAssistant("", true);
+        },
+        onResponseId: (id) => {
+          lmStudioResponseIdRef.current = id;
+        },
+      });
 
       const isJson =
         !!config.jsonSchema &&

@@ -1,53 +1,49 @@
-import { useSyncExternalStore } from "react";
-import type { AppConfig, McpServer, McpTool } from "../types";
-import { DEFAULT_CONFIG, PROVIDER_DEFAULTS } from "../types";
-import { createObservable } from "./observable";
+import { useSyncExternalStore } from 'react'
+import type { AppConfig, McpServer, McpTool } from '../types'
+import { DEFAULT_CONFIG, PROVIDER_DEFAULTS } from '../types'
+import { createObservable } from './observable'
 
-const LS_KEY = "chat_pedagogique_config";
+const LS_KEY = 'chat_pedagogique_config'
 
 function loadConfig(): AppConfig {
   try {
-    const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return DEFAULT_CONFIG;
-    const saved = JSON.parse(raw);
+    const raw = localStorage.getItem(LS_KEY)
+    if (!raw) return DEFAULT_CONFIG
+    const saved = JSON.parse(raw)
     // Migration : ancien format avec apiKey à plat → apiKeys par provider
-    if (saved.llm && typeof saved.llm.apiKey === "string") {
+    if (saved.llm && typeof saved.llm.apiKey === 'string') {
       saved.llm.apiKeys = {
         ...DEFAULT_CONFIG.llm.apiKeys,
-        [saved.llm.provider ?? "openai"]: saved.llm.apiKey,
-      };
-      delete saved.llm.apiKey;
+        [saved.llm.provider ?? 'openai']: saved.llm.apiKey,
+      }
+      delete saved.llm.apiKey
     }
     // Migration : si pas d'apiFormat, dériver depuis le provider sauvegardé
     if (saved.llm && !saved.llm.apiFormat) {
-      const p = saved.llm.provider;
+      const p = saved.llm.provider
       saved.llm.apiFormat =
-        p === "openai"
-          ? "responses"
-          : p === "anthropic"
-            ? "anthropic_messages"
-            : "chat_completions";
+        p === 'openai' ? 'responses' : p === 'anthropic' ? 'anthropic_messages' : 'chat_completions'
     }
     // Migration : champs MCP plats → tableau mcpServers
-    if (typeof saved.mcpUrl === "string" && !Array.isArray(saved.mcpServers)) {
+    if (typeof saved.mcpUrl === 'string' && !Array.isArray(saved.mcpServers)) {
       const legacyServer: McpServer = {
         id: crypto.randomUUID(),
-        name: (saved.mcpName as string) || "Serveur MCP",
+        name: (saved.mcpName as string) || 'Serveur MCP',
         url: saved.mcpUrl,
         enabled: (saved.mcpEnabled as boolean) ?? false,
         tools: (saved.mcpTools as McpTool[]) ?? [],
-      };
-      saved.mcpServers = saved.mcpUrl ? [legacyServer] : [];
-      delete saved.mcpUrl;
-      delete saved.mcpName;
-      delete saved.mcpEnabled;
-      delete saved.mcpTools;
+      }
+      saved.mcpServers = saved.mcpUrl ? [legacyServer] : []
+      delete saved.mcpUrl
+      delete saved.mcpName
+      delete saved.mcpEnabled
+      delete saved.mcpTools
     }
     // Provider inconnu (ex. valeur obsolète en localStorage) → retour au défaut
     if (saved.llm && !(saved.llm.provider in PROVIDER_DEFAULTS)) {
-      saved.llm.provider = DEFAULT_CONFIG.llm.provider;
-      saved.llm.apiFormat = DEFAULT_CONFIG.llm.apiFormat;
-      saved.llm.baseUrl = DEFAULT_CONFIG.llm.baseUrl;
+      saved.llm.provider = DEFAULT_CONFIG.llm.provider
+      saved.llm.apiFormat = DEFAULT_CONFIG.llm.apiFormat
+      saved.llm.baseUrl = DEFAULT_CONFIG.llm.baseUrl
     }
     return {
       ...DEFAULT_CONFIG,
@@ -61,32 +57,29 @@ function loadConfig(): AppConfig {
         ? (saved.mcpServers as McpServer[])
         : DEFAULT_CONFIG.mcpServers,
       hostedTools: { ...DEFAULT_CONFIG.hostedTools, ...saved.hostedTools },
-    };
+    }
   } catch {
-    return DEFAULT_CONFIG;
+    return DEFAULT_CONFIG
   }
 }
 
 function saveConfig(config: AppConfig) {
-  localStorage.setItem(LS_KEY, JSON.stringify(config));
+  localStorage.setItem(LS_KEY, JSON.stringify(config))
 }
 
-let globalConfig = loadConfig();
-const { notify, subscribe } = createObservable();
+let globalConfig = loadConfig()
+const { notify, subscribe } = createObservable()
 
 export function getConfig(): AppConfig {
-  return globalConfig;
+  return globalConfig
 }
 
 export function updateConfig(partial: Partial<AppConfig>) {
-  globalConfig = { ...globalConfig, ...partial };
-  saveConfig(globalConfig);
-  notify();
+  globalConfig = { ...globalConfig, ...partial }
+  saveConfig(globalConfig)
+  notify()
 }
 
-export function useConfig(): [
-  AppConfig,
-  (partial: Partial<AppConfig>) => void,
-] {
-  return [useSyncExternalStore(subscribe, getConfig), updateConfig];
+export function useConfig(): [AppConfig, (partial: Partial<AppConfig>) => void] {
+  return [useSyncExternalStore(subscribe, getConfig), updateConfig]
 }

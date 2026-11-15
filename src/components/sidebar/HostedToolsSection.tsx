@@ -1,35 +1,32 @@
-import { Globe } from "lucide-react";
-import { Accordion } from "./Accordion";
-import { Toggle } from "./Toggle";
-import { useConfig } from "../../store/configStore";
+import { Globe } from 'lucide-react'
+import { Accordion } from './Accordion'
+import { Toggle } from './Toggle'
+import { useConfig } from '../../store/configStore'
 import {
   IMAGE_TOOL_MODELS,
   IMAGE_TOOL_SIZES,
   imageGenerationAvailable,
   imageGenerationProviderAvailable,
   webSearchAvailable,
-} from "../../services/llm/helpers";
-import { getImagePricing } from "../../services/imagePricing";
+} from '../../services/llm/helpers'
+import { getImagePricing } from '../../services/imagePricing'
 
 export function HostedToolsSection() {
-  const [config, update] = useConfig();
-  const available = webSearchAvailable(config);
-  const imageAvailable = imageGenerationAvailable(config);
-  const imageProviderOk = imageGenerationProviderAvailable(config);
+  const [config, update] = useConfig()
+  const available = webSearchAvailable(config)
+  const imageAvailable = imageGenerationAvailable(config)
+  const imageProviderOk = imageGenerationProviderAvailable(config)
   const imageModelLabel = (m: string) => {
-    const p = getImagePricing(m);
-    if (!p) return m;
-    return `${m} — $${p.textInputPerMillion.toFixed(2)}/$${p.imageInputPerMillion.toFixed(2)}/$${p.imageOutputPerMillion.toFixed(2)} /Mtok`;
-  };
+    const p = getImagePricing(m)
+    if (!p) return m
+    return `${m} — $${p.textInputPerMillion.toFixed(2)}/$${p.imageInputPerMillion.toFixed(2)}/$${p.imageOutputPerMillion.toFixed(2)} /Mtok`
+  }
 
   return (
-    <Accordion
-      title="Outils hébergés"
-      icon={<Globe className="w-4 h-4 text-indigo-500" />}
-    >
+    <Accordion title="Outils hébergés" icon={<Globe className="w-4 h-4 text-indigo-500" />}>
       <div className="space-y-3">
         <div
-          className={`flex items-start justify-between gap-3 ${available ? "" : "opacity-50 pointer-events-none"}`}
+          className={`flex items-start justify-between gap-3 ${available ? '' : 'opacity-50 pointer-events-none'}`}
           aria-disabled={!available}
         >
           <div>
@@ -58,7 +55,7 @@ export function HostedToolsSection() {
         )}
 
         <div
-          className={`space-y-2 ${imageAvailable ? "" : "opacity-50 pointer-events-none"}`}
+          className={`space-y-2 ${imageAvailable ? '' : 'opacity-50 pointer-events-none'}`}
           aria-disabled={!imageAvailable}
         >
           <div className="flex items-start justify-between gap-3">
@@ -120,7 +117,7 @@ export function HostedToolsSection() {
             >
               {IMAGE_TOOL_SIZES.map((s) => (
                 <option key={s} value={s}>
-                  {s.replace("x", " × ")}
+                  {s.replace('x', ' × ')}
                 </option>
               ))}
             </select>
@@ -130,10 +127,10 @@ export function HostedToolsSection() {
           <p className="text-xs text-amber-600">
             {imageProviderOk
               ? "Modèle principal non compatible avec l'outil image. Choisissez un modèle de la liste blanche."
-              : "Disponible avec OpenAI (API Responses)."}
+              : 'Disponible avec OpenAI (API Responses).'}
           </p>
         )}
       </div>
     </Accordion>
-  );
+  )
 }

@@ -47,6 +47,7 @@ describe("hosted web search helpers", () => {
       webSearch: true,
       imageGeneration: false,
       imageModel: "gpt-image-2.6-flare",
+      imageSize: "640x1024",
     };
     expect(webSearchActive(makeConfig())).toBe(false);
     expect(webSearchActive(makeConfig({ hostedTools: on }))).toBe(true);
@@ -63,6 +64,7 @@ describe("buildOpenAIResponsesBody with web search", () => {
         webSearch: true,
         imageGeneration: false,
         imageModel: "gpt-image-2.6-flare",
+        imageSize: "640x1024",
       },
     });
     const body = buildOpenAIResponsesBody(

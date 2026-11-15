@@ -83,7 +83,7 @@ export interface TokenUsage {
   imageOutputTokens?: number;
 }
 
-export type MessageRole =
+type MessageRole =
   | "user"
   | "assistant"
   | "system"

@@ -11,6 +11,7 @@ const anthropicCfg = (hosted = false) =>
         webSearch: hosted,
         imageGeneration: false,
         imageModel: "gpt-image-2.6-flare",
+        imageSize: "640x1024",
       },
     },
     { provider: "anthropic", apiFormat: "anthropic_messages" },

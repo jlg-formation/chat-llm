@@ -65,6 +65,7 @@ describe("image generation availability", () => {
     webSearch: false,
     imageGeneration: true,
     imageModel: "gpt-image-2.6-flare",
+    imageSize: "640x1024",
   };
 
   it("is available for openai + responses with a whitelisted model", () => {

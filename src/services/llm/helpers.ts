@@ -21,7 +21,7 @@ export const webSearchActive = (c: AppConfig) =>
   c.hostedTools.webSearch && webSearchAvailable(c);
 
 // Modèles principaux pouvant appeler l'outil image_generation (doc OpenAI, « Supported models »)
-export const IMAGE_GENERATION_MODELS: readonly string[] = [
+const IMAGE_GENERATION_MODELS: readonly string[] = [
   "chat-latest",
   "gpt-5.2",
   "gpt-5.2-pro",
@@ -58,7 +58,7 @@ export const IMAGE_TOOL_SIZES: readonly string[] = [
 export const imageGenerationProviderAvailable = (c: AppConfig) =>
   c.llm.provider === "openai" && usesResponsesAPI(c);
 
-export const imageGenerationModelSupported = (c: AppConfig) =>
+const imageGenerationModelSupported = (c: AppConfig) =>
   IMAGE_GENERATION_MODELS.includes(c.llm.model);
 
 export const imageGenerationAvailable = (c: AppConfig) =>
