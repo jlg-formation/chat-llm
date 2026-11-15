@@ -1,95 +1,88 @@
-import { useState } from "react";
-import { Network, Plus } from "lucide-react";
-import { McpServerCard } from "./McpServerCard";
-import { useConfig } from "../../store/configStore";
-import { Accordion } from "./Accordion";
-import { fetchMcpTools, connectMcp, disconnectMcp } from "../../services/mcp";
-import type { McpServer } from "../../types";
+import { useState } from 'react'
+import { Network, Plus } from 'lucide-react'
+import { McpServerCard } from './McpServerCard'
+import { useConfig } from '../../store/configStore'
+import { Accordion } from './Accordion'
+import { fetchMcpTools, connectMcp, disconnectMcp } from '../../services/mcp'
+import type { McpServer } from '../../types'
 
 export function McpSection() {
-  const [config, update] = useConfig();
-  const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
-  const [errorIds, setErrorIds] = useState<Map<string, string>>(new Map());
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [config, update] = useConfig()
+  const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set())
+  const [errorIds, setErrorIds] = useState<Map<string, string>>(new Map())
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
   function updateServer(id: string, patch: Partial<McpServer>) {
     update({
-      mcpServers: config.mcpServers.map((s) =>
-        s.id === id ? { ...s, ...patch } : s,
-      ),
-    });
+      mcpServers: config.mcpServers.map((s) => (s.id === id ? { ...s, ...patch } : s)),
+    })
   }
 
   function addServer() {
-    const id = crypto.randomUUID();
+    const id = crypto.randomUUID()
     update({
-      mcpServers: [
-        ...config.mcpServers,
-        { id, name: "", url: "", enabled: false, tools: [] },
-      ],
-    });
-    setExpandedIds((prev) => new Set(prev).add(id));
+      mcpServers: [...config.mcpServers, { id, name: '', url: '', enabled: false, tools: [] }],
+    })
+    setExpandedIds((prev) => new Set(prev).add(id))
   }
 
   async function removeServer(id: string) {
-    const server = config.mcpServers.find((s) => s.id === id);
+    const server = config.mcpServers.find((s) => s.id === id)
     if (server?.enabled && server.url) {
       try {
-        await disconnectMcp(server);
+        await disconnectMcp(server)
       } catch {
         /* ignore */
       }
     }
-    update({ mcpServers: config.mcpServers.filter((s) => s.id !== id) });
+    update({ mcpServers: config.mcpServers.filter((s) => s.id !== id) })
   }
 
   // Exécute une action réseau en gérant l'indicateur de chargement et le message d'erreur du serveur
   async function runForServer(id: string, action: () => Promise<void>) {
-    setLoadingIds((prev) => new Set(prev).add(id));
+    setLoadingIds((prev) => new Set(prev).add(id))
     setErrorIds((prev) => {
-      const m = new Map(prev);
-      m.delete(id);
-      return m;
-    });
+      const m = new Map(prev)
+      m.delete(id)
+      return m
+    })
     try {
-      await action();
+      await action()
     } catch (e) {
-      setErrorIds((prev) =>
-        new Map(prev).set(id, `Erreur : ${(e as Error).message}`),
-      );
+      setErrorIds((prev) => new Map(prev).set(id, `Erreur : ${(e as Error).message}`))
     } finally {
       setLoadingIds((prev) => {
-        const s = new Set(prev);
-        s.delete(id);
-        return s;
-      });
+        const s = new Set(prev)
+        s.delete(id)
+        return s
+      })
     }
   }
 
   async function toggleServer(server: McpServer) {
-    const enabling = !server.enabled;
+    const enabling = !server.enabled
     if (!server.url) {
-      updateServer(server.id, { enabled: enabling });
-      return;
+      updateServer(server.id, { enabled: enabling })
+      return
     }
     await runForServer(server.id, async () => {
       if (enabling) {
-        await connectMcp(server);
-        const tools = await fetchMcpTools(server);
-        updateServer(server.id, { enabled: true, tools });
+        await connectMcp(server)
+        const tools = await fetchMcpTools(server)
+        updateServer(server.id, { enabled: true, tools })
       } else {
-        await disconnectMcp(server);
-        updateServer(server.id, { enabled: false, tools: [] });
+        await disconnectMcp(server)
+        updateServer(server.id, { enabled: false, tools: [] })
       }
-    });
+    })
   }
 
   async function refreshTools(server: McpServer) {
-    if (!server.url) return;
+    if (!server.url) return
     await runForServer(server.id, async () => {
-      const tools = await fetchMcpTools(server);
-      updateServer(server.id, { tools });
-    });
+      const tools = await fetchMcpTools(server)
+      updateServer(server.id, { tools })
+    })
   }
 
   function toggleTool(serverId: string, toolName: string) {
@@ -99,28 +92,23 @@ export function McpSection() {
           ? s
           : {
               ...s,
-              tools: s.tools.map((t) =>
-                t.name === toolName ? { ...t, enabled: !t.enabled } : t,
-              ),
+              tools: s.tools.map((t) => (t.name === toolName ? { ...t, enabled: !t.enabled } : t)),
             },
       ),
-    });
+    })
   }
 
   function toggleExpanded(id: string) {
     setExpandedIds((prev) => {
-      const s = new Set(prev);
-      if (s.has(id)) s.delete(id);
-      else s.add(id);
-      return s;
-    });
+      const s = new Set(prev)
+      if (s.has(id)) s.delete(id)
+      else s.add(id)
+      return s
+    })
   }
 
   return (
-    <Accordion
-      title="Serveurs MCP"
-      icon={<Network className="w-4 h-4 text-teal-500" />}
-    >
+    <Accordion title="Serveurs MCP" icon={<Network className="w-4 h-4 text-teal-500" />}>
       <div className="space-y-3">
         <button
           onClick={addServer}
@@ -131,9 +119,7 @@ export function McpSection() {
         </button>
 
         {config.mcpServers.length === 0 && (
-          <p className="text-xs text-gray-400 text-center py-1">
-            Aucun serveur MCP configuré
-          </p>
+          <p className="text-xs text-gray-400 text-center py-1">Aucun serveur MCP configuré</p>
         )}
 
         {config.mcpServers.map((server) => (
@@ -153,5 +139,5 @@ export function McpSection() {
         ))}
       </div>
     </Accordion>
-  );
+  )
 }

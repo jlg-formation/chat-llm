@@ -43,7 +43,10 @@ describe('tool definitions', () => {
   })
 
   it('falls back to an empty object schema when none is provided', () => {
-    expect(mcpToolForChatCompletions(bare).function.parameters).toEqual({ type: 'object', properties: {} })
+    expect(mcpToolForChatCompletions(bare).function.parameters).toEqual({
+      type: 'object',
+      properties: {},
+    })
     expect(mcpToolForResponsesAPI(bare).parameters).toEqual({ type: 'object', properties: {} })
   })
 })

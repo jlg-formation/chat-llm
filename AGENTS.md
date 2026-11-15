@@ -41,14 +41,14 @@ Each exposes: `getState()`, `setState()`, `useHook()` — hooks re-render on glo
 
 The app **unifies 5 incompatible LLM APIs** behind `sendMessage()`:
 
-| Provider      | Format               | Endpoint                    | Key Trait                                                               |
-| ------------- | -------------------- | --------------------------- | ----------------------------------------------------------------------- |
-| **OpenAI**    | `responses`          | `POST /v1/responses`        | Custom SSE events (`response.output_text.delta`)                        |
-| **Anthropic** | `anthropic_messages` | `POST /v1/messages`         | `x-api-key`, adaptive thinking, `tool_use`/`tool_result` content blocks |
-| **Mistral**   | `chat_completions` / `responses` | `POST {base}/chat/completions` / `POST {base}/responses` | Base URL includes `/v1`; `max_tokens`, no `stream_options` |
-| **OVH AI**    | `chat_completions`   | `POST /v1/chat/completions` | OpenAI-compatible, 2 models only (`gpt-oss-20b`, `-120b`)               |
-| **LM Studio** | `lmstudio_chat`      | `POST /v1/chat`             | Stateful (sends `previous_response_id`), native MCP via `integrations`  |
-| **Ollama**    | `ollama_chat`        | `POST /api/chat`            | Native Ollama, `think: false` forced                                    |
+| Provider      | Format                           | Endpoint                                                 | Key Trait                                                               |
+| ------------- | -------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **OpenAI**    | `responses`                      | `POST /v1/responses`                                     | Custom SSE events (`response.output_text.delta`)                        |
+| **Anthropic** | `anthropic_messages`             | `POST /v1/messages`                                      | `x-api-key`, adaptive thinking, `tool_use`/`tool_result` content blocks |
+| **Mistral**   | `chat_completions` / `responses` | `POST {base}/chat/completions` / `POST {base}/responses` | Base URL includes `/v1`; `max_tokens`, no `stream_options`              |
+| **OVH AI**    | `chat_completions`               | `POST /v1/chat/completions`                              | OpenAI-compatible, 2 models only (`gpt-oss-20b`, `-120b`)               |
+| **LM Studio** | `lmstudio_chat`                  | `POST /v1/chat`                                          | Stateful (sends `previous_response_id`), native MCP via `integrations`  |
+| **Ollama**    | `ollama_chat`                    | `POST /api/chat`                                         | Native Ollama, `think: false` forced                                    |
 
 Anthropic also offers an OpenAI-compatible mode (`chat_completions` on `/v1/chat/completions`), see [ADR 004](docs/adr/004-provider-anthropic-double-format.md).
 
@@ -122,7 +122,7 @@ Unlike other providers, LM Studio maintains context via `previous_response_id` p
 ### Tool Iteration Silent Ceiling
 
 ```typescript
-const MAX_TOOL_ITERATIONS = 100;
+const MAX_TOOL_ITERATIONS = 100
 ```
 
 If LLM recursively calls tools, loop stops at 100 **with no error message**. Users see 100 tool_call messages but no "limit reached" notification.

@@ -1,18 +1,18 @@
-import { RefreshCw, Trash2, ChevronDown, ChevronRight } from "lucide-react";
-import { Toggle } from "./Toggle";
-import type { McpServer } from "../../types";
+import { RefreshCw, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
+import { Toggle } from './Toggle'
+import type { McpServer } from '../../types'
 
 interface Props {
-  server: McpServer;
-  isExpanded: boolean;
-  isLoading: boolean;
-  error?: string;
-  onToggle: () => void;
-  onToggleExpanded: () => void;
-  onRemove: () => void;
-  onRefresh: () => void;
-  onToggleTool: (name: string) => void;
-  onUpdate: (patch: Partial<McpServer>) => void;
+  server: McpServer
+  isExpanded: boolean
+  isLoading: boolean
+  error?: string
+  onToggle: () => void
+  onToggleExpanded: () => void
+  onRemove: () => void
+  onRefresh: () => void
+  onToggleTool: (name: string) => void
+  onUpdate: (patch: Partial<McpServer>) => void
 }
 
 export function McpServerCard({
@@ -27,27 +27,20 @@ export function McpServerCard({
   onToggleTool,
   onUpdate,
 }: Props) {
-  const enabledCount = server.tools.filter((t) => t.enabled).length;
+  const enabledCount = server.tools.filter((t) => t.enabled).length
 
   return (
     <div
-      className={`border rounded-md ${server.enabled ? "border-teal-300 bg-teal-50/30" : "border-gray-200"}`}
+      className={`border rounded-md ${server.enabled ? 'border-teal-300 bg-teal-50/30' : 'border-gray-200'}`}
     >
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2">
-        <Toggle
-          checked={server.enabled}
-          onChange={() => onToggle()}
-          color="teal"
-          size="sm"
-        />
+        <Toggle checked={server.enabled} onChange={() => onToggle()} color="teal" size="sm" />
         <span
           className="flex-1 text-sm font-medium text-gray-700 truncate cursor-pointer select-none"
           onClick={() => onToggleExpanded()}
         >
-          {server.name || (
-            <span className="text-gray-400 italic font-normal">Sans nom</span>
-          )}
+          {server.name || <span className="text-gray-400 italic font-normal">Sans nom</span>}
         </span>
         {server.tools.length > 0 && (
           <span className="text-xs text-teal-600 bg-teal-100 rounded-full px-1.5 py-0.5 shrink-0">
@@ -57,13 +50,9 @@ export function McpServerCard({
         <button
           onClick={() => onToggleExpanded()}
           className="text-gray-400 hover:text-gray-600 shrink-0"
-          aria-label={isExpanded ? "Réduire" : "Développer"}
+          aria-label={isExpanded ? 'Réduire' : 'Développer'}
         >
-          {isExpanded ? (
-            <ChevronDown className="w-4 h-4" />
-          ) : (
-            <ChevronRight className="w-4 h-4" />
-          )}
+          {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </button>
         <button
           onClick={() => onRemove()}
@@ -90,9 +79,7 @@ export function McpServerCard({
           </div>
 
           <div>
-            <label className="block text-xs text-gray-500 mb-1">
-              URL (Streamable HTTP)
-            </label>
+            <label className="block text-xs text-gray-500 mb-1">URL (Streamable HTTP)</label>
             <div className="flex gap-2">
               <input
                 type="url"
@@ -108,9 +95,7 @@ export function McpServerCard({
                 title="Recharger les outils"
                 aria-label="Recharger les outils"
               >
-                <RefreshCw
-                  className={`w-4 h-4 text-gray-600 ${isLoading ? "animate-spin" : ""}`}
-                />
+                <RefreshCw className={`w-4 h-4 text-gray-600 ${isLoading ? 'animate-spin' : ''}`} />
               </button>
             </div>
           </div>
@@ -122,7 +107,7 @@ export function McpServerCard({
             <div className="flex gap-2">
               <input
                 type="password"
-                value={server.token ?? ""}
+                value={server.token ?? ''}
                 onChange={(e) => onUpdate({ token: e.target.value })}
                 autoComplete="off"
                 className="flex-1 text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-teal-500"
@@ -135,9 +120,7 @@ export function McpServerCard({
 
           {server.tools.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs text-gray-500 font-medium">
-                Outils disponibles :
-              </p>
+              <p className="text-xs text-gray-500 font-medium">Outils disponibles :</p>
               {server.tools.map((tool) => (
                 <div key={tool.name} className="flex items-start gap-2">
                   <Toggle
@@ -148,13 +131,11 @@ export function McpServerCard({
                   />
                   <div className="min-w-0">
                     <div
-                      className={`font-mono text-xs ${tool.enabled ? "text-gray-800" : "text-gray-400"}`}
+                      className={`font-mono text-xs ${tool.enabled ? 'text-gray-800' : 'text-gray-400'}`}
                     >
                       {tool.name}
                     </div>
-                    <div className="text-xs text-gray-400">
-                      {tool.description}
-                    </div>
+                    <div className="text-xs text-gray-400">{tool.description}</div>
                   </div>
                 </div>
               ))}
@@ -163,5 +144,5 @@ export function McpServerCard({
         </div>
       )}
     </div>
-  );
+  )
 }

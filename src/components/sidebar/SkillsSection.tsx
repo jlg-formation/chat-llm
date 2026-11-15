@@ -14,7 +14,9 @@ export function SkillsSection() {
     setSkills(await loadSkills())
   }
 
-  useEffect(() => { loadSkills().then(setSkills) }, [])
+  useEffect(() => {
+    loadSkills().then(setSkills)
+  }, [])
 
   async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -60,14 +62,16 @@ export function SkillsSection() {
         )}
 
         <div className="space-y-2">
-          {skills.map(skill => (
+          {skills.map((skill) => (
             <div
               key={skill.id}
               className={`flex items-center gap-2 p-2 rounded-md border ${
                 skill.enabled ? 'border-yellow-200 bg-yellow-50' : 'border-gray-200 bg-gray-50'
               }`}
             >
-              <span className="flex-1 text-sm font-medium text-gray-700 truncate">{skill.name}</span>
+              <span className="flex-1 text-sm font-medium text-gray-700 truncate">
+                {skill.name}
+              </span>
               <Toggle checked={skill.enabled} onChange={() => toggleSkill(skill)} color="yellow" />
               <button
                 onClick={() => removeSkill(skill.id)}
@@ -82,7 +86,15 @@ export function SkillsSection() {
 
         <p className="text-xs text-gray-500">
           Les skills activés sont injectés dans le prompt système selon la spec{' '}
-          <a href="https://agentskills.io" target="_blank" rel="noopener noreferrer" className="underline">agentskills.io</a>.
+          <a
+            href="https://agentskills.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            agentskills.io
+          </a>
+          .
         </p>
       </div>
     </Accordion>

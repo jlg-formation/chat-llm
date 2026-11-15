@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 
 const CW = 14 // largeur du gutter chevron en px
-const PAD = 6  // padding de base du conteneur (p-1.5 = 6px)
+const PAD = 6 // padding de base du conteneur (p-1.5 = 6px)
 
 function Primitive({ value }: { value: unknown }) {
   if (value === null) return <span className="text-gray-400">null</span>
@@ -14,7 +14,12 @@ function Primitive({ value }: { value: unknown }) {
   return <span>{String(value)}</span>
 }
 
-function JsonNode({ value, prefix, suffix, depth = 0 }: {
+function JsonNode({
+  value,
+  prefix,
+  suffix,
+  depth = 0,
+}: {
   value: unknown
   prefix?: ReactNode
   suffix?: ReactNode
@@ -45,15 +50,21 @@ function JsonNode({ value, prefix, suffix, depth = 0 }: {
   )
 
   if (Array.isArray(value)) {
-    if (value.length === 0) return (
-      <div>{prefix}<span className="text-gray-500">[]</span>{suffix}</div>
-    )
+    if (value.length === 0)
+      return (
+        <div>
+          {prefix}
+          <span className="text-gray-500">[]</span>
+          {suffix}
+        </div>
+      )
     return (
       <>
         <div style={{ position: 'relative' }}>
-          {chevronBtn(open, () => setOpen(o => !o))}
+          {chevronBtn(open, () => setOpen((o) => !o))}
           <span>
-            {prefix}<span className="text-gray-500">[</span>
+            {prefix}
+            <span className="text-gray-500">[</span>
             {!open && (
               <span className="text-gray-400 cursor-pointer" onClick={() => setOpen(true)}>
                 {value.length}…]{suffix}
@@ -73,7 +84,10 @@ function JsonNode({ value, prefix, suffix, depth = 0 }: {
                 />
               ))}
             </div>
-            <div><span className="text-gray-500">]</span>{suffix}</div>
+            <div>
+              <span className="text-gray-500">]</span>
+              {suffix}
+            </div>
           </>
         )}
       </>
@@ -82,18 +96,25 @@ function JsonNode({ value, prefix, suffix, depth = 0 }: {
 
   if (value !== null && typeof value === 'object') {
     const entries = Object.entries(value as Record<string, unknown>)
-    if (entries.length === 0) return (
-      <div>{prefix}<span className="text-gray-500">{'{}'}</span>{suffix}</div>
-    )
+    if (entries.length === 0)
+      return (
+        <div>
+          {prefix}
+          <span className="text-gray-500">{'{}'}</span>
+          {suffix}
+        </div>
+      )
     return (
       <>
         <div style={{ position: 'relative' }}>
-          {chevronBtn(open, () => setOpen(o => !o))}
+          {chevronBtn(open, () => setOpen((o) => !o))}
           <span>
-            {prefix}<span className="text-gray-500">{'{'}</span>
+            {prefix}
+            <span className="text-gray-500">{'{'}</span>
             {!open && (
               <span className="text-gray-400 cursor-pointer" onClick={() => setOpen(true)}>
-                …{'}'}{suffix}
+                …{'}'}
+                {suffix}
               </span>
             )}
           </span>
@@ -106,25 +127,46 @@ function JsonNode({ value, prefix, suffix, depth = 0 }: {
                   key={k}
                   value={v}
                   depth={depth + 1}
-                  prefix={<><span className="text-indigo-700">"{k}"</span><span className="text-gray-500">: </span></>}
+                  prefix={
+                    <>
+                      <span className="text-indigo-700">"{k}"</span>
+                      <span className="text-gray-500">: </span>
+                    </>
+                  }
                   suffix={i < entries.length - 1 ? <span className="text-gray-400">,</span> : null}
                 />
               ))}
             </div>
-            <div><span className="text-gray-500">{'}'}</span>{suffix}</div>
+            <div>
+              <span className="text-gray-500">{'}'}</span>
+              {suffix}
+            </div>
           </>
         )}
       </>
     )
   }
 
-  return <div>{prefix}<Primitive value={value} />{suffix}</div>
+  return (
+    <div>
+      {prefix}
+      <Primitive value={value} />
+      {suffix}
+    </div>
+  )
 }
 
 export function JsonTree({ value }: { value: unknown }) {
-  const parsed = typeof value === 'string'
-    ? (() => { try { return JSON.parse(value) } catch { return value } })()
-    : value
+  const parsed =
+    typeof value === 'string'
+      ? (() => {
+          try {
+            return JSON.parse(value)
+          } catch {
+            return value
+          }
+        })()
+      : value
 
   return (
     <div

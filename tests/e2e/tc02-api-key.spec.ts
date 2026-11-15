@@ -2,7 +2,6 @@ import { test, expect } from '@playwright/test'
 import { setConfig, LS_KEY } from './helpers'
 
 test.describe('TC-02 · Injection et masquage de la clé API', () => {
-
   test('le champ clé API est de type password (caractères masqués)', async ({ page }) => {
     await setConfig(page)
     await page.goto('/')
@@ -11,7 +10,9 @@ test.describe('TC-02 · Injection et masquage de la clé API', () => {
     await expect(page.getByLabel(/Clé API/)).toHaveAttribute('type', 'password')
   })
 
-  test("la clé injectée depuis l'environnement est présente dans localStorage", async ({ page }) => {
+  test("la clé injectée depuis l'environnement est présente dans localStorage", async ({
+    page,
+  }) => {
     const key = process.env.OPENAI_API_KEY ?? 'sk-test-from-env'
     await setConfig(page, {
       llm: { provider: 'openai', apiKeys: { openai: key, ovh: '', lmstudio: '', ollama: '' } },
@@ -35,7 +36,9 @@ test.describe('TC-02 · Injection et masquage de la clé API', () => {
     await expect(page.getByText('Stockée en clair dans localStorage')).toBeVisible()
   })
 
-  test("changer de provider affiche un champ de clé API vide si le provider n'a pas de clé configurée", async ({ page }) => {
+  test("changer de provider affiche un champ de clé API vide si le provider n'a pas de clé configurée", async ({
+    page,
+  }) => {
     await setConfig(page, {
       llm: {
         provider: 'openai',

@@ -21,7 +21,15 @@ describe('LeftSidebar', () => {
   it('lists every configuration section', () => {
     render(<LeftSidebar />)
     expect(screen.getByText('Configuration')).toBeInTheDocument()
-    for (const title of ['Provider LLM', 'Mode Stream', 'Sampling', 'Prompt Système', 'Structured Output', 'Skills', 'Serveurs MCP']) {
+    for (const title of [
+      'Provider LLM',
+      'Mode Stream',
+      'Sampling',
+      'Prompt Système',
+      'Structured Output',
+      'Skills',
+      'Serveurs MCP',
+    ]) {
       expect(screen.getByRole('button', { name: title })).toBeInTheDocument()
     }
   })

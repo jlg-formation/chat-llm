@@ -62,7 +62,9 @@ describe('ProviderSection provider selection', () => {
   })
 
   it('keeps a compatible format when switching to OpenAI from OVH', async () => {
-    updateConfig(makeConfig({}, { provider: 'ovh', apiFormat: 'chat_completions', model: 'gpt-oss-20b' }))
+    updateConfig(
+      makeConfig({}, { provider: 'ovh', apiFormat: 'chat_completions', model: 'gpt-oss-20b' }),
+    )
     render(<ProviderSection />)
     await user.selectOptions(screen.getByLabelText('Provider'), 'openai')
     expect(getConfig().llm.apiFormat).toBe('chat_completions')
@@ -78,7 +80,17 @@ describe('ProviderSection provider selection', () => {
   })
 
   it('edits the base URL and API key of a local provider', async () => {
-    updateConfig(makeConfig({}, { provider: 'ollama', apiFormat: 'ollama_chat', model: 'llama3', baseUrl: 'http://localhost:11434' }))
+    updateConfig(
+      makeConfig(
+        {},
+        {
+          provider: 'ollama',
+          apiFormat: 'ollama_chat',
+          model: 'llama3',
+          baseUrl: 'http://localhost:11434',
+        },
+      ),
+    )
     render(<ProviderSection />)
     const baseUrl = screen.getByLabelText('URL de base')
     expect(baseUrl).not.toBeDisabled()
@@ -110,7 +122,10 @@ describe('ProviderSection Mistral', () => {
     expect(cfg.baseUrl).toBe('https://api.mistral.ai/v1')
     expect(screen.getByLabelText('URL de base')).toBeEnabled()
     expect(screen.getByRole('option', { name: /mistral-large-latest/ })).toBeInTheDocument()
-    expect(screen.getByRole('radio', { name: /API Chat Completions/ })).toHaveAttribute('aria-checked', 'true')
+    expect(screen.getByRole('radio', { name: /API Chat Completions/ })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
     await user.click(screen.getByRole('radio', { name: /API Responses/ }))
     expect(getConfig().llm.apiFormat).toBe('responses')
   })
@@ -123,11 +138,25 @@ describe('ProviderSection Mistral', () => {
   })
 
   it('enriches loaded models with static pricing', async () => {
-    updateConfig(makeConfig({}, { provider: 'mistral', apiFormat: 'chat_completions', model: 'mistral-small-latest', baseUrl: 'https://api.mistral.ai/v1' }))
+    updateConfig(
+      makeConfig(
+        {},
+        {
+          provider: 'mistral',
+          apiFormat: 'chat_completions',
+          model: 'mistral-small-latest',
+          baseUrl: 'https://api.mistral.ai/v1',
+        },
+      ),
+    )
     vi.mocked(fetchModels).mockResolvedValue([{ id: 'mistral-large-latest' } as ModelInfo])
     render(<ProviderSection />)
     await user.click(screen.getByRole('button', { name: /Charger/ }))
-    expect(await screen.findByRole('option', { name: /mistral-large-latest — 1000k ctx, \$0\.70\/\$2\.10/ })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('option', {
+        name: /mistral-large-latest — 1000k ctx, \$0\.70\/\$2\.10/,
+      }),
+    ).toBeInTheDocument()
     expect(fetchModels).toHaveBeenCalledWith('mistral', 'https://api.mistral.ai/v1', '')
   })
 })
@@ -159,14 +188,21 @@ describe('ProviderSection model loading', () => {
   it('filters OVH models and labels them with context and pricing', () => {
     updateConfig(makeConfig({}, { provider: 'ovh', apiFormat: 'responses', model: 'gpt-oss-20b' }))
     setCachedModels('ovh', [
-      { id: 'gpt-oss-20b', contextLength: 131072, pricingPrompt: 0.000001, pricingCompletion: 0.000002 } as ModelInfo,
+      {
+        id: 'gpt-oss-20b',
+        contextLength: 131072,
+        pricingPrompt: 0.000001,
+        pricingCompletion: 0.000002,
+      } as ModelInfo,
       { id: 'tiny-chat', contextLength: 512, pricingPrompt: 0.0000005 } as ModelInfo,
       { id: 'bge-m3' } as ModelInfo,
       { id: 'whisper-large' } as ModelInfo,
       { id: 'llama', supportsToolUse: false } as ModelInfo,
     ])
     render(<ProviderSection />)
-    expect(screen.getByRole('option', { name: /131k ctx, \$1\.00\/\$2\.00 \/Mtok/ })).toBeInTheDocument()
+    expect(
+      screen.getByRole('option', { name: /131k ctx, \$1\.00\/\$2\.00 \/Mtok/ }),
+    ).toBeInTheDocument()
     expect(screen.getByRole('option', { name: /512 ctx, \$0\.50\/Mtok/ })).toBeInTheDocument()
     expect(screen.queryByRole('option', { name: /bge-m3/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('option', { name: /whisper/ })).not.toBeInTheDocument()
@@ -186,7 +222,9 @@ describe('ProviderSection model loading', () => {
   })
 
   it('shows the custom option when the current model is not in the list', () => {
-    updateConfig(makeConfig({}, { provider: 'ovh', apiFormat: 'chat_completions', model: 'custom-x' }))
+    updateConfig(
+      makeConfig({}, { provider: 'ovh', apiFormat: 'chat_completions', model: 'custom-x' }),
+    )
     setCachedModels('ovh', [{ id: 'gpt-oss-20b' } as ModelInfo])
     render(<ProviderSection />)
     expect(screen.getByRole('option', { name: 'custom-x (personnalisé)' })).toBeInTheDocument()

@@ -27,9 +27,11 @@ export function StreamSection() {
             config.streamEnabled ? 'bg-green-500' : 'bg-gray-300'
           }`}
         >
-          <span className={`absolute h-4 w-4 rounded-full bg-white shadow transition-transform ${
-            config.streamEnabled ? 'translate-x-6' : 'translate-x-1'
-          }`} />
+          <span
+            className={`absolute h-4 w-4 rounded-full bg-white shadow transition-transform ${
+              config.streamEnabled ? 'translate-x-6' : 'translate-x-1'
+            }`}
+          />
         </button>
       </div>
     </Accordion>

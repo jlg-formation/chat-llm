@@ -1,10 +1,14 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 * {
   box-sizing: border-box;
 }
 
-button, a, [role="button"], label[for], summary {
+button,
+a,
+[role='button'],
+label[for],
+summary {
   cursor: pointer;
 }
 
@@ -23,28 +27,85 @@ body {
 }
 
 /* Scrollbar fin */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #f1f5f9; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
 
 /* Markdown dans les messages */
-.prose-chat p { margin: 0 0 0.5rem; }
-.prose-chat p:last-child { margin-bottom: 0; }
-.prose-chat pre { background: #f1f5f9; padding: 0.75rem; border-radius: 6px; overflow-x: auto; margin: 0.5rem 0; }
-.prose-chat code { font-family: ui-monospace, Consolas, monospace; font-size: 0.875rem; background: #f1f5f9; padding: 2px 5px; border-radius: 3px; }
-.prose-chat pre code { background: none; padding: 0; }
-.prose-chat ul, .prose-chat ol { padding-left: 1.5rem; margin: 0.5rem 0; }
-.prose-chat li { margin: 0.25rem 0; }
-.prose-chat table { border-collapse: collapse; width: 100%; margin: 0.75rem 0; font-size: 0.8125rem; }
-.prose-chat th { background: #f1f5f9; font-weight: 600; text-align: left; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; }
-.prose-chat td { padding: 0.4rem 0.75rem; border: 1px solid #e2e8f0; }
-.prose-chat tr:nth-child(even) td { background: #f8fafc; }
+.prose-chat p {
+  margin: 0 0 0.5rem;
+}
+.prose-chat p:last-child {
+  margin-bottom: 0;
+}
+.prose-chat pre {
+  background: #f1f5f9;
+  padding: 0.75rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+.prose-chat code {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.875rem;
+  background: #f1f5f9;
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+.prose-chat pre code {
+  background: none;
+  padding: 0;
+}
+.prose-chat ul,
+.prose-chat ol {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+.prose-chat li {
+  margin: 0.25rem 0;
+}
+.prose-chat table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.75rem 0;
+  font-size: 0.8125rem;
+}
+.prose-chat th {
+  background: #f1f5f9;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e2e8f0;
+}
+.prose-chat td {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid #e2e8f0;
+}
+.prose-chat tr:nth-child(even) td {
+  background: #f8fafc;
+}
 
 /* Spinner charge/décharge : accélère puis décélère à chaque tour */
 @keyframes spin-charge {
-  0%   { transform: rotate(0deg);   animation-timing-function: cubic-bezier(0.4, 0, 1, 1); }
-  50%  { transform: rotate(180deg); animation-timing-function: cubic-bezier(0, 0, 0.6, 1); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+    animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
+  }
+  50% {
+    transform: rotate(180deg);
+    animation-timing-function: cubic-bezier(0, 0, 0.6, 1);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 .animate-spin-charge {
   animation: spin-charge 1.8s infinite;

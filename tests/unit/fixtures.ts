@@ -8,7 +8,9 @@ export function makeConfig(
   return { ...DEFAULT_CONFIG, ...overrides, llm: { ...DEFAULT_CONFIG.llm, ...llm } }
 }
 
-export function makeMessage(partial: Partial<ChatMessage> & Pick<ChatMessage, 'role'>): ChatMessage {
+export function makeMessage(
+  partial: Partial<ChatMessage> & Pick<ChatMessage, 'role'>,
+): ChatMessage {
   return { id: 'm', content: '', ...partial }
 }
 
@@ -23,7 +25,11 @@ export function sseResponse(chunks: string[], status = 200): Response {
   return new Response(stream, { status, headers: { 'content-type': 'text/event-stream' } })
 }
 
-export function jsonResponse(body: unknown, status = 200, headers: Record<string, string> = {}): Response {
+export function jsonResponse(
+  body: unknown,
+  status = 200,
+  headers: Record<string, string> = {},
+): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: { 'content-type': 'application/json', ...headers },

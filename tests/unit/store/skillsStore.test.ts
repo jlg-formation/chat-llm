@@ -8,16 +8,27 @@ vi.mock('localforage', () => {
   const instance = {
     keys: async () => [...db.keys()],
     getItem: async (key: string) => db.get(key) ?? null,
-    setItem: async (key: string, value: unknown) => { db.set(key, value) },
-    removeItem: async (key: string) => { db.delete(key) },
-    clear: async () => { db.clear() },
+    setItem: async (key: string, value: unknown) => {
+      db.set(key, value)
+    },
+    removeItem: async (key: string) => {
+      db.delete(key)
+    },
+    clear: async () => {
+      db.clear()
+    },
   }
   return { default: { createInstance: () => instance } }
 })
 
 import {
-  loadSkills, importSkillFromZip, updateSkill, deleteSkill, clearSkills,
-  getSkillContent, parseSkillFrontmatter,
+  loadSkills,
+  importSkillFromZip,
+  updateSkill,
+  deleteSkill,
+  clearSkills,
+  getSkillContent,
+  parseSkillFrontmatter,
 } from '@/store/skillsStore'
 
 async function zipFile(entries: Record<string, string>, dirs: string[] = []): Promise<File> {
@@ -29,7 +40,11 @@ async function zipFile(entries: Record<string, string>, dirs: string[] = []): Pr
 }
 
 const skill = (overrides: Partial<Skill> = {}): Skill => ({
-  id: 'id-1', name: 'demo', enabled: true, files: {}, ...overrides,
+  id: 'id-1',
+  name: 'demo',
+  enabled: true,
+  files: {},
+  ...overrides,
 })
 
 beforeEach(() => {
@@ -40,7 +55,7 @@ describe('skillsStore persistence', () => {
   it('lists skills sorted by name', async () => {
     db.set('b', skill({ id: 'b', name: 'zeta' }))
     db.set('a', skill({ id: 'a', name: 'alpha' }))
-    expect((await loadSkills()).map(s => s.name)).toEqual(['alpha', 'zeta'])
+    expect((await loadSkills()).map((s) => s.name)).toEqual(['alpha', 'zeta'])
   })
 
   it('skips keys holding no value', async () => {
@@ -68,7 +83,10 @@ describe('importSkillFromZip', () => {
     const imported = await importSkillFromZip(file)
     expect(imported.name).toBe('pdf-tools')
     expect(imported.enabled).toBe(true)
-    expect(Object.keys(imported.files).sort()).toEqual(['pdf-tools/SKILL.md', 'pdf-tools/scripts/run.md'])
+    expect(Object.keys(imported.files).sort()).toEqual([
+      'pdf-tools/SKILL.md',
+      'pdf-tools/scripts/run.md',
+    ])
     expect(db.get(imported.id)).toEqual(imported)
   })
 
@@ -101,7 +119,9 @@ describe('getSkillContent', () => {
 
 describe('parseSkillFrontmatter', () => {
   it('extracts name and description from the frontmatter', () => {
-    const s = skill({ files: { 'demo/SKILL.md': '---\nname: Demo Skill\ndescription: Does things\n---\n# Body' } })
+    const s = skill({
+      files: { 'demo/SKILL.md': '---\nname: Demo Skill\ndescription: Does things\n---\n# Body' },
+    })
     expect(parseSkillFrontmatter(s)).toEqual({ name: 'Demo Skill', description: 'Does things' })
   })
 

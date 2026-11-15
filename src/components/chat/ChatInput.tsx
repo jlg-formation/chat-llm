@@ -44,7 +44,10 @@ export function ChatInput({ onSend, onStop, disabled }: Props) {
   function handleKey(e: KeyboardEvent<HTMLTextAreaElement>) {
     const textarea = textareaRef.current
     if (!textarea) {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault()
+        handleSend()
+      }
       return
     }
 
@@ -89,7 +92,7 @@ export function ChatInput({ onSend, onStop, disabled }: Props) {
   async function addImageFile(file: File) {
     if (!file.type.startsWith('image/')) return
     const dataUrl = await readFileAsDataUrl(file)
-    setImages(imgs => [...imgs, { dataUrl, mimeType: file.type }])
+    setImages((imgs) => [...imgs, { dataUrl, mimeType: file.type }])
   }
 
   function readFileAsDataUrl(file: File): Promise<string> {
@@ -119,7 +122,7 @@ export function ChatInput({ onSend, onStop, disabled }: Props) {
   }
 
   function removeImage(i: number) {
-    setImages(imgs => imgs.filter((_, idx) => idx !== i))
+    setImages((imgs) => imgs.filter((_, idx) => idx !== i))
   }
 
   return (
@@ -128,7 +131,11 @@ export function ChatInput({ onSend, onStop, disabled }: Props) {
         <div className="flex gap-2 flex-wrap mb-2">
           {images.map((img, i) => (
             <div key={i} className="relative">
-              <img src={img.dataUrl} alt={`Image jointe ${i + 1}`} className="h-16 w-16 object-cover rounded-md border border-gray-200" />
+              <img
+                src={img.dataUrl}
+                alt={`Image jointe ${i + 1}`}
+                className="h-16 w-16 object-cover rounded-md border border-gray-200"
+              />
               <button
                 onClick={() => removeImage(i)}
                 aria-label={`Supprimer l'image ${i + 1}`}
@@ -162,7 +169,7 @@ export function ChatInput({ onSend, onStop, disabled }: Props) {
         <textarea
           ref={textareaRef}
           value={text}
-          onChange={e => setText(e.target.value)}
+          onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKey}
           onPaste={handlePaste}
           disabled={disabled}

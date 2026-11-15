@@ -2,13 +2,14 @@ import { test, expect } from '@playwright/test'
 import { setConfig, interceptLLM } from './helpers'
 
 test.describe('TC-12 · Auto-expansion du textarea — hauteur maximale', () => {
-
   test.beforeEach(async ({ page }) => {
     await setConfig(page, { streamEnabled: false })
     await page.goto('/')
   })
 
-  test('la hauteur du textarea est plafonnée à 200 px même avec beaucoup de lignes', async ({ page }) => {
+  test('la hauteur du textarea est plafonnée à 200 px même avec beaucoup de lignes', async ({
+    page,
+  }) => {
     const input = page.getByRole('textbox', { name: 'Message' })
 
     // Ajouter 25 sauts de ligne pour dépasser le plafond de 200 px

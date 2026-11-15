@@ -133,7 +133,9 @@ describe('McpSection server list', () => {
 describe('McpSection tool refresh and removal', () => {
   it('reloads tools from the server', async () => {
     seed([{}])
-    vi.mocked(fetchMcpTools).mockResolvedValue([{ name: 'x', description: '', enabled: true }] as never)
+    vi.mocked(fetchMcpTools).mockResolvedValue([
+      { name: 'x', description: '', enabled: true },
+    ] as never)
     await renderOpen()
     await user.click(screen.getByRole('button', { name: 'Développer' }))
     await user.click(screen.getByRole('button', { name: 'Recharger les outils' }))

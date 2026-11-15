@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { Brain, ChevronDown, ChevronRight } from "lucide-react";
+import { useState } from 'react'
+import { Brain, ChevronDown, ChevronRight } from 'lucide-react'
 
 interface Props {
-  content: string;
-  isStreaming?: boolean;
+  content: string
+  isStreaming?: boolean
 }
 
 export function ThinkingBlock({ content, isStreaming }: Props) {
-  const [toggled, setToggled] = useState<boolean | null>(null);
+  const [toggled, setToggled] = useState<boolean | null>(null)
   // Ouvert pendant la réflexion, sauf choix explicite de l'utilisateur
-  const open = toggled ?? !!isStreaming;
+  const open = toggled ?? !!isStreaming
 
   return (
     <div className="text-xs rounded-lg border border-purple-200 bg-purple-50 overflow-hidden">
@@ -32,5 +32,5 @@ export function ThinkingBlock({ content, isStreaming }: Props) {
         </pre>
       )}
     </div>
-  );
+  )
 }

@@ -2,7 +2,10 @@ import { describe, it, expect } from 'vitest'
 import pricing from '@/data/openai-pricing.json'
 import { getStaticPricing, getDefaultOpenAiModels } from '@/services/pricing'
 
-const table = pricing as Record<string, { pricingPrompt?: number; pricingCompletion?: number; contextLength?: number }>
+const table = pricing as Record<
+  string,
+  { pricingPrompt?: number; pricingCompletion?: number; contextLength?: number }
+>
 const someKey = Object.keys(table)[0]
 
 describe('getStaticPricing', () => {
@@ -24,6 +27,6 @@ describe('getDefaultOpenAiModels', () => {
     const models = getDefaultOpenAiModels()
     expect(models.length).toBeGreaterThan(0)
     expect(models[0]).toHaveProperty('id')
-    expect(models.every(m => typeof m.id === 'string')).toBe(true)
+    expect(models.every((m) => typeof m.id === 'string')).toBe(true)
   })
 })

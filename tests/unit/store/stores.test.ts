@@ -6,7 +6,13 @@ import { setCachedModels, getCachedModels, useModelsCache } from '@/store/models
 import type { HttpExchange } from '@/types'
 
 const exchange = (id: string): HttpExchange => ({
-  id, timestamp: 1, type: 'llm', method: 'POST', url: 'http://x', requestHeaders: {}, requestBody: null,
+  id,
+  timestamp: 1,
+  type: 'llm',
+  method: 'POST',
+  url: 'http://x',
+  requestHeaders: {},
+  requestBody: null,
 })
 
 beforeEach(() => {
@@ -27,7 +33,7 @@ describe('httpStore', () => {
     addExchange(exchange('b'))
     updateExchange('b', { error: 'x' })
     const { result } = renderHook(() => useHttpExchanges())
-    expect(result.current[0].map(e => e.error)).toEqual([undefined, 'x'])
+    expect(result.current[0].map((e) => e.error)).toEqual([undefined, 'x'])
   })
 
   it('re-renders subscribers when exchanges change and clears via the hook', () => {

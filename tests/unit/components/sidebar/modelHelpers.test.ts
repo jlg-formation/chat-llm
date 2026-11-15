@@ -22,7 +22,13 @@ describe('isOpenAiChatModel', () => {
 
 describe('isOvhChatModel', () => {
   it('drops embeddings, speech, image and guard models', () => {
-    const drop = ['bge-m3', 'nvr-tts-en-us', 'whisper-large-v3', 'stable-diffusion-xl', 'qwen-guard-gen-8b']
+    const drop = [
+      'bge-m3',
+      'nvr-tts-en-us',
+      'whisper-large-v3',
+      'stable-diffusion-xl',
+      'qwen-guard-gen-8b',
+    ]
     expect(drop.some((id) => isOvhChatModel({ id }))).toBe(false)
     expect(isOvhChatModel({ id: 'gpt-oss-20b' })).toBe(true)
   })

@@ -143,9 +143,7 @@ describe('ChatInput images', () => {
     expect(await screen.findByAltText('Image jointe 1')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Envoyer' }))
-    expect(onSend).toHaveBeenCalledWith('', [
-      expect.objectContaining({ mimeType: 'image/png' }),
-    ])
+    expect(onSend).toHaveBeenCalledWith('', [expect.objectContaining({ mimeType: 'image/png' })])
   })
 
   it('removes an attached image', async () => {
@@ -164,7 +162,7 @@ describe('ChatInput images', () => {
     fireEvent.change(input, {
       target: { files: [new File(['texte'], 'notes.txt', { type: 'text/plain' })] },
     })
-    await new Promise(resolve => setTimeout(resolve, 0))
+    await new Promise((resolve) => setTimeout(resolve, 0))
     expect(screen.queryByRole('img')).not.toBeInTheDocument()
   })
 

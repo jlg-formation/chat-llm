@@ -2,7 +2,6 @@ import { test, expect } from '@playwright/test'
 import { setConfig } from './helpers'
 
 test.describe('TC-93 · Header synchronisé', () => {
-
   test('affiche le provider et le modèle par défaut', async ({ page }) => {
     await setConfig(page, { llm: { provider: 'openai', model: 'gpt-5.4-nano' } })
     await page.goto('/')

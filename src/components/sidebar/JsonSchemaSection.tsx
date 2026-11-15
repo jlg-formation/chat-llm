@@ -5,16 +5,23 @@ import { Accordion } from './Accordion'
 export function JsonSchemaSection() {
   const [config, update] = useConfig()
 
-  const isValid = !config.jsonSchema || (() => {
-    try { JSON.parse(config.jsonSchema); return true } catch { return false }
-  })()
+  const isValid =
+    !config.jsonSchema ||
+    (() => {
+      try {
+        JSON.parse(config.jsonSchema)
+        return true
+      } catch {
+        return false
+      }
+    })()
 
   return (
     <Accordion title="Structured Output" icon={<Braces className="w-4 h-4 text-orange-500" />}>
       <div>
         <textarea
           value={config.jsonSchema}
-          onChange={e => update({ jsonSchema: e.target.value })}
+          onChange={(e) => update({ jsonSchema: e.target.value })}
           rows={6}
           aria-label="Schéma JSON"
           aria-invalid={!isValid}

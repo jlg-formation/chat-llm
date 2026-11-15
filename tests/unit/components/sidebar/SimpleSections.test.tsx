@@ -173,7 +173,12 @@ describe('UsageSection', () => {
   it('estimates the cost and context usage from loaded model pricing', async () => {
     updateConfig(makeConfig({}, { provider: 'openai', model: 'gpt-x' }))
     setCachedModels('openai', [
-      { id: 'gpt-x', pricingPrompt: 0.000001, pricingCompletion: 0.000002, contextLength: 128000 } as ModelInfo,
+      {
+        id: 'gpt-x',
+        pricingPrompt: 0.000001,
+        pricingCompletion: 0.000002,
+        contextLength: 128000,
+      } as ModelInfo,
     ])
     addUsage({ promptTokens: 1500, completionTokens: 500 })
     render(<UsageSection />)

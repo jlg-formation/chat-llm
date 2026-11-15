@@ -34,11 +34,13 @@ const MAX_ITERATIONS = 100
 test.describe('TC-91 · Boucle agentique — limite de 100 itérations', () => {
   test.describe.configure({ mode: 'serial', timeout: 150_000 })
 
-  test('la boucle ne fait pas plus de 101 requêtes (1 initiale + 100 itérations)', async ({ page }) => {
+  test('la boucle ne fait pas plus de 101 requêtes (1 initiale + 100 itérations)', async ({
+    page,
+  }) => {
     await setConfig(page, { streamEnabled: false })
 
     let requestCount = 0
-    await page.route('**/v1/responses', route => {
+    await page.route('**/v1/responses', (route) => {
       requestCount++
       route.fulfill({
         status: 200,
@@ -60,7 +62,7 @@ test.describe('TC-91 · Boucle agentique — limite de 100 itérations', () => {
     await setConfig(page, { streamEnabled: false })
 
     let n = 0
-    await page.route('**/v1/responses', route => {
+    await page.route('**/v1/responses', (route) => {
       n++
       route.fulfill({ status: 200, contentType: 'application/json', body: makeToolCallResponse(n) })
     })
@@ -74,14 +76,18 @@ test.describe('TC-91 · Boucle agentique — limite de 100 itérations', () => {
     await expect(toolCallMsgs).toHaveCount(MAX_ITERATIONS, { timeout: 5_000 })
   })
 
-  test('le bouton "Arrêter la génération" disparaît après la fin de la boucle', async ({ page }) => {
+  test('le bouton "Arrêter la génération" disparaît après la fin de la boucle', async ({
+    page,
+  }) => {
     await setConfig(page, { streamEnabled: false })
 
-    await page.route('**/v1/responses', route => route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: makeToolCallResponse(1),
-    }))
+    await page.route('**/v1/responses', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: makeToolCallResponse(1),
+      }),
+    )
 
     await gotoWithInspectorHidden(page)
     await page.getByRole('textbox', { name: 'Message' }).fill('Test arrêt boucle')

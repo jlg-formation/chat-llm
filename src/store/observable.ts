@@ -1,15 +1,15 @@
 /** Mécanique d'abonnement partagée par les stores (notify + subscribe pour useSyncExternalStore). */
 export function createObservable() {
-  const listeners = new Set<() => void>();
+  const listeners = new Set<() => void>()
   return {
     notify() {
-      listeners.forEach((l) => l());
+      listeners.forEach((l) => l())
     },
     subscribe(listener: () => void) {
-      listeners.add(listener);
+      listeners.add(listener)
       return () => {
-        listeners.delete(listener);
-      };
+        listeners.delete(listener)
+      }
     },
-  };
+  }
 }

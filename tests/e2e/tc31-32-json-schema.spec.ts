@@ -2,7 +2,6 @@ import { test, expect } from '@playwright/test'
 import { setConfig } from './helpers'
 
 test.describe('TC-31 · Validation JSON Schema et TC-32 · Transmission', () => {
-
   test.beforeEach(async ({ page }) => {
     await setConfig(page, { streamEnabled: false })
     await page.goto('/')
@@ -25,16 +24,24 @@ test.describe('TC-31 · Validation JSON Schema et TC-32 · Transmission', () => 
   })
 
   test('TC-32 · le JSON Schema est transmis dans la requête LLM', async ({ page }) => {
-    const schema = '{"name":"test","schema":{"type":"object","properties":{"answer":{"type":"string"}}}}'
+    const schema =
+      '{"name":"test","schema":{"type":"object","properties":{"answer":{"type":"string"}}}}'
 
     let body: Record<string, unknown> | null = null
-    await page.route('**/v1/responses', async route => {
-      body = await route.request().postDataJSON() as Record<string, unknown>
+    await page.route('**/v1/responses', async (route) => {
+      body = (await route.request().postDataJSON()) as Record<string, unknown>
       await route.fulfill({
-        status: 200, contentType: 'application/json',
+        status: 200,
+        contentType: 'application/json',
         body: JSON.stringify({
           id: 'r',
-          output: [{ type: 'message', role: 'assistant', content: [{ type: 'output_text', text: '{"answer":"42"}' }] }],
+          output: [
+            {
+              type: 'message',
+              role: 'assistant',
+              content: [{ type: 'output_text', text: '{"answer":"42"}' }],
+            },
+          ],
           usage: { input_tokens: 10, output_tokens: 5 },
         }),
       })
@@ -43,7 +50,9 @@ test.describe('TC-31 · Validation JSON Schema et TC-32 · Transmission', () => 
     await page.getByRole('textbox', { name: 'Schéma JSON' }).fill(schema)
     await page.getByRole('textbox', { name: 'Message' }).fill('Question')
     await page.getByRole('textbox', { name: 'Message' }).press('Enter')
-    await page.waitForFunction(() => document.querySelector('main')?.textContent?.includes('42'), { timeout: 10_000 })
+    await page.waitForFunction(() => document.querySelector('main')?.textContent?.includes('42'), {
+      timeout: 10_000,
+    })
 
     expect(body).not.toBeNull()
     const textFormat = body!['text'] as Record<string, unknown> | undefined

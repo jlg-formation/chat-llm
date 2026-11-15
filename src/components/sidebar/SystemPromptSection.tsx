@@ -10,14 +10,15 @@ export function SystemPromptSection() {
       <div>
         <textarea
           value={config.systemPrompt}
-          onChange={e => update({ systemPrompt: e.target.value })}
+          onChange={(e) => update({ systemPrompt: e.target.value })}
           rows={5}
           aria-label="Prompt système"
           className="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y font-mono"
           placeholder="Vous êtes un assistant pédagogique..."
         />
         <p className="text-xs text-gray-500 mt-1">
-          Injecté en premier dans chaque requête. Les skills activés y sont également ajoutés automatiquement.
+          Injecté en premier dans chaque requête. Les skills activés y sont également ajoutés
+          automatiquement.
         </p>
       </div>
     </Accordion>

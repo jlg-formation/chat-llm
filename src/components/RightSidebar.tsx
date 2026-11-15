@@ -1,55 +1,41 @@
-import {
-  ChevronRight,
-  ChevronLeft,
-  Trash2,
-  ArrowRight,
-  ArrowLeft,
-} from "lucide-react";
-import { useState, useRef, useCallback, useEffect, memo } from "react";
-import { useHttpExchanges } from "../store/httpStore";
-import type { HttpExchange } from "../types";
-import { JsonTree } from "./JsonTree";
+import { ChevronRight, ChevronLeft, Trash2, ArrowRight, ArrowLeft } from 'lucide-react'
+import { useState, useRef, useCallback, useEffect, memo } from 'react'
+import { useHttpExchanges } from '../store/httpStore'
+import type { HttpExchange } from '../types'
+import { JsonTree } from './JsonTree'
 
-const MIN_WIDTH = 200;
-const MAX_WIDTH = 800;
-const DEFAULT_WIDTH = 320;
+const MIN_WIDTH = 200
+const MAX_WIDTH = 800
+const DEFAULT_WIDTH = 320
 
 function HeadersBlock({ headers }: { headers: Record<string, string> }) {
   return (
     <pre className="font-mono text-gray-700 whitespace-pre-wrap break-all bg-gray-50 rounded p-1.5 leading-relaxed">
       {Object.entries(headers)
         .map(([k, v]) => `${k}: ${v}`)
-        .join("\n")}
+        .join('\n')}
     </pre>
-  );
+  )
 }
 
-const ExchangeCard = memo(function ExchangeCard({
-  exchange,
-}: {
-  exchange: HttpExchange;
-}) {
-  const [open, setOpen] = useState(true);
-  const isLlm = exchange.type === "llm";
+const ExchangeCard = memo(function ExchangeCard({ exchange }: { exchange: HttpExchange }) {
+  const [open, setOpen] = useState(true)
+  const isLlm = exchange.type === 'llm'
 
-  const borderColor = isLlm ? "border-blue-200" : "border-green-200";
-  const headerBg = isLlm ? "bg-blue-50" : "bg-green-50";
-  const badgeClass = isLlm
-    ? "bg-blue-100 text-blue-700"
-    : "bg-green-100 text-green-700";
+  const borderColor = isLlm ? 'border-blue-200' : 'border-green-200'
+  const headerBg = isLlm ? 'bg-blue-50' : 'bg-green-50'
+  const badgeClass = isLlm ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
 
   return (
     <div className={`border ${borderColor} rounded-lg overflow-hidden text-xs`}>
       <button
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        aria-label={`${isLlm ? "LLM" : "MCP"} ${exchange.method} ${exchange.url}`}
+        aria-label={`${isLlm ? 'LLM' : 'MCP'} ${exchange.method} ${exchange.url}`}
         className={`w-full flex items-center gap-2 px-3 py-2 ${headerBg} text-left`}
       >
-        <span
-          className={`px-1.5 py-0.5 rounded text-xs font-bold uppercase ${badgeClass}`}
-        >
-          {isLlm ? "LLM" : "MCP"}
+        <span className={`px-1.5 py-0.5 rounded text-xs font-bold uppercase ${badgeClass}`}>
+          {isLlm ? 'LLM' : 'MCP'}
         </span>
         <span className="font-mono text-gray-600 truncate flex-1">
           {exchange.method} {exchange.url}
@@ -91,20 +77,19 @@ const ExchangeCard = memo(function ExchangeCard({
                 <span
                   className={`ml-1 px-1.5 py-0.5 rounded font-bold ${
                     exchange.responseStatus < 300
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-red-100 text-red-700'
                   }`}
                 >
                   {exchange.responseStatus}
                 </span>
               </div>
-              {exchange.responseHeaders &&
-                Object.keys(exchange.responseHeaders).length > 0 && (
-                  <>
-                    <div className="text-gray-500 font-medium">Headers :</div>
-                    <HeadersBlock headers={exchange.responseHeaders} />
-                  </>
-                )}
+              {exchange.responseHeaders && Object.keys(exchange.responseHeaders).length > 0 && (
+                <>
+                  <div className="text-gray-500 font-medium">Headers :</div>
+                  <HeadersBlock headers={exchange.responseHeaders} />
+                </>
+              )}
               {exchange.responseBody !== undefined && (
                 <>
                   <div className="text-gray-500 font-medium mt-1">Body :</div>
@@ -116,57 +101,53 @@ const ExchangeCard = memo(function ExchangeCard({
 
           {exchange.error && (
             <div className="px-3 py-2">
-              <p className="text-red-600 font-medium">
-                Erreur : {exchange.error}
-              </p>
+              <p className="text-red-600 font-medium">Erreur : {exchange.error}</p>
             </div>
           )}
         </div>
       )}
     </div>
-  );
-});
+  )
+})
 
 export function RightSidebar() {
-  const [exchanges, clear] = useHttpExchanges();
-  const [collapsed, setCollapsed] = useState(false);
-  const [width, setWidth] = useState(DEFAULT_WIDTH);
-  const dragging = useRef(false);
-  const startX = useRef(0);
-  const startWidth = useRef(0);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const [exchanges, clear] = useHttpExchanges()
+  const [collapsed, setCollapsed] = useState(false)
+  const [width, setWidth] = useState(DEFAULT_WIDTH)
+  const dragging = useRef(false)
+  const startX = useRef(0)
+  const startWidth = useRef(0)
+  const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [exchanges]);
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [exchanges])
 
   const onMouseDown = useCallback(
     (e: React.MouseEvent) => {
-      dragging.current = true;
-      startX.current = e.clientX;
-      startWidth.current = width;
-      document.body.style.cursor = "col-resize";
-      document.body.style.userSelect = "none";
+      dragging.current = true
+      startX.current = e.clientX
+      startWidth.current = width
+      document.body.style.cursor = 'col-resize'
+      document.body.style.userSelect = 'none'
 
       const onMouseMove = (ev: MouseEvent) => {
-        if (!dragging.current) return;
-        const delta = startX.current - ev.clientX;
-        setWidth(
-          Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, startWidth.current + delta)),
-        );
-      };
+        if (!dragging.current) return
+        const delta = startX.current - ev.clientX
+        setWidth(Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, startWidth.current + delta)))
+      }
       const onMouseUp = () => {
-        dragging.current = false;
-        document.body.style.cursor = "";
-        document.body.style.userSelect = "";
-        window.removeEventListener("mousemove", onMouseMove);
-        window.removeEventListener("mouseup", onMouseUp);
-      };
-      window.addEventListener("mousemove", onMouseMove);
-      window.addEventListener("mouseup", onMouseUp);
+        dragging.current = false
+        document.body.style.cursor = ''
+        document.body.style.userSelect = ''
+        window.removeEventListener('mousemove', onMouseMove)
+        window.removeEventListener('mouseup', onMouseUp)
+      }
+      window.addEventListener('mousemove', onMouseMove)
+      window.addEventListener('mouseup', onMouseUp)
     },
     [width],
-  );
+  )
 
   if (collapsed) {
     return (
@@ -180,7 +161,7 @@ export function RightSidebar() {
           <ChevronLeft className="w-4 h-4" />
         </button>
       </div>
-    );
+    )
   }
 
   return (
@@ -239,5 +220,5 @@ export function RightSidebar() {
         </div>
       </aside>
     </div>
-  );
+  )
 }

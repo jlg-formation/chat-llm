@@ -13,7 +13,7 @@ describe('streamLmStudioChat', () => {
       event('message.delta', { content: 'lut' }),
       event('chat.end', { response_id: 'resp-9', input_tokens: 12, total_output_tokens: 3 }),
     ])
-    const result = await streamLmStudioChat(res, t => tokens.push(t))
+    const result = await streamLmStudioChat(res, (t) => tokens.push(t))
     expect(tokens).toEqual(['Sa', 'lut'])
     expect(result).toEqual({
       type: 'text',
@@ -60,10 +60,17 @@ describe('parseLmStudioChatNonStreaming', () => {
   })
 
   it('handles a payload without output or stats', () => {
-    expect(parseLmStudioChatNonStreaming({})).toEqual({ type: 'text', content: '', usage: undefined, responseId: undefined })
+    expect(parseLmStudioChatNonStreaming({})).toEqual({
+      type: 'text',
+      content: '',
+      usage: undefined,
+      responseId: undefined,
+    })
   })
 
   it('treats a message without content as empty text', () => {
-    expect(parseLmStudioChatNonStreaming({ output: [{ type: 'message' }] })).toMatchObject({ content: '' })
+    expect(parseLmStudioChatNonStreaming({ output: [{ type: 'message' }] })).toMatchObject({
+      content: '',
+    })
   })
 })

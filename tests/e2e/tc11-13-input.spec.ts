@@ -2,7 +2,6 @@ import { test, expect } from '@playwright/test'
 import { setConfig } from './helpers'
 
 test.describe('TC-11 · Saut de ligne et TC-13 · Bouton Envoyer désactivé', () => {
-
   test.beforeEach(async ({ page }) => {
     await setConfig(page)
     await page.goto('/')

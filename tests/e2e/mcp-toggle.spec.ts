@@ -28,7 +28,6 @@ function mcpCheckbox(page: Page) {
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 test.describe('Serveur MCP — activation / désactivation', () => {
-
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
     await page.evaluate(() => localStorage.clear())
@@ -38,7 +37,7 @@ test.describe('Serveur MCP — activation / désactivation', () => {
 
   test('activation : envoie initialize puis notifications/initialized', async ({ page }) => {
     const requests: string[] = []
-    page.on('request', req => {
+    page.on('request', (req) => {
       if (req.url() === MCP_URL && req.method() === 'POST') {
         const body = req.postDataJSON() as { method?: string }
         if (body?.method) requests.push(body.method)
@@ -50,17 +49,21 @@ test.describe('Serveur MCP — activation / désactivation', () => {
 
     expect(requests).toContain('initialize')
     expect(requests).toContain('notifications/initialized')
-    expect(requests.indexOf('initialize')).toBeLessThan(requests.indexOf('notifications/initialized'))
+    expect(requests.indexOf('initialize')).toBeLessThan(
+      requests.indexOf('notifications/initialized'),
+    )
   })
 
-  test('activation : la réponse initialize contient protocolVersion et serverInfo', async ({ page }) => {
+  test('activation : la réponse initialize contient protocolVersion et serverInfo', async ({
+    page,
+  }) => {
     let initializeResponse: Record<string, unknown> | null = null
 
-    page.on('response', async resp => {
+    page.on('response', async (resp) => {
       if (resp.url() === MCP_URL && resp.request().method() === 'POST') {
         const body = resp.request().postDataJSON() as { method?: string }
         if (body?.method === 'initialize') {
-          const json = await resp.json() as { result?: Record<string, unknown> }
+          const json = (await resp.json()) as { result?: Record<string, unknown> }
           initializeResponse = json.result ?? null
         }
       }
@@ -79,21 +82,31 @@ test.describe('Serveur MCP — activation / désactivation', () => {
     await expect(mcpCheckbox(page)).toBeChecked({ timeout: 10_000 })
 
     // Les outils doivent apparaître sans clic supplémentaire
-    await expect(page.locator('div.font-mono', { hasText: 'about-jlg-consulting' }).first()).toBeVisible({ timeout: 10_000 })
+    await expect(
+      page.locator('div.font-mono', { hasText: 'about-jlg-consulting' }).first(),
+    ).toBeVisible({ timeout: 10_000 })
   })
 
   test('désactivation : le toggle se désactive et les outils sont retirés', async ({ page }) => {
     await mcpLabel(page).click()
     await expect(mcpCheckbox(page)).toBeChecked({ timeout: 10_000 })
-    await expect(page.locator('div.font-mono', { hasText: 'about-jlg-consulting' }).first()).toBeVisible({ timeout: 10_000 })
+    await expect(
+      page.locator('div.font-mono', { hasText: 'about-jlg-consulting' }).first(),
+    ).toBeVisible({ timeout: 10_000 })
 
     await mcpLabel(page).click()
     await expect(mcpCheckbox(page)).not.toBeChecked({ timeout: 10_000 })
-    await expect(mcpRegion(page).locator('div.font-mono', { hasText: 'about-jlg-consulting' })).toHaveCount(0)
+    await expect(
+      mcpRegion(page).locator('div.font-mono', { hasText: 'about-jlg-consulting' }),
+    ).toHaveCount(0)
   })
 
-  test('erreur réseau : le toggle reste désactivé si le serveur est inaccessible', async ({ page }) => {
-    await page.locator('input[placeholder="http://localhost:8000"]').fill('https://invalid.example.com/mcp')
+  test('erreur réseau : le toggle reste désactivé si le serveur est inaccessible', async ({
+    page,
+  }) => {
+    await page
+      .locator('input[placeholder="http://localhost:8000"]')
+      .fill('https://invalid.example.com/mcp')
 
     await mcpLabel(page).click()
 
@@ -111,5 +124,4 @@ test.describe('Serveur MCP — activation / désactivation', () => {
     await mcpLabel(page).click()
     await expect(mcpCheckbox(page)).toBeChecked({ timeout: 10_000 })
   })
-
 })

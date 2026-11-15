@@ -20,6 +20,7 @@ L'application simule l'expérience ChatGPT tout en exposant de manière transpar
 - **Dépôt GitHub** : https://github.com/jlg-formation/chat-llm
 
 Un fichier **README.md** doit être présent à la racine du dépôt et expliquer :
+
 - La finalité pédagogique du projet
 - Les providers LLM supportés
 - La notion de skills (spec agentskills.io)
@@ -64,12 +65,14 @@ Panneau de configuration persisté en **localStorage**. Les sections sont organi
 ### 2.1 Provider LLM
 
 Sélection du provider parmi :
+
 - **OpenAI** (`https://api.openai.com`)
 - **OVH AI Endpoints** (URL configurable)
 - **LM Studio** (URL locale configurable, ex. `http://localhost:1234`)
 - **Ollama** (URL locale configurable, ex. `http://localhost:11434`)
 
 Champs associés :
+
 - URL de base de l'API (pré-remplie selon le provider, modifiable)
 - Clé d'authentification API (champ texte, masqué type password) — **non sécurisée, assumé**
 - Modèle à utiliser (champ texte libre ou liste dynamique si l'API le permet)
@@ -77,6 +80,7 @@ Champs associés :
 ### 2.2 Mode Stream
 
 Toggle on/off.
+
 - **On** : les réponses sont reçues en Server-Sent Events (SSE), affichées progressivement dans le chat. La sidebar HTTP affiche la réponse finale consolidée.
 - **Off** : appel HTTP classique, réponse complète attendue.
 
@@ -113,6 +117,7 @@ Les skills suivent la **spécification [agentskills.io](https://agentskills.io/h
 ### 2.6 MCP Server (optionnel)
 
 Si l'utilisateur souhaite utiliser un serveur MCP externe :
+
 - Champ URL du serveur MCP
 - Toggle activation/désactivation globale du MCP
 - Liste des outils (tools) exposés par le serveur MCP, avec activation/désactivation individuelle par outil
@@ -238,24 +243,24 @@ En mode stream (SSE), la sidebar affiche la **réponse consolidée finale** uniq
 
 Données légères de configuration persistées entre les sessions :
 
-| Clé              | Contenu                                           |
-|------------------|---------------------------------------------------|
-| `llm_provider`   | Provider sélectionné + URL + modèle               |
-| `llm_api_key`    | Clé API (non chiffrée)                            |
-| `stream_enabled` | Booléen                                           |
-| `system_prompt`  | Texte du prompt système saisi par l'utilisateur   |
-| `json_schema`    | Texte du JSON Schema                              |
-| `mcp_url`        | URL du serveur MCP                                |
-| `mcp_enabled`    | Booléen                                           |
-| `mcp_tools`      | Liste des tools avec état activé/désactivé        |
+| Clé              | Contenu                                         |
+| ---------------- | ----------------------------------------------- |
+| `llm_provider`   | Provider sélectionné + URL + modèle             |
+| `llm_api_key`    | Clé API (non chiffrée)                          |
+| `stream_enabled` | Booléen                                         |
+| `system_prompt`  | Texte du prompt système saisi par l'utilisateur |
+| `json_schema`    | Texte du JSON Schema                            |
+| `mcp_url`        | URL du serveur MCP                              |
+| `mcp_enabled`    | Booléen                                         |
+| `mcp_tools`      | Liste des tools avec état activé/désactivé      |
 
 ### IndexedDB (via localforage)
 
 Données volumineuses :
 
-| Store         | Contenu                                                      |
-|---------------|--------------------------------------------------------------|
-| `skills`      | Liste des skills : nom, état (activé/désactivé), contenu des fichiers décompressés du ZIP |
+| Store    | Contenu                                                                                   |
+| -------- | ----------------------------------------------------------------------------------------- |
+| `skills` | Liste des skills : nom, état (activé/désactivé), contenu des fichiers décompressés du ZIP |
 
 **Non persisté** : historique des conversations, logs HTTP de la sidebar.
 
@@ -265,20 +270,22 @@ Données volumineuses :
 
 Chaque provider expose sa propre API la plus récente. Le client HTTP s'adapte selon le provider sélectionné.
 
-| Provider | API utilisée | Endpoint |
-|----------|-------------|----------|
-| **OpenAI** | API Responses (la plus récente) | `POST /v1/responses` |
-| **OVH AI Endpoints** | API Chat Completions OpenAI-compatible | `POST /v1/chat/completions` |
-| **LM Studio** | API Chat Completions OpenAI-compatible | `POST /v1/chat/completions` |
-| **Ollama** | API native Ollama (`/api/chat`) ou OpenAI-compatible selon configuration | `POST /api/chat` |
+| Provider             | API utilisée                                                             | Endpoint                    |
+| -------------------- | ------------------------------------------------------------------------ | --------------------------- |
+| **OpenAI**           | API Responses (la plus récente)                                          | `POST /v1/responses`        |
+| **OVH AI Endpoints** | API Chat Completions OpenAI-compatible                                   | `POST /v1/chat/completions` |
+| **LM Studio**        | API Chat Completions OpenAI-compatible                                   | `POST /v1/chat/completions` |
+| **Ollama**           | API native Ollama (`/api/chat`) ou OpenAI-compatible selon configuration | `POST /api/chat`            |
 
 ### Spécificités API Responses OpenAI
+
 - Le champ `input` remplace `messages`
 - Le streaming passe par les événements SSE de type `response.output_text.delta`
 - Le structured output utilise le champ `text.format` avec `type: "json_schema"`
 - Les images sont transmises dans `input` comme blocs de type `input_image` (base64)
 
 ### Spécificités API Chat Completions (OVH, LM Studio, Ollama)
+
 - Champ `messages` standard avec rôles `system`, `user`, `assistant`
 - Streaming via SSE avec `data: {"choices":[{"delta":{"content":"..."}}]}`
 - Structured output via `response_format: { type: "json_schema", json_schema: {...} }` si supporté

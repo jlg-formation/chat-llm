@@ -2,7 +2,6 @@ import { test, expect } from '@playwright/test'
 import { setConfig, LS_KEY } from './helpers'
 
 test.describe('TC-90 · Persistance de la configuration', () => {
-
   test('le provider et le modèle sont restaurés après rechargement', async ({ page }) => {
     await setConfig(page, { llm: { provider: 'ovh', model: 'gpt-oss-20b' } })
     await page.goto('/')
@@ -37,7 +36,12 @@ test.describe('TC-90 · Persistance de la configuration', () => {
   })
 
   test('la clé API est restaurée après rechargement', async ({ page }) => {
-    await setConfig(page, { llm: { provider: 'openai', apiKeys: { openai: 'sk-test-persisted', ovh: '', lmstudio: '', ollama: '' } } })
+    await setConfig(page, {
+      llm: {
+        provider: 'openai',
+        apiKeys: { openai: 'sk-test-persisted', ovh: '', lmstudio: '', ollama: '' },
+      },
+    })
     await page.goto('/')
     await page.reload()
 

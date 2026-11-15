@@ -60,11 +60,9 @@ export async function clearSkills(): Promise<void> {
 }
 
 export function getSkillContent(skill: Skill): string {
-  const mainKey = Object.keys(skill.files).find(k =>
-    k.toLowerCase().endsWith('skill.md')
-  )
+  const mainKey = Object.keys(skill.files).find((k) => k.toLowerCase().endsWith('skill.md'))
   if (mainKey) return skill.files[mainKey]
-  const firstMd = Object.keys(skill.files).find(k => k.endsWith('.md'))
+  const firstMd = Object.keys(skill.files).find((k) => k.endsWith('.md'))
   if (firstMd) return skill.files[firstMd]
   return ''
 }

@@ -3,10 +3,13 @@ import JSZip from 'jszip'
 import { setConfig, LS_KEY } from './helpers'
 
 test.describe('TC-06 · Reset complet de la configuration', () => {
-
   test.beforeEach(async ({ page }) => {
     await setConfig(page, {
-      llm: { provider: 'ovh', model: 'gpt-oss-20b', apiKeys: { openai: 'sk-x', ovh: 'ovh-key', lmstudio: '', ollama: '' } },
+      llm: {
+        provider: 'ovh',
+        model: 'gpt-oss-20b',
+        apiKeys: { openai: 'sk-x', ovh: 'ovh-key', lmstudio: '', ollama: '' },
+      },
       streamEnabled: false,
       systemPrompt: 'Mon prompt personnalisé',
     })
@@ -43,12 +46,13 @@ async function clickReset(page: Page) {
 
 async function makeSkillZip(skillName: string): Promise<Buffer> {
   const zip = new JSZip()
-  zip.folder(skillName)!.file('SKILL.md', `---\nname: ${skillName}\ndescription: Skill de test.\n---\n`)
+  zip
+    .folder(skillName)!
+    .file('SKILL.md', `---\nname: ${skillName}\ndescription: Skill de test.\n---\n`)
   return Buffer.from(await zip.generateAsync({ type: 'nodebuffer' }))
 }
 
 test.describe('TC-06b · Reset des skills et serveurs MCP', () => {
-
   test('le reset supprime les skills (UI + IndexedDB)', async ({ page }) => {
     await setConfig(page)
     await page.goto('/')
@@ -57,7 +61,11 @@ test.describe('TC-06b · Reset des skills et serveurs MCP', () => {
       page.waitForEvent('filechooser'),
       page.getByRole('button', { name: 'Charger un skill (.zip)' }).click(),
     ])
-    await fileChooser.setFiles({ name: 'skill-reset.zip', mimeType: 'application/zip', buffer: await makeSkillZip('skill-reset') })
+    await fileChooser.setFiles({
+      name: 'skill-reset.zip',
+      mimeType: 'application/zip',
+      buffer: await makeSkillZip('skill-reset'),
+    })
     const skillsRegion = page.getByRole('region', { name: 'Skills' })
     await expect(skillsRegion.getByText('skill-reset')).toBeVisible({ timeout: 5_000 })
 
@@ -74,7 +82,15 @@ test.describe('TC-06b · Reset des skills et serveurs MCP', () => {
 
   test('le reset supprime les serveurs MCP configurés', async ({ page }) => {
     await setConfig(page, {
-      mcpServers: [{ id: 'srv-1', name: 'Serveur à effacer', url: 'http://localhost:9999', enabled: false, tools: [] }],
+      mcpServers: [
+        {
+          id: 'srv-1',
+          name: 'Serveur à effacer',
+          url: 'http://localhost:9999',
+          enabled: false,
+          tools: [],
+        },
+      ],
     })
     await page.goto('/')
     await page.getByRole('button', { name: 'Serveurs MCP' }).click()

@@ -46,7 +46,10 @@ describe('ChatMessageView text messages', () => {
   it('renders assistant markdown and opens links in a new tab', () => {
     render(
       <ChatMessageView
-        message={makeMessage({ role: 'assistant', content: '**gras** [site](https://example.com)' })}
+        message={makeMessage({
+          role: 'assistant',
+          content: '**gras** [site](https://example.com)',
+        })}
       />,
     )
     expect(screen.getByText('gras').tagName).toBe('STRONG')
@@ -69,7 +72,9 @@ describe('ChatMessageView text messages', () => {
 
   it('shows a streaming cursor after partial content', () => {
     const { container } = render(
-      <ChatMessageView message={makeMessage({ role: 'assistant', content: 'En cours', isStreaming: true })} />,
+      <ChatMessageView
+        message={makeMessage({ role: 'assistant', content: 'En cours', isStreaming: true })}
+      />,
     )
     expect(screen.getByText('En cours')).toBeInTheDocument()
     expect(container.querySelector('.animate-pulse')).not.toBeNull()
@@ -86,7 +91,9 @@ describe('ChatMessageView XML blocks', () => {
   it('renders a closed XML block collapsed and expands it on click', async () => {
     const user = userEvent.setup()
     render(
-      <ChatMessageView message={makeMessage({ role: 'assistant', content: '<think>reflexion</think>Reponse' })} />,
+      <ChatMessageView
+        message={makeMessage({ role: 'assistant', content: '<think>reflexion</think>Reponse' })}
+      />,
     )
     expect(screen.queryByText('reflexion')).not.toBeInTheDocument()
     await user.click(screen.getByText('<think>'))
@@ -96,7 +103,13 @@ describe('ChatMessageView XML blocks', () => {
 
   it('shows a token estimate for an unclosed XML block', () => {
     render(
-      <ChatMessageView message={makeMessage({ role: 'assistant', content: '<think>partial text', isStreaming: true })} />,
+      <ChatMessageView
+        message={makeMessage({
+          role: 'assistant',
+          content: '<think>partial text',
+          isStreaming: true,
+        })}
+      />,
     )
     expect(screen.getByText('~3 tokens')).toBeInTheDocument()
   })
@@ -104,7 +117,13 @@ describe('ChatMessageView XML blocks', () => {
   it('expands an unclosed XML block to show its content', async () => {
     const user = userEvent.setup()
     render(
-      <ChatMessageView message={makeMessage({ role: 'assistant', content: '<think>partial text', isStreaming: true })} />,
+      <ChatMessageView
+        message={makeMessage({
+          role: 'assistant',
+          content: '<think>partial text',
+          isStreaming: true,
+        })}
+      />,
     )
     await user.click(screen.getByText('<think>'))
     expect(screen.getByText('partial text')).toBeInTheDocument()
@@ -114,13 +133,19 @@ describe('ChatMessageView XML blocks', () => {
 describe('ChatMessageView JSON responses', () => {
   it('pretty-prints valid JSON responses', () => {
     const { container } = render(
-      <ChatMessageView message={makeMessage({ role: 'assistant', content: '{"ok":true}', isJson: true })} />,
+      <ChatMessageView
+        message={makeMessage({ role: 'assistant', content: '{"ok":true}', isJson: true })}
+      />,
     )
     expect(container.querySelector('pre')?.textContent).toContain('"ok": true')
   })
 
   it('falls back to raw text when the JSON is invalid', () => {
-    render(<ChatMessageView message={makeMessage({ role: 'assistant', content: 'pas json', isJson: true })} />)
+    render(
+      <ChatMessageView
+        message={makeMessage({ role: 'assistant', content: 'pas json', isJson: true })}
+      />,
+    )
     expect(screen.getByText('pas json')).toBeInTheDocument()
   })
 })
@@ -141,7 +166,9 @@ describe('ChatMessageView tool messages', () => {
   it('shows raw arguments when a tool call is not valid JSON', async () => {
     const user = userEvent.setup()
     render(
-      <ChatMessageView message={makeMessage({ role: 'tool_call', content: 'brut', toolName: 'x' })} />,
+      <ChatMessageView
+        message={makeMessage({ role: 'tool_call', content: 'brut', toolName: 'x' })}
+      />,
     )
     await user.click(screen.getByText('Appel outil :').closest('button')!)
     expect(screen.getByText('brut')).toBeInTheDocument()
@@ -149,9 +176,7 @@ describe('ChatMessageView tool messages', () => {
 
   it('expands a tool result on click', async () => {
     const user = userEvent.setup()
-    render(
-      <ChatMessageView message={makeMessage({ role: 'tool_result', content: '42' })} />,
-    )
+    render(<ChatMessageView message={makeMessage({ role: 'tool_result', content: '42' })} />)
     expect(screen.queryByText('42')).not.toBeInTheDocument()
     await user.click(screen.getByText('Résultat outil').closest('button')!)
     expect(screen.getByText('42')).toBeInTheDocument()
@@ -201,7 +226,11 @@ describe('ChatMessageView mermaid', () => {
   })
 
   it('renders mermaid code as plain code while streaming', () => {
-    render(<ChatMessageView message={makeMessage({ role: 'assistant', content: diagram, isStreaming: true })} />)
+    render(
+      <ChatMessageView
+        message={makeMessage({ role: 'assistant', content: diagram, isStreaming: true })}
+      />,
+    )
     expect(screen.queryByTitle('Cliquer pour agrandir')).not.toBeInTheDocument()
     expect(mermaid.parse).not.toHaveBeenCalled()
   })

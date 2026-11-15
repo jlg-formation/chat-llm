@@ -2,7 +2,6 @@ import { test, expect } from '@playwright/test'
 import { setConfig } from './helpers'
 
 test.describe('TC-01 · Sélection du provider et du modèle', () => {
-
   test.beforeEach(async ({ page }) => {
     await setConfig(page)
     await page.goto('/')

@@ -2,7 +2,6 @@ import { test, expect } from '@playwright/test'
 import { setConfig, interceptLLM } from './helpers'
 
 test.describe('TC-60 · Inspecteur HTTP — affichage échange LLM', () => {
-
   test.beforeEach(async ({ page }) => {
     await setConfig(page, { streamEnabled: false })
     await interceptLLM(page, 'Réponse inspecteur.')
@@ -13,7 +12,9 @@ test.describe('TC-60 · Inspecteur HTTP — affichage échange LLM', () => {
     await page.getByRole('textbox', { name: 'Message' }).fill('Test inspecteur')
     await page.getByRole('textbox', { name: 'Message' }).press('Enter')
 
-    await expect(page.locator('span.bg-blue-100', { hasText: 'LLM' }).first()).toBeVisible({ timeout: 15_000 })
+    await expect(page.locator('span.bg-blue-100', { hasText: 'LLM' }).first()).toBeVisible({
+      timeout: 15_000,
+    })
   })
 
   test("la carte affiche la méthode POST et l'URL de l'API", async ({ page }) => {

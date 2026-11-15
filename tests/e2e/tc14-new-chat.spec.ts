@@ -2,7 +2,6 @@ import { test, expect } from '@playwright/test'
 import { setConfig, interceptLLM } from './helpers'
 
 test.describe('TC-14 · Nouvelle discussion', () => {
-
   test.beforeEach(async ({ page }) => {
     await setConfig(page, { streamEnabled: false })
     await interceptLLM(page, 'Réponse de test.')
@@ -15,7 +14,9 @@ test.describe('TC-14 · Nouvelle discussion', () => {
 
     await input.fill('Bonjour')
     await input.press('Enter')
-    await expect(chat.getByText('Réponse de test.', { exact: true })).toBeVisible({ timeout: 15_000 })
+    await expect(chat.getByText('Réponse de test.', { exact: true })).toBeVisible({
+      timeout: 15_000,
+    })
 
     await page.getByRole('button', { name: 'Nouvelle discussion' }).click()
 
@@ -29,7 +30,9 @@ test.describe('TC-14 · Nouvelle discussion', () => {
 
     await input.fill('Premier message')
     await input.press('Enter')
-    await expect(chat.getByText('Réponse de test.', { exact: true })).toBeVisible({ timeout: 15_000 })
+    await expect(chat.getByText('Réponse de test.', { exact: true })).toBeVisible({
+      timeout: 15_000,
+    })
 
     await page.getByRole('button', { name: 'Nouvelle discussion' }).click()
 

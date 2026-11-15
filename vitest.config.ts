@@ -14,12 +14,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**'],
-      exclude: [
-        'src/main.tsx',
-        'src/types.ts',
-        'src/**/*.d.ts',
-        'src/assets/**',
-      ],
+      exclude: ['src/main.tsx', 'src/types.ts', 'src/**/*.d.ts', 'src/assets/**'],
       reporter: ['text', 'html'],
       reportsDirectory: 'coverage',
       thresholds: {

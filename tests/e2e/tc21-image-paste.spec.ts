@@ -2,7 +2,8 @@ import { test, expect } from '@playwright/test'
 import { setConfig } from './helpers'
 
 // PNG 1×1 pixel minimal encodé en base64
-const PNG_B64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+const PNG_B64 =
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
 
 /** Dispatch un ClipboardEvent paste avec une image PNG sur le textarea de saisie. */
 async function pastePng(page: import('@playwright/test').Page) {
@@ -17,13 +18,16 @@ async function pastePng(page: import('@playwright/test').Page) {
     const file = new File([blob], 'pasted.png', { type: 'image/png' })
     const dt = new DataTransfer()
     dt.items.add(file)
-    const event = new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true })
+    const event = new ClipboardEvent('paste', {
+      clipboardData: dt,
+      bubbles: true,
+      cancelable: true,
+    })
     textarea.dispatchEvent(event)
   }, PNG_B64)
 }
 
-test.describe('TC-21 · Ajout d\'image par copier-coller', () => {
-
+test.describe("TC-21 · Ajout d'image par copier-coller", () => {
   test.beforeEach(async ({ page }) => {
     await setConfig(page, { streamEnabled: false })
     await page.goto('/')
@@ -38,12 +42,12 @@ test.describe('TC-21 · Ajout d\'image par copier-coller', () => {
     await pastePng(page)
     await expect(page.locator('img[alt="Image jointe 1"]')).toBeVisible({ timeout: 3_000 })
 
-    await page.getByRole('button', { name: 'Supprimer l\'image 1' }).click()
+    await page.getByRole('button', { name: "Supprimer l'image 1" }).click()
 
     await expect(page.locator('img[alt="Image jointe 1"]')).not.toBeVisible()
   })
 
-  test('le texte normal collé n\'ajoute pas de miniature', async ({ page }) => {
+  test("le texte normal collé n'ajoute pas de miniature", async ({ page }) => {
     // Playwright keyboard paste (texte)
     await page.getByRole('textbox', { name: 'Message' }).click()
     await page.evaluate(() => {

@@ -2,13 +2,12 @@ import { test, expect } from '@playwright/test'
 import { setConfig } from './helpers'
 
 test.describe('TC-61 · Redimensionnement de la sidebar droite', () => {
-
   test.beforeEach(async ({ page }) => {
     await setConfig(page, { streamEnabled: false })
     await page.goto('/')
   })
 
-  test('la poignée de drag permet d\'élargir la sidebar droite', async ({ page }) => {
+  test("la poignée de drag permet d'élargir la sidebar droite", async ({ page }) => {
     const handle = page.locator('[title="Redimensionner"]')
     const box = await handle.boundingBox()
     if (!box) throw new Error('Poignée de redimensionnement introuvable')
@@ -63,13 +62,12 @@ test.describe('TC-61 · Redimensionnement de la sidebar droite', () => {
 })
 
 test.describe('TC-62 · Réduction et expansion de la sidebar droite', () => {
-
   test.beforeEach(async ({ page }) => {
     await setConfig(page, { streamEnabled: false })
     await page.goto('/')
   })
 
-  test('le chevron masque l\'inspecteur HTTP', async ({ page }) => {
+  test("le chevron masque l'inspecteur HTTP", async ({ page }) => {
     await page.getByRole('button', { name: "Masquer l'inspecteur HTTP" }).click()
     await expect(page.getByRole('complementary', { name: 'Inspecteur HTTP' })).not.toBeVisible()
   })

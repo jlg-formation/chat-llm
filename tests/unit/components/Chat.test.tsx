@@ -105,7 +105,9 @@ describe('Chat basic conversation', () => {
 
   it('passes the system prompt and usage to the stores', async () => {
     updateConfig(makeConfig({ streamEnabled: false, systemPrompt: 'Sois bref' }))
-    mockSend.mockResolvedValue(textResult('ok', { usage: { promptTokens: 3, completionTokens: 4 } }))
+    mockSend.mockResolvedValue(
+      textResult('ok', { usage: { promptTokens: 3, completionTokens: 4 } }),
+    )
     render(<Chat />)
     await sendText('Salut')
     await screen.findByText('ok')
@@ -124,7 +126,9 @@ describe('Chat basic conversation', () => {
   })
 
   it('passes the previous LM Studio response id and clears it on reset', async () => {
-    updateConfig(makeConfig({ streamEnabled: false }, { provider: 'lmstudio', apiFormat: 'lmstudio_chat' }))
+    updateConfig(
+      makeConfig({ streamEnabled: false }, { provider: 'lmstudio', apiFormat: 'lmstudio_chat' }),
+    )
     mockSend.mockResolvedValue(textResult('A', { responseId: 'r1' }))
     const user = userEvent.setup()
     render(<Chat />)
@@ -169,7 +173,9 @@ describe('Chat tool calls', () => {
     render(<Chat />)
     await sendText('Calcule')
     expect(await screen.findByText('Fini')).toBeInTheDocument()
-    expect(mockCallTool).toHaveBeenCalledWith(expect.objectContaining({ id: 's1' }), 'calc', { x: 1 })
+    expect(mockCallTool).toHaveBeenCalledWith(expect.objectContaining({ id: 's1' }), 'calc', {
+      x: 1,
+    })
     expect(screen.getByText('calc')).toBeInTheDocument()
 
     await user.click(screen.getByText('Résultat outil').closest('button')!)
@@ -187,7 +193,9 @@ describe('Chat tool calls', () => {
     mockSend
       .mockResolvedValueOnce({
         type: 'tool_calls',
-        calls: [{ id: 'c1', name: 'get_skill_details', args: { name: 'pdf' }, rawArgs: '{"name":"pdf"}' }],
+        calls: [
+          { id: 'c1', name: 'get_skill_details', args: { name: 'pdf' }, rawArgs: '{"name":"pdf"}' },
+        ],
       } as LLMResult)
       .mockResolvedValueOnce(textResult('Termine'))
 
@@ -196,10 +204,17 @@ describe('Chat tool calls', () => {
     expect(await screen.findByText('Termine')).toBeInTheDocument()
     const [, , systemPrompt, skillRefs] = mockSend.mock.calls[0]
     expect(systemPrompt).toContain('Lire des PDF')
-    expect(skillRefs).toEqual([expect.objectContaining({ name: 'pdf', description: 'Lire des PDF' })])
+    expect(skillRefs).toEqual([
+      expect.objectContaining({ name: 'pdf', description: 'Lire des PDF' }),
+    ])
     // Le second appel reçoit le résultat du skill dans l'historique
     expect(mockSend.mock.calls[1][1]).toEqual(
-      expect.arrayContaining([expect.objectContaining({ role: 'tool_result', content: expect.stringContaining('Instructions pdf') })]),
+      expect.arrayContaining([
+        expect.objectContaining({
+          role: 'tool_result',
+          content: expect.stringContaining('Instructions pdf'),
+        }),
+      ]),
     )
   })
 
