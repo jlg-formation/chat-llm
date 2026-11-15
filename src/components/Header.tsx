@@ -1,7 +1,33 @@
-import { Globe, Radio, Wifi, WifiOff } from 'lucide-react'
+import { Globe, Lock, Radio, Wifi, WifiOff } from 'lucide-react'
 import { useConfig } from '../store/configStore'
 import { PROVIDER_DEFAULTS } from '../types'
 import { webSearchActive } from '../services/llm/helpers'
+import {
+  getSpendLimitUsd,
+  isSpendLimitReached,
+  useSpentUsd,
+} from '../store/spendGuard'
+
+const formatUsd = (usd: number) => `${usd.toFixed(2).replace('.', ',')} $`
+
+function RestrictedBadge() {
+  const spent = useSpentUsd()
+  if (!isSpendLimitReached()) return null
+
+  return (
+    <div className="relative group">
+      <div className="flex items-center gap-1.5 bg-red-50 text-red-700 px-3 py-1 rounded-full text-xs font-medium">
+        <Lock className="w-3.5 h-3.5" /> restricted
+      </div>
+      <div className="pointer-events-none absolute right-0 top-full mt-2 w-64 rounded-md bg-gray-900 p-3 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+        <p>Seuil de dépense atteint : les appels sont bloqués.</p>
+        <p className="mt-1">
+          Dépensé : {formatUsd(spent)} / Seuil : {formatUsd(getSpendLimitUsd())}
+        </p>
+      </div>
+    </div>
+  )
+}
 
 export function Header() {
   const [config] = useConfig()
@@ -15,9 +41,11 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-4 text-sm text-gray-600">
-        <div className="flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
-          <span className="font-medium">{providerLabel}</span>
-          {config.llm.model && <span className="text-blue-500 text-xs">/ {config.llm.model}</span>}
+        <RestrictedBadge />
+
+        <div className="flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
+          <span>{providerLabel}</span>
+          {config.llm.model && <span className="text-blue-500">/ {config.llm.model}</span>}
         </div>
 
         {webSearchActive(config) && (

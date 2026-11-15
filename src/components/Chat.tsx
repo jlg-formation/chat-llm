@@ -1,128 +1,174 @@
-import { useRef, useEffect, useState } from 'react'
-import type { ChatMessage as ChatMessageType, HostedActivity, MessageImage } from '../types'
-import { ChatMessageView } from './chat/ChatMessage'
-import { ChatInput } from './chat/ChatInput'
-import { buildToolMessages } from './chat/toolMessages'
-import { useConfig } from '../store/configStore'
-import { loadSkills, getSkillContent, parseSkillFrontmatter } from '../store/skillsStore'
-import { sendMessage } from '../services/llm'
-import { callMcpTool } from '../services/mcp'
-import { genId } from '../services/id'
-import type { SkillRef, LLMToolCall } from '../services/llm'
-import { SquarePen } from 'lucide-react'
-import { addUsage, resetUsage } from '../store/usageStore'
+import { useRef, useEffect, useState } from "react";
+import type {
+  AppConfig,
+  ChatMessage as ChatMessageType,
+  HostedActivity,
+  MessageImage,
+} from "../types";
+import { ChatMessageView } from "./chat/ChatMessage";
+import { ChatInput } from "./chat/ChatInput";
+import { buildToolMessages } from "./chat/toolMessages";
+import { useConfig } from "../store/configStore";
+import {
+  loadSkills,
+  getSkillContent,
+  parseSkillFrontmatter,
+} from "../store/skillsStore";
+import { sendMessage } from "../services/llm";
+import { callMcpTool } from "../services/mcp";
+import { genId } from "../services/id";
+import type { SkillRef, LLMToolCall } from "../services/llm";
+import { SquarePen } from "lucide-react";
+import { addUsage, addImageUsage, resetUsage } from "../store/usageStore";
+import {
+  addSpend,
+  estimateCallCostUsd,
+  getSpendLimitUsd,
+  isSpendLimitReached,
+  useSpentUsd,
+} from "../store/spendGuard";
 
-const MAX_TOOL_ITERATIONS = 100
+const MAX_TOOL_ITERATIONS = 100;
 
 export function Chat() {
-  const [config] = useConfig()
-  const [messages, setMessages] = useState<ChatMessageType[]>([])
-  const [sending, setSending] = useState(false)
-  const abortRef = useRef<AbortController | null>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const lmStudioResponseIdRef = useRef<string | undefined>(undefined)
+  const [config] = useConfig();
+  // Abonnement : redessine le bandeau à chaque dépense
+  useSpentUsd();
+  const [messages, setMessages] = useState<ChatMessageType[]>([]);
+  const [sending, setSending] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const lmStudioResponseIdRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   async function buildSystemAndSkills(): Promise<{
-    systemPrompt: string
-    skillRefs: SkillRef[]
+    systemPrompt: string;
+    skillRefs: SkillRef[];
   }> {
-    const skills = await loadSkills()
-    const active = skills.filter((s) => s.enabled)
-    let systemPrompt = config.systemPrompt ?? ''
+    const skills = await loadSkills();
+    const active = skills.filter((s) => s.enabled);
+    let systemPrompt = config.systemPrompt ?? "";
 
     if (active.length === 0) {
-      return { systemPrompt, skillRefs: [] }
+      return { systemPrompt, skillRefs: [] };
     }
 
-    const skillRefs: SkillRef[] = active.map((s) => parseSkillFrontmatter(s))
+    const skillRefs: SkillRef[] = active.map((s) => parseSkillFrontmatter(s));
 
     const skillList = skillRefs
-      .map((r) => `- **${r.name}**${r.description ? ` : ${r.description}` : ''}`)
-      .join('\n')
+      .map(
+        (r) => `- **${r.name}**${r.description ? ` : ${r.description}` : ""}`,
+      )
+      .join("\n");
 
     systemPrompt +=
       `\n\n## Skills disponibles\n\n` +
       `Utilise l'outil \`get_skill_details\` pour obtenir les instructions complètes d'un skill si tu en as besoin avant de répondre.\n\n` +
-      skillList
+      skillList;
 
-    return { systemPrompt, skillRefs }
+    return { systemPrompt, skillRefs };
   }
 
-  async function resolveToolCall(call: LLMToolCall): Promise<string> {
-    if (call.name !== 'get_skill_details') {
-      for (const server of config.mcpServers) {
-        if (!server.enabled) continue
-        const tool = server.tools.find((t) => t.name === call.name && t.enabled)
-        if (tool) return callMcpTool(server, call.name, call.args as Record<string, unknown>)
+  async function resolveToolCall(
+    call: LLMToolCall,
+    mcpServers: AppConfig["mcpServers"],
+  ): Promise<string> {
+    if (call.name !== "get_skill_details") {
+      for (const server of mcpServers) {
+        if (!server.enabled) continue;
+        const tool = server.tools.find(
+          (t) => t.name === call.name && t.enabled,
+        );
+        if (tool)
+          return callMcpTool(
+            server,
+            call.name,
+            call.args as Record<string, unknown>,
+          );
       }
     }
 
-    const skillName = (call.args.name as string) ?? ''
-    const skills = await loadSkills()
+    const skillName = (call.args.name as string) ?? "";
+    const skills = await loadSkills();
     const skill = skills.find(
-      (s) => s.name === skillName || parseSkillFrontmatter(s).name === skillName,
-    )
-    if (!skill) return `Skill "${skillName}" non trouvé.`
-    return getSkillContent(skill)
+      (s) =>
+        s.name === skillName || parseSkillFrontmatter(s).name === skillName,
+    );
+    if (!skill) return `Skill "${skillName}" non trouvé.`;
+    return getSkillContent(skill);
   }
 
   async function handleSend(text: string, images: MessageImage[]) {
+    // Plafond atteint : pas d'images ni de MCP pour cet envoi
+    const runConfig: AppConfig = isSpendLimitReached()
+      ? {
+          ...config,
+          mcpServers: [],
+          hostedTools: { ...config.hostedTools, imageGeneration: false },
+        }
+      : config;
     const userMsg: ChatMessageType = {
       id: genId(),
-      role: 'user',
+      role: "user",
       content: text,
       images: images.length > 0 ? images : undefined,
-    }
+    };
 
-    const assistantId = genId()
+    const assistantId = genId();
     const assistantMsg: ChatMessageType = {
       id: assistantId,
-      role: 'assistant',
-      content: '',
+      role: "assistant",
+      content: "",
       isStreaming: true,
-    }
+    };
 
-    const newMessages = [...messages, userMsg]
-    setMessages([...newMessages, assistantMsg])
-    setSending(true)
+    const newMessages = [...messages, userMsg];
+    setMessages([...newMessages, assistantMsg]);
+    setSending(true);
 
-    const ctrl = new AbortController()
-    abortRef.current = ctrl
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
 
     const patchAssistant = (patch: Partial<ChatMessageType>) => {
-      setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, ...patch } : m)))
-    }
-    const updateAssistant = (content: string, isStreaming: boolean, isJson = false) =>
-      patchAssistant({ content, isStreaming, isJson })
+      setMessages((prev) =>
+        prev.map((m) => (m.id === assistantId ? { ...m, ...patch } : m)),
+      );
+    };
+    const updateAssistant = (
+      content: string,
+      isStreaming: boolean,
+      isJson = false,
+    ) => patchAssistant({ content, isStreaming, isJson });
 
     try {
-      const { systemPrompt, skillRefs } = await buildSystemAndSkills()
+      const { systemPrompt, skillRefs } = await buildSystemAndSkills();
 
-      let apiMessages = [...newMessages]
-      let finalContent = ''
-      let thinkingText = ''
+      let apiMessages = [...newMessages];
+      let finalContent = "";
+      let thinkingText = "";
       const onToken = (token: string) => {
-        finalContent += token
-        updateAssistant(finalContent, true)
-      }
+        finalContent += token;
+        updateAssistant(finalContent, true);
+      };
       const onThinking = (token: string) => {
-        thinkingText += token
-        patchAssistant({ thinking: thinkingText })
-      }
+        thinkingText += token;
+        patchAssistant({ thinking: thinkingText });
+      };
 
-      const activeMcpTools = config.mcpServers
+      const activeMcpTools = runConfig.mcpServers
         .filter((s) => s.enabled)
-        .flatMap((s) => s.tools.filter((t) => t.enabled))
+        .flatMap((s) => s.tools.filter((t) => t.enabled));
       const prevId =
-        config.llm.apiFormat === 'lmstudio_chat' ? lmStudioResponseIdRef.current : undefined
-      const hosted: HostedActivity = { searches: [], sources: [] }
+        config.llm.apiFormat === "lmstudio_chat"
+          ? lmStudioResponseIdRef.current
+          : undefined;
+      const hosted: HostedActivity = { searches: [], sources: [], images: [] };
       const callLLM = async () => {
         const res = await sendMessage(
-          config,
+          runConfig,
           apiMessages,
           systemPrompt,
           skillRefs,
@@ -131,100 +177,116 @@ export function Chat() {
           ctrl.signal,
           prevId,
           onThinking,
-        )
-        if (res.usage) addUsage(res.usage)
+        );
+        if (res.usage) addUsage(res.usage);
+        addSpend(estimateCallCostUsd(runConfig, res.usage));
+        addImageUsage(
+          res.hosted?.images.length ?? 0,
+          config.hostedTools.imageModel,
+          res.usage?.imageOutputTokens,
+          res.usage?.imageInputTokens,
+        );
         if (res.hosted) {
-          hosted.searches.push(...res.hosted.searches)
-          hosted.sources.push(...res.hosted.sources)
+          hosted.searches.push(...res.hosted.searches);
+          hosted.sources.push(...res.hosted.sources);
+          hosted.images.push(...res.hosted.images);
         }
-        return res
-      }
-      let result = await callLLM()
-      if (result.responseId) lmStudioResponseIdRef.current = result.responseId
+        return res;
+      };
+      let result = await callLLM();
+      if (result.responseId) lmStudioResponseIdRef.current = result.responseId;
 
-      let iterations = 0
-      let partialText = ''
+      let iterations = 0;
+      let partialText = "";
       while (
-        (result.type === 'tool_calls' || (result.type === 'text' && result.pausedContent)) &&
+        (result.type === "tool_calls" ||
+          (result.type === "text" && result.pausedContent)) &&
         iterations < MAX_TOOL_ITERATIONS
       ) {
-        iterations++
-        if (result.type === 'text') {
+        iterations++;
+        if (result.type === "text") {
           // Hors streaming, le texte partiel n'est pas émis par onToken
-          if (!config.streamEnabled) partialText += result.content
+          if (!config.streamEnabled) partialText += result.content;
           apiMessages = [
             ...apiMessages,
-            { id: genId(), role: 'assistant', content: '', rawContent: result.pausedContent },
-          ]
-          result = await callLLM()
-          continue
+            {
+              id: genId(),
+              role: "assistant",
+              content: "",
+              rawContent: result.pausedContent,
+            },
+          ];
+          result = await callLLM();
+          continue;
         }
-        finalContent = ''
-        partialText = ''
+        finalContent = "";
+        partialText = "";
 
         const toolResults = await Promise.all(
           result.calls.map(async (call) => ({
             call,
-            content: await resolveToolCall(call),
+            content: await resolveToolCall(call, runConfig.mcpServers),
           })),
-        )
+        );
 
         // Construire les messages tool_call + tool_result et les ajouter à l'historique
-        const toolMsgs = buildToolMessages(toolResults, result.thinkingBlocks)
+        const toolMsgs = buildToolMessages(toolResults, result.thinkingBlocks);
 
-        apiMessages = [...apiMessages, ...toolMsgs]
+        apiMessages = [...apiMessages, ...toolMsgs];
 
         // Mettre à jour l'UI : insérer les messages tool avant le message assistant en cours
         setMessages((prev) => {
-          const withoutLast = prev.slice(0, -1)
-          return [...withoutLast, ...toolMsgs, prev[prev.length - 1]]
-        })
+          const withoutLast = prev.slice(0, -1);
+          return [...withoutLast, ...toolMsgs, prev[prev.length - 1]];
+        });
 
-        thinkingText = ''
-        patchAssistant({ thinking: undefined })
-        updateAssistant('', true)
+        thinkingText = "";
+        patchAssistant({ thinking: undefined });
+        updateAssistant("", true);
 
-        result = await callLLM()
+        result = await callLLM();
       }
 
-      if (!config.streamEnabled && result.type === 'text') {
-        finalContent = partialText + result.content
+      if (!config.streamEnabled && result.type === "text") {
+        finalContent = partialText + result.content;
       }
 
       const isJson =
         !!config.jsonSchema &&
         (() => {
           try {
-            JSON.parse(finalContent)
-            return true
+            JSON.parse(finalContent);
+            return true;
           } catch {
-            return false
+            return false;
           }
-        })()
+        })();
 
-      updateAssistant(finalContent, false, isJson)
+      updateAssistant(finalContent, false, isJson);
       // Non-streaming : la réflexion n'arrive qu'avec le résultat final
-      if (result.thinking) patchAssistant({ thinking: result.thinking })
+      if (result.thinking) patchAssistant({ thinking: result.thinking });
 
       const sources = hosted.sources.filter(
         (s, i, all) => all.findIndex((o) => o.url === s.url) === i,
-      )
+      );
       if (hosted.searches.length > 0 || sources.length > 0)
-        patchAssistant({ webSearches: hosted.searches, sources })
+        patchAssistant({ webSearches: hosted.searches, sources });
+      if (hosted.images.length > 0)
+        patchAssistant({ generatedImages: hosted.images });
     } catch (err) {
-      if ((err as Error).name === 'AbortError') {
+      if ((err as Error).name === "AbortError") {
         // Arrêt demandé par l'utilisateur — on conserve le contenu partiel déjà affiché
-        patchAssistant({ isStreaming: false })
+        patchAssistant({ isStreaming: false });
       } else {
         patchAssistant({
           content: `Erreur : ${(err as Error).message}`,
           isStreaming: false,
           isError: true,
-        })
+        });
       }
     } finally {
-      abortRef.current = null
-      setSending(false)
+      abortRef.current = null;
+      setSending(false);
     }
   }
 
@@ -235,9 +297,9 @@ export function Chat() {
         {messages.length > 0 && (
           <button
             onClick={() => {
-              setMessages([])
-              resetUsage()
-              lmStudioResponseIdRef.current = undefined
+              setMessages([]);
+              resetUsage();
+              lmStudioResponseIdRef.current = undefined;
             }}
             className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-blue-500 transition-colors"
           >
@@ -253,7 +315,9 @@ export function Chat() {
             <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-4">
               <span className="text-3xl">💬</span>
             </div>
-            <p className="text-sm font-medium text-gray-500">Commencez une conversation</p>
+            <p className="text-sm font-medium text-gray-500">
+              Commencez une conversation
+            </p>
             <p className="text-xs text-gray-400 mt-1">
               Configurez votre provider LLM et envoyez un message
             </p>
@@ -266,7 +330,17 @@ export function Chat() {
         <div ref={bottomRef} />
       </div>
 
-      <ChatInput onSend={handleSend} onStop={() => abortRef.current?.abort()} disabled={sending} />
+      {isSpendLimitReached() && (
+        <div className="px-4 py-2 text-xs text-amber-800 bg-amber-50 border-t border-amber-200">
+          Plafond de {getSpendLimitUsd().toFixed(2).replace(".", ",")} $ atteint
+          : la génération d'images et les outils MCP sont désactivés.
+        </div>
+      )}
+      <ChatInput
+        onSend={handleSend}
+        onStop={() => abortRef.current?.abort()}
+        disabled={sending}
+      />
     </main>
-  )
+  );
 }

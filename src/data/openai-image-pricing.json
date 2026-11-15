@@ -1,0 +1,15 @@
+{
+  "source": "https://developers.openai.com/api/docs/pricing (section Images, Standard), consulté le 2026-11-15",
+  "models": {
+    "gpt-image-2.6-sunburst": {
+      "textInputPerMillion": 5,
+      "imageInputPerMillion": 8,
+      "imageOutputPerMillion": 30
+    },
+    "gpt-image-2.6-flare": {
+      "textInputPerMillion": 5,
+      "imageInputPerMillion": 8,
+      "imageOutputPerMillion": 30
+    }
+  }
+}
