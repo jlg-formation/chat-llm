@@ -106,7 +106,7 @@ describe('ProviderSection Mistral', () => {
     await user.selectOptions(screen.getByLabelText('Provider'), 'mistral')
     const cfg = getConfig().llm
     expect(cfg.apiFormat).toBe('chat_completions')
-    expect(cfg.model).toBe('mistral-small-latest')
+    expect(cfg.model).toBe('ministral-3b-latest')
     expect(cfg.baseUrl).toBe('https://api.mistral.ai/v1')
     expect(screen.getByLabelText('URL de base')).toBeEnabled()
     expect(screen.getByRole('option', { name: /mistral-large-latest/ })).toBeInTheDocument()
@@ -127,7 +127,7 @@ describe('ProviderSection Mistral', () => {
     vi.mocked(fetchModels).mockResolvedValue([{ id: 'mistral-large-latest' } as ModelInfo])
     render(<ProviderSection />)
     await user.click(screen.getByRole('button', { name: /Charger/ }))
-    expect(await screen.findByRole('option', { name: /mistral-large-latest — \$0\.70\/\$2\.10/ })).toBeInTheDocument()
+    expect(await screen.findByRole('option', { name: /mistral-large-latest — 1000k ctx, \$0\.70\/\$2\.10/ })).toBeInTheDocument()
     expect(fetchModels).toHaveBeenCalledWith('mistral', 'https://api.mistral.ai/v1', '')
   })
 })

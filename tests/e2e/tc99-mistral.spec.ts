@@ -40,15 +40,21 @@ test.describe("TC-99 · Provider Mistral — sélection et configuration", () =>
     await expect(page.getByLabel("URL de base")).toBeEnabled();
     await expect(page.getByLabel("URL de base")).toHaveValue(MISTRAL_BASE);
     await expect(page.getByRole("combobox", { name: "Modèle" })).toHaveValue(
-      "mistral-small-latest",
+      "ministral-3b-latest",
     );
   });
 
-  test("la liste de repli propose small et large", async ({ page }) => {
+  test("la liste de repli propose ministral, small et large", async ({
+    page,
+  }) => {
     await page
       .getByRole("combobox", { name: "Provider" })
       .selectOption("mistral");
-    for (const id of ["mistral-small-latest", "mistral-large-latest"])
+    for (const id of [
+      "ministral-3b-latest",
+      "mistral-small-latest",
+      "mistral-large-latest",
+    ])
       await expect(
         page.locator(`select[aria-label="Modèle"] option[value="${id}"]`),
       ).toHaveCount(1);

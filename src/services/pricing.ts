@@ -1,20 +1,32 @@
 import type { ModelInfo } from "./models";
+import type { Provider } from "../types";
 import openaiPricing from "../data/openai-pricing.json";
 import anthropicPricing from "../data/anthropic-pricing.json";
 import mistralPricing from "../data/mistral-pricing.json";
+import ovhPricing from "../data/ovh-pricing.json";
 
 export type PricingEntry = Pick<
   ModelInfo,
   "pricingPrompt" | "pricingCompletion" | "contextLength" | "longContext"
 >;
 
-const TABLE = {
-  ...openaiPricing,
-  ...anthropicPricing,
-  ...mistralPricing,
-} as Record<string, PricingEntry>;
+type PricingTable = Record<string, PricingEntry>;
+
+// Une table par provider : un même id peut avoir des prix différents d'un provider à l'autre.
+const TABLES: Partial<Record<Provider, PricingTable>> = {
+  openai: openaiPricing as PricingTable,
+  anthropic: anthropicPricing as PricingTable,
+  mistral: mistralPricing as PricingTable,
+  ovh: ovhPricing as PricingTable,
+};
+
+const ALL_PROVIDERS_TABLE: PricingTable = Object.assign(
+  {},
+  ...Object.values(TABLES),
+);
 
 const DEFAULT_MISTRAL_MODEL_IDS = [
+  "ministral-3b-latest",
   "mistral-small-latest",
   "mistral-large-latest",
 ];
@@ -38,37 +50,45 @@ const DEFAULT_OPENAI_MODEL_IDS = [
   "gpt-6-astra",
 ];
 
-/** Prix d'un modèle : correspondance exacte, sinon plus long préfixe connu (variantes datées). */
-export function getStaticPricing(modelId: string): PricingEntry | undefined {
-  if (TABLE[modelId]) return TABLE[modelId];
+/**
+ * Prix d'un modèle : correspondance exacte, sinon plus long préfixe connu (variantes datées).
+ * Sans `provider`, toutes les tables sont fusionnées ; avec un provider sans table (local), aucun prix.
+ */
+export function getStaticPricing(
+  modelId: string,
+  provider?: Provider,
+): PricingEntry | undefined {
+  const table = provider ? TABLES[provider] : ALL_PROVIDERS_TABLE;
+  if (!table) return undefined;
+  if (table[modelId]) return table[modelId];
   let best: string | undefined;
-  for (const key of Object.keys(TABLE)) {
+  for (const key of Object.keys(table)) {
     if (
       modelId.startsWith(key) &&
       (best === undefined || key.length > best.length)
     )
       best = key;
   }
-  return best ? TABLE[best] : undefined;
+  return best ? table[best] : undefined;
 }
 
 export function getDefaultOpenAiModels(): ModelInfo[] {
   return DEFAULT_OPENAI_MODEL_IDS.map((id) => ({
     id,
-    ...getStaticPricing(id),
+    ...getStaticPricing(id, "openai"),
   }));
 }
 
 export function getDefaultAnthropicModels(): ModelInfo[] {
   return DEFAULT_ANTHROPIC_MODEL_IDS.map((id) => ({
     id,
-    ...getStaticPricing(id),
+    ...getStaticPricing(id, "anthropic"),
   }));
 }
 
 export function getDefaultMistralModels(): ModelInfo[] {
   return DEFAULT_MISTRAL_MODEL_IDS.map((id) => ({
     id,
-    ...getStaticPricing(id),
+    ...getStaticPricing(id, "mistral"),
   }));
 }

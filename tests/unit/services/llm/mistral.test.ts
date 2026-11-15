@@ -107,6 +107,23 @@ describe("mistral models", () => {
     vi.unstubAllGlobals();
   });
 
+  it("drops audio, OCR, embedding and moderation models", async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({
+        data: [
+          { id: "mistral-large-latest", capabilities: { completion_chat: true } },
+          { id: "voxtral-small-2507", capabilities: { completion_chat: true } },
+          { id: "any-audio", capabilities: { audio_transcription: true } },
+          { id: "mistral-ocr-latest", capabilities: { ocr: true } },
+          { id: "mistral-embed", capabilities: { completion_chat: false } },
+          { id: "mistral-moderation-latest" },
+        ],
+      }),
+    );
+    const models = await fetchModels("mistral", "https://m/v1", "k");
+    expect(models.map((m) => m.id)).toEqual(["mistral-large-latest"]);
+  });
+
   it("lists chat models from {base}/models with Bearer auth", async () => {
     fetchMock.mockResolvedValueOnce(
       jsonResponse({
@@ -145,16 +162,25 @@ describe("mistral pricing", () => {
   it("provides the static fallback list with prices", () => {
     const models = getDefaultMistralModels();
     expect(models.map((m) => m.id)).toEqual([
+      "ministral-3b-latest",
       "mistral-small-latest",
       "mistral-large-latest",
     ]);
-    expect(models[0].pricingPrompt).toBeCloseTo(1.5e-7);
+    expect(models[0].pricingPrompt).toBeCloseTo(1e-7);
     expect(getStaticPricing("mistral-large-latest")?.pricingCompletion).toBe(
       0.0000021,
     );
   });
 
-  it("returns no price for an unknown dated variant", () => {
-    expect(getStaticPricing("mistral-small-2603")).toBeUndefined();
+  it("resolves a dated variant by prefix and ignores unknown models", () => {
+    expect(
+      getStaticPricing("mistral-small-2603", "mistral")?.pricingPrompt,
+    ).toBeDefined();
+    expect(getStaticPricing("modele-inconnu", "mistral")).toBeUndefined();
+  });
+
+  it("keeps provider tables apart and gives no price to local providers", () => {
+    expect(getStaticPricing("gpt-oss-20b", "ovh")?.pricingPrompt).toBe(4e-8);
+    expect(getStaticPricing("gpt-oss-20b", "ollama")).toBeUndefined();
   });
 });

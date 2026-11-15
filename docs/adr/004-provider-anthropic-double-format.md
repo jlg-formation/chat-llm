@@ -17,7 +17,7 @@ L'évolution 04 ajoute Anthropic (Claude) avec une parité fonctionnelle complè
 - Structured output natif via `output_config.format` (le schéma interne de `{ name, schema }` est extrait) ; `strict: true` forcé en mode compatible.
 - Boucle d'outils locale (pas de `mcp_servers`). Les blocs `thinking` / `redacted_thinking` sont conservés bruts dans `ChatMessage.thinkingBlocks` et rejoués avec les `tool_use`. Les messages d'une même itération partagent `ChatMessage.toolTurnId` pour que le builder les regroupe en un message assistant et un message user.
 - Parser dédié (`parsersAnthropic.ts`) : le streaming assemble des blocs, puis passe par la même fonction que le non-streaming pour garantir la parité.
-- Tarifs statiques (`src/data/anthropic-pricing.json`) ; le palier tarifaire de Haiku 5.5 (> 100 000 tokens de prompt) n'est pas appliqué car `usageStore` ne cumule que des totaux : le palier bas est utilisé et signalé.
+- Tarifs statiques (`src/data/anthropic-pricing.json`), générés par `bun run pricing` depuis la grille officielle d'Anthropic (voir [ADR 006](006-tarifs-sources-officielles-par-provider.md)) ; le palier tarifaire de Haiku 5.5 (> 100 000 tokens de prompt) n'est pas appliqué car `usageStore` ne cumule que des totaux : le palier bas est utilisé et signalé.
 
 ## Raisons
 

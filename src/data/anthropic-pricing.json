@@ -1,23 +1,97 @@
 {
+  "claude-fable-5": {
+    "pricingPrompt": 0.00001,
+    "pricingCompletion": 0.00005,
+    "contextLength": 1000000
+  },
+  "claude-fable-5-1": {
+    "pricingPrompt": 0.00001,
+    "pricingCompletion": 0.00005,
+    "contextLength": 1000000
+  },
+  "claude-fable-5-2": {
+    "pricingPrompt": 0.000008,
+    "pricingCompletion": 0.00004,
+    "contextLength": 1000000
+  },
+  "claude-haiku-4-5": {
+    "pricingPrompt": 0.000001,
+    "pricingCompletion": 0.000005,
+    "contextLength": 200000
+  },
   "claude-haiku-5-5": {
     "pricingPrompt": 1e-7,
     "pricingCompletion": 5e-7,
+    "contextLength": 1000000,
     "longContext": {
       "threshold": 100000,
       "pricingPrompt": 5e-7,
       "pricingCompletion": 0.0000025
     }
   },
-  "claude-sonnet-5-5": {
-    "pricingPrompt": 0.000002,
-    "pricingCompletion": 0.00001
+  "claude-mythos-5": {
+    "pricingPrompt": 0.00001,
+    "pricingCompletion": 0.00005,
+    "contextLength": 1000000
+  },
+  "claude-mythos-5-1": {
+    "pricingPrompt": 0.00001,
+    "pricingCompletion": 0.00005,
+    "contextLength": 1000000
+  },
+  "claude-mythos-5-2": {
+    "pricingPrompt": 0.000008,
+    "pricingCompletion": 0.00004,
+    "contextLength": 1000000
+  },
+  "claude-opus-4-5": {
+    "pricingPrompt": 0.000005,
+    "pricingCompletion": 0.000025,
+    "contextLength": 200000
+  },
+  "claude-opus-4-6": {
+    "pricingPrompt": 0.000005,
+    "pricingCompletion": 0.000025,
+    "contextLength": 1000000
+  },
+  "claude-opus-4-7": {
+    "pricingPrompt": 0.000005,
+    "pricingCompletion": 0.000025,
+    "contextLength": 1000000
+  },
+  "claude-opus-4-8": {
+    "pricingPrompt": 0.000005,
+    "pricingCompletion": 0.000025,
+    "contextLength": 1000000
+  },
+  "claude-opus-5": {
+    "pricingPrompt": 0.000005,
+    "pricingCompletion": 0.000025,
+    "contextLength": 1000000
   },
   "claude-opus-5-5": {
     "pricingPrompt": 0.000004,
-    "pricingCompletion": 0.00002
+    "pricingCompletion": 0.00002,
+    "contextLength": 1000000
   },
-  "claude-fable-5-2": {
-    "pricingPrompt": 0.000008,
-    "pricingCompletion": 0.00004
+  "claude-sonnet-4-5": {
+    "pricingPrompt": 0.000003,
+    "pricingCompletion": 0.000015,
+    "contextLength": 200000
+  },
+  "claude-sonnet-4-6": {
+    "pricingPrompt": 0.000003,
+    "pricingCompletion": 0.000015,
+    "contextLength": 1000000
+  },
+  "claude-sonnet-5": {
+    "pricingPrompt": 0.000002,
+    "pricingCompletion": 0.00001,
+    "contextLength": 1000000
+  },
+  "claude-sonnet-5-5": {
+    "pricingPrompt": 0.000002,
+    "pricingCompletion": 0.00001,
+    "contextLength": 1000000
   }
 }

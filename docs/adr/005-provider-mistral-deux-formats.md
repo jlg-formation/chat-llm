@@ -15,8 +15,8 @@ L'évolution 05 ajoute Mistral AI comme provider cloud français, avec une parit
 - Authentification `Authorization: Bearer`, appel direct depuis le navigateur.
 - `chat_completions` : `max_tokens` (et non `max_completion_tokens`) et pas de `stream_options`, Mistral rejetant les champs inconnus ; l'usage arrive dans le dernier chunk. `responses` : `store: false`, sans `previous_response_id` ni `conversation`, l'historique complet étant renvoyé à chaque appel.
 - Boucle d'outils locale pour les deux formats ; le MCP natif, les agents et l'API Conversations de Mistral ne sont pas utilisés.
-- Liste de repli : `mistral-small-latest` (défaut) et `mistral-large-latest`. `mistral-medium-latest` est écarté car Mistral Medium 3.5 est déprécié depuis le 31/10/2026 au profit de Large 4. Tarifs statiques dans `src/data/mistral-pricing.json`.
-- La liste dynamique (`GET {base}/models`) écarte les modèles dont `capabilities.completion_chat` vaut `false`.
+- Liste de repli : `ministral-3b-latest` (défaut, le moins cher), `mistral-small-latest` et `mistral-large-latest`. `mistral-medium-latest` est écarté car Mistral Medium 3.5 est déprécié depuis le 31/10/2026 au profit de Large 4. Tarifs statiques dans `src/data/mistral-pricing.json`, générés par `bun run pricing` depuis la grille officielle de Mistral (voir [ADR 006](006-tarifs-sources-officielles-par-provider.md)).
+- La liste dynamique (`GET {base}/models`) ne garde que les modèles texte → texte (images en entrée tolérées) : `isMistralChatModel()` écarte `completion_chat: false`, les capacités audio, OCR et modération, et les ids Voxtral, OCR, embed, moderation, TTS ou Timestral.
 
 ## Raisons
 

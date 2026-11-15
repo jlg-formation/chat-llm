@@ -43,6 +43,26 @@ function authHeaders(
     : { Authorization: `Bearer ${apiKey}` };
 }
 
+// Garde les modèles texte → texte (images en entrée tolérées) ; exclut audio, OCR, embeddings, modération.
+const MISTRAL_NON_CHAT_ID =
+  /voxtral|ocr|embed|moderation|transcribe|tts|speech|timestral/i;
+const MISTRAL_NON_CHAT_CAPABILITIES = [
+  "audio_transcription",
+  "audio_transcription_realtime",
+  "audio_speech",
+  "ocr",
+  "moderation",
+];
+
+export function isMistralChatModel(
+  id: string,
+  capabilities?: Record<string, boolean | undefined>,
+): boolean {
+  if (MISTRAL_NON_CHAT_ID.test(id)) return false;
+  if (capabilities?.completion_chat === false) return false;
+  return !MISTRAL_NON_CHAT_CAPABILITIES.some((c) => capabilities?.[c]);
+}
+
 export async function fetchModels(
   provider: Provider,
   baseUrl: string,
@@ -72,11 +92,11 @@ export async function fetchModels(
       data?: Array<{
         id: string;
         max_context_length?: number;
-        capabilities?: { completion_chat?: boolean };
+        capabilities?: Record<string, boolean | undefined>;
       }>;
     }>(`${base}/models`, headers);
     return (json.data ?? [])
-      .filter((m) => m.capabilities?.completion_chat !== false)
+      .filter((m) => isMistralChatModel(m.id, m.capabilities))
       .map((m) => ({
         id: m.id,
         contextLength: m.max_context_length || undefined,

@@ -1,10 +1,92 @@
 {
-  "mistral-small-latest": {
+  "codestral-2508": {
+    "pricingPrompt": 3e-7,
+    "pricingCompletion": 9e-7,
+    "contextLength": 128000
+  },
+  "codestral-latest": {
+    "pricingPrompt": 3e-7,
+    "pricingCompletion": 9e-7,
+    "contextLength": 128000
+  },
+  "deepseek-v4-1-flash-1017": {
+    "pricingPrompt": 3e-7,
+    "pricingCompletion": 0.0000012,
+    "contextLength": 1000000
+  },
+  "ministral-14b-2512": {
+    "pricingPrompt": 2e-7,
+    "pricingCompletion": 2e-7,
+    "contextLength": 256000
+  },
+  "ministral-14b-latest": {
+    "pricingPrompt": 2e-7,
+    "pricingCompletion": 2e-7,
+    "contextLength": 256000
+  },
+  "ministral-3b-2512": {
+    "pricingPrompt": 1e-7,
+    "pricingCompletion": 1e-7,
+    "contextLength": 256000
+  },
+  "ministral-3b-latest": {
+    "pricingPrompt": 1e-7,
+    "pricingCompletion": 1e-7,
+    "contextLength": 256000
+  },
+  "ministral-8b-2512": {
     "pricingPrompt": 1.5e-7,
-    "pricingCompletion": 6e-7
+    "pricingCompletion": 1.5e-7,
+    "contextLength": 256000
+  },
+  "ministral-8b-latest": {
+    "pricingPrompt": 1.5e-7,
+    "pricingCompletion": 1.5e-7,
+    "contextLength": 256000
+  },
+  "mistral-large-4": {
+    "pricingPrompt": 7e-7,
+    "pricingCompletion": 0.0000021,
+    "contextLength": 1000000
+  },
+  "mistral-large-4-0": {
+    "pricingPrompt": 7e-7,
+    "pricingCompletion": 0.0000021,
+    "contextLength": 1000000
   },
   "mistral-large-latest": {
     "pricingPrompt": 7e-7,
-    "pricingCompletion": 0.0000021
+    "pricingCompletion": 0.0000021,
+    "contextLength": 1000000
+  },
+  "mistral-small-2603": {
+    "pricingPrompt": 1.5e-7,
+    "pricingCompletion": 6e-7,
+    "contextLength": 256000
+  },
+  "mistral-small-latest": {
+    "pricingPrompt": 1.5e-7,
+    "pricingCompletion": 6e-7,
+    "contextLength": 256000
+  },
+  "zai-glm-5": {
+    "pricingPrompt": 0.0000014,
+    "pricingCompletion": 0.0000044,
+    "contextLength": 1000000
+  },
+  "zai-glm-5-3": {
+    "pricingPrompt": 0.0000014,
+    "pricingCompletion": 0.0000044,
+    "contextLength": 1000000
+  },
+  "zai-glm-5-3-flash": {
+    "pricingPrompt": 1.5e-7,
+    "pricingCompletion": 5e-7,
+    "contextLength": 1000000
+  },
+  "zai-glm-latest": {
+    "pricingPrompt": 0.0000014,
+    "pricingCompletion": 0.0000044,
+    "contextLength": 1000000
   }
 }

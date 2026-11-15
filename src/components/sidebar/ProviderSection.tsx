@@ -14,12 +14,17 @@ import { setCachedModels, useModelsCache } from "../../store/modelsStore";
 import type { ModelInfo } from "../../services/models";
 
 import { ApiFormatSelector } from "./ApiFormatSelector";
-import { supportsFormat, modelLabel, isOvhChatModel } from "./modelHelpers";
+import {
+  supportsFormat,
+  modelLabel,
+  isOvhChatModel,
+  isOpenAiChatModel,
+} from "./modelHelpers";
 
 const DEFAULT_MODEL: Record<Provider, string> = {
   openai: "gpt-6-luna",
   anthropic: "claude-haiku-5-5",
-  mistral: "mistral-small-latest",
+  mistral: "ministral-3b-latest",
   ovh: "gpt-oss-20b",
   lmstudio: "",
   ollama: "",
@@ -68,12 +73,10 @@ export function ProviderSection() {
         llm.baseUrl,
         llm.apiKeys[llm.provider],
       );
-      const enriched =
-        llm.provider === "openai" ||
-        llm.provider === "anthropic" ||
-        llm.provider === "mistral"
-          ? models.map((m) => ({ ...m, ...getStaticPricing(m.id) }))
-          : models;
+      const enriched = models.map((m) => ({
+        ...m,
+        ...getStaticPricing(m.id, llm.provider),
+      }));
       setCachedModels(llm.provider, enriched);
     } catch (e) {
       setLoadError((e as Error).message);
@@ -88,17 +91,8 @@ export function ProviderSection() {
       if (cachedModels) {
         // Depuis l'API : on garde les gpt-* récents uniquement
         return cachedModels
-          .filter(
-            (m) =>
-              m.id.startsWith("gpt-") &&
-              !m.id.includes("audio") &&
-              !m.id.includes("realtime") &&
-              !m.id.includes("image") &&
-              !m.id.includes("transcribe") &&
-              !m.id.includes("tts") &&
-              !m.id.includes("search"),
-          )
-          .map((m) => ({ ...m, ...getStaticPricing(m.id) }))
+          .filter(isOpenAiChatModel)
+          .map((m) => ({ ...m, ...getStaticPricing(m.id, "openai") }))
           .sort((a, b) => a.id.localeCompare(b.id));
       }
       return getDefaultOpenAiModels();

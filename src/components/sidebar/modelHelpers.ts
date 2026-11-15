@@ -31,7 +31,7 @@ export function modelLabel(m: ModelInfo): string {
   return label;
 }
 
-// Filtre les modèles OVH pertinents pour le chat (exclut embeddings, audio, image)
+// Filtre les modèles OVH pertinents pour le chat (exclut embeddings, audio, image, modération)
 export function isOvhChatModel(m: ModelInfo): boolean {
   const id = m.id.toLowerCase();
   if (
@@ -39,9 +39,34 @@ export function isOvhChatModel(m: ModelInfo): boolean {
     id.includes("whisper") ||
     id.includes("diffusion") ||
     id.includes("ppl") ||
-    id.includes("bge")
+    id.includes("bge") ||
+    id.includes("tts") ||
+    id.includes("nvr-") ||
+    id.includes("guard") ||
+    id.includes("rerank")
   )
     return false;
   if (m.maxCompletionTokens === 0 && m.contextLength === 0) return false;
   return true;
+}
+
+const OPENAI_NON_CHAT_PARTS = [
+  "audio",
+  "realtime",
+  "image",
+  "transcribe",
+  "tts",
+  "search",
+  "instruct",
+  "deep-research",
+  "computer-use",
+  "moderation",
+];
+
+// Modèles gpt-* texte → texte (images en entrée tolérées) ; exclut audio, image, recherche, complétion seule.
+export function isOpenAiChatModel(m: ModelInfo): boolean {
+  return (
+    m.id.startsWith("gpt-") &&
+    !OPENAI_NON_CHAT_PARTS.some((part) => m.id.includes(part))
+  );
 }

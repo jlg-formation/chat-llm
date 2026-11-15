@@ -49,7 +49,7 @@ export function UsageSection() {
 
   const modelInfo =
     models?.find((m) => m.id === config.llm.model) ??
-    getStaticPricing(config.llm.model);
+    getStaticPricing(config.llm.model, config.llm.provider);
   const costPrompt =
     modelInfo?.pricingPrompt !== undefined
       ? promptTokens * modelInfo.pricingPrompt
