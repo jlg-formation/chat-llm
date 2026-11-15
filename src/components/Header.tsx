@@ -2,11 +2,7 @@ import { Globe, Lock, Radio, Wifi, WifiOff } from 'lucide-react'
 import { useConfig } from '../store/configStore'
 import { PROVIDER_DEFAULTS } from '../types'
 import { webSearchActive } from '../services/llm/helpers'
-import {
-  getSpendLimitUsd,
-  isSpendLimitReached,
-  useSpentUsd,
-} from '../store/spendGuard'
+import { getSpendLimitUsd, isSpendLimitReached, useSpentUsd } from '../store/spendGuard'
 
 const formatUsd = (usd: number) => `${usd.toFixed(2).replace('.', ',')} $`
 
