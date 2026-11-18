@@ -39,6 +39,17 @@ describe("resolveReasoningEffort", () => {
     ).toBeUndefined();
   });
 
+  it("never offers minimal for GPT-6 models that reject it", () => {
+    for (const model of ["gpt-6-luna", "gpt-6-sol", "gpt-6.1-terra", "gpt-6-astra"]) {
+      expect(getReasoningEfforts(model)).not.toContain("minimal");
+    }
+    const config = makeConfig(
+      {},
+      { model: "gpt-6-luna", reasoningEffort: "minimal" },
+    );
+    expect(resolveReasoningEffort(config)).toBeUndefined();
+  });
+
   it("rejects levels that a model does not support", () => {
     expect(getReasoningEfforts("gpt-6-astra")).not.toContain("none");
     const config = makeConfig(

@@ -11,6 +11,9 @@ const ALL_LEVELS: ReasoningEffort[] = [
   "max",
 ];
 const NO_NONE: ReasoningEffort[] = ALL_LEVELS.filter((e) => e !== "none");
+const NO_MINIMAL: ReasoningEffort[] = ALL_LEVELS.filter(
+  (e) => e !== "minimal",
+);
 const NO_NONE_NO_MINIMAL: ReasoningEffort[] = NO_NONE.filter(
   (e) => e !== "minimal",
 );
@@ -32,11 +35,11 @@ const REASONING_EFFORTS: Record<string, ReasoningEffort[]> = {
   "gpt-5.6-luna": GPT_5_LEVELS,
   "gpt-5.6-sol": GPT_5_LEVELS,
   "gpt-5.6-terra": GPT_5_LEVELS,
-  "gpt-6-luna": ALL_LEVELS,
-  "gpt-6-sol": ALL_LEVELS,
-  "gpt-6-astra": NO_NONE,
+  "gpt-6-luna": NO_MINIMAL,
+  "gpt-6-sol": NO_MINIMAL,
+  "gpt-6-astra": NO_NONE_NO_MINIMAL,
   "gpt-6.1-sol": NO_NONE_NO_MINIMAL,
-  "gpt-6.1-terra": ALL_LEVELS,
+  "gpt-6.1-terra": NO_MINIMAL,
   "gpt-6.2-astra": NO_NONE,
   "gpt-6.2-sol": NO_NONE,
 };
