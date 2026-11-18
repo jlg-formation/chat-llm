@@ -41,7 +41,7 @@ const REASONING_EFFORTS: Record<string, ReasoningEffort[]> = {
   "gpt-6.1-sol": NO_NONE_NO_MINIMAL,
   "gpt-6.1-terra": NO_MINIMAL,
   "gpt-6.2-astra": NO_NONE,
-  "gpt-6.2-sol": NO_NONE,
+  "gpt-6.2-sol": NO_NONE_NO_MINIMAL,
 };
 
 /** Niveaux d'effort supportés, ou null si le modèle n'est pas dans la table. */

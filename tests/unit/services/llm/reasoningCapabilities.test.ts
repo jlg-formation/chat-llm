@@ -40,7 +40,13 @@ describe("resolveReasoningEffort", () => {
   });
 
   it("never offers minimal for GPT-6 models that reject it", () => {
-    for (const model of ["gpt-6-luna", "gpt-6-sol", "gpt-6.1-terra", "gpt-6-astra"]) {
+    for (const model of [
+      "gpt-6-luna",
+      "gpt-6-sol",
+      "gpt-6.1-terra",
+      "gpt-6-astra",
+      "gpt-6.2-sol",
+    ]) {
       expect(getReasoningEfforts(model)).not.toContain("minimal");
     }
     const config = makeConfig(
