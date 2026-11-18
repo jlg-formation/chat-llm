@@ -24,7 +24,20 @@ export interface LLMConfig {
   maxTokens: number | null;
   // Anthropic : demande les résumés de réflexion (display: summarized)
   showThinking: boolean;
+  // OpenAI Responses : null = non modifié (défaut medium si supporté), 'api_default' = champ non envoyé
+  reasoningEffort: ReasoningEffort | "api_default" | null;
+  // OpenAI Responses : affiche le résumé du raisonnement
+  showReasoning: boolean;
 }
+
+export type ReasoningEffort =
+  | "none"
+  | "minimal"
+  | "low"
+  | "medium"
+  | "high"
+  | "xhigh"
+  | "max";
 
 export interface AppConfig {
   llm: LLMConfig;
@@ -103,8 +116,10 @@ export interface ChatMessage {
   isStreaming?: boolean;
   isJson?: boolean;
   isError?: boolean;
-  // Réflexion affichée (Anthropic)
+  // Réflexion affichée (Anthropic, OpenAI résumé)
   thinking?: string;
+  // Bloc de réflexion replié par défaut (résumé OpenAI)
+  thinkingClosed?: boolean;
   // Pour tool_call
   toolCallId?: string;
   toolName?: string;
@@ -194,6 +209,8 @@ export const DEFAULT_CONFIG: AppConfig = {
     topP: null,
     maxTokens: null,
     showThinking: false,
+    reasoningEffort: null,
+    showReasoning: true,
   },
   streamEnabled: true,
   systemPrompt: "",

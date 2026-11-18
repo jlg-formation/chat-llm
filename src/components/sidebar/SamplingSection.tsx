@@ -87,47 +87,6 @@ function SliderField({
   )
 }
 
-function ThinkingToggle() {
-  const [config, update] = useConfig()
-  const { llm } = config
-  // Le mode compatible OpenAI ne renvoie pas la réflexion
-  const unavailable = llm.apiFormat !== 'anthropic_messages'
-  const on = llm.showThinking && !unavailable
-
-  return (
-    <div
-      className={`rounded-md border px-3 py-2 ${on ? 'border-purple-300 bg-purple-50' : 'border-gray-200 bg-white'} ${unavailable ? 'opacity-50' : ''}`}
-    >
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <div
-            className={`text-xs font-semibold leading-tight ${on ? 'text-purple-700' : 'text-gray-600'}`}
-          >
-            Afficher la réflexion
-          </div>
-          <div className="text-xs text-gray-400 leading-tight">
-            {unavailable
-              ? 'Indisponible en mode OpenAI compatible'
-              : 'Réflexion adaptative (display: summarized)'}
-          </div>
-        </div>
-        <button
-          onClick={() => update({ llm: { ...llm, showThinking: !llm.showThinking } })}
-          disabled={unavailable}
-          role="switch"
-          aria-checked={on}
-          aria-label="Afficher la réflexion"
-          className={`relative shrink-0 inline-flex h-5 w-9 items-center rounded-full transition-colors ${on ? 'bg-purple-500' : 'bg-gray-300'}`}
-        >
-          <span
-            className={`absolute h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${on ? 'translate-x-4.5' : 'translate-x-0.5'}`}
-          />
-        </button>
-      </div>
-    </div>
-  )
-}
-
 export function SamplingSection() {
   const [config, update] = useConfig()
   const { llm } = config
@@ -187,8 +146,6 @@ export function SamplingSection() {
             className="w-full text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-purple-400"
           />
         </div>
-
-        {isAnthropic && <ThinkingToggle />}
       </div>
     </Accordion>
   )

@@ -90,7 +90,7 @@ export async function sendMessage(
       : isAnthropicNative
         ? await streamAnthropicMessages(response, onToken, onThinking)
         : isResponsesAPI
-          ? await streamOpenAIResponses(response, onToken)
+          ? await streamOpenAIResponses(response, onToken, onThinking)
           : await streamChatCompletions(response, isOllama, onToken)
 
     const thinking = result.thinking ? { thinking: result.thinking } : {}

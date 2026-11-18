@@ -111,6 +111,7 @@ export function ChatMessageView({ message }: Props) {
           <ThinkingBlock
             content={message.thinking}
             isStreaming={message.isStreaming && !message.content}
+            closedByDefault={message.thinkingClosed}
           />
         )}
 

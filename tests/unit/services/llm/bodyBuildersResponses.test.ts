@@ -72,10 +72,35 @@ describe("buildOpenAIResponsesBody", () => {
     ]);
   });
 
+  it("sends reasoning effort and drops sampling params while reasoning is active", () => {
+    const body = buildOpenAIResponsesBody(
+      makeConfig({}, { model: "gpt-5.4", topP: 0.5, temperature: 0.7 }),
+      [],
+      "",
+      [],
+      [],
+    ) as Record<string, unknown>;
+    expect(body.reasoning).toEqual({ effort: "medium", summary: "auto" });
+    expect(body).not.toHaveProperty("top_p");
+    expect(body).not.toHaveProperty("temperature");
+  });
+
+  it("keeps sampling params when reasoning effort is none", () => {
+    const body = buildOpenAIResponsesBody(
+      makeConfig({}, { model: "gpt-5.4", reasoningEffort: "none", topP: 0.5 }),
+      [],
+      "",
+      [],
+      [],
+    ) as Record<string, unknown>;
+    expect(body.reasoning).toEqual({ effort: "none", summary: "auto" });
+    expect(body.top_p).toBe(0.5);
+  });
+
   it("applies sampling, tools, schema and omits null params", () => {
     const config = makeConfig(
       { jsonSchema: '{"type":"object"}' },
-      { topP: 0.5, maxTokens: 42 },
+      { topP: 0.5, maxTokens: 42, reasoningEffort: "none" },
     );
     const body = buildOpenAIResponsesBody(
       config,

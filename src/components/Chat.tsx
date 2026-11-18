@@ -53,6 +53,7 @@ export function Chat() {
       role: "assistant",
       content: "",
       isStreaming: true,
+      thinkingClosed: config.llm.apiFormat === "responses",
     };
 
     const newMessages = [...messages, userMsg];
@@ -77,9 +78,12 @@ export function Chat() {
       const { systemPrompt, skillRefs } = await buildSystemAndSkills(runConfig);
 
       let thinkingText = "";
+      // showReasoning ne concerne que OpenAI ; Anthropic reste piloté par showThinking
+      const showThinkingBlock =
+        config.llm.apiFormat !== "responses" || config.llm.showReasoning;
       const onThinking = (token: string) => {
         thinkingText += token;
-        patchAssistant({ thinking: thinkingText });
+        if (showThinkingBlock) patchAssistant({ thinking: thinkingText });
       };
       const prevId =
         config.llm.apiFormat === "lmstudio_chat"
@@ -125,7 +129,8 @@ export function Chat() {
 
       updateAssistant(finalContent, false, isJson);
       // Non-streaming : la réflexion n'arrive qu'avec le résultat final
-      if (result.thinking) patchAssistant({ thinking: result.thinking });
+      if (result.thinking && showThinkingBlock)
+        patchAssistant({ thinking: result.thinking });
 
       const sources = hosted.sources.filter(
         (s, i, all) => all.findIndex((o) => o.url === s.url) === i,

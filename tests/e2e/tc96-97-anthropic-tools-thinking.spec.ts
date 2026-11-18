@@ -159,7 +159,7 @@ test.describe('TC-97 · Anthropic — affichage de la réflexion', () => {
     await setConfig(page, { ...ANTHROPIC_CONFIG, streamEnabled: false })
     const requests = await interceptAnthropic(page, () => [{ type: 'text', text: 'ok' }])
     await page.goto('/')
-    await page.getByRole('button', { name: 'Sampling' }).click()
+    await page.getByRole('button', { name: 'Thinking' }).click()
     await page.getByRole('switch', { name: 'Afficher la réflexion' }).click()
     await send(page, 'Test')
     await expect(page.locator('main')).toContainText('ok', { timeout: 10_000 })

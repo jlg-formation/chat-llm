@@ -1,6 +1,7 @@
 import { Settings, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 import { ProviderSection } from './sidebar/ProviderSection'
+import { ThinkingSection } from './sidebar/ThinkingSection'
 import { StreamSection } from './sidebar/StreamSection'
 import { SystemPromptSection } from './sidebar/SystemPromptSection'
 import { JsonSchemaSection } from './sidebar/JsonSchemaSection'
@@ -63,6 +64,7 @@ export function LeftSidebar() {
         </button>
       </div>
       <ProviderSection />
+      <ThinkingSection />
       <StreamSection />
       <SamplingSection />
       <SystemPromptSection />

@@ -124,7 +124,7 @@ Unlike other providers, LM Studio maintains context via `previous_response_id` p
 ### Tool Iteration Silent Ceiling
 
 ```typescript
-const MAX_TOOL_ITERATIONS = 100;
+const MAX_TOOL_ITERATIONS = 100
 ```
 
 If LLM recursively calls tools, loop stops at 100 **with no error message**. Users see 100 tool_call messages but no "limit reached" notification.
@@ -197,7 +197,7 @@ When MCP server returns 404, it signals session expired. Custom client:
 - **[src/components/LeftSidebar.tsx](src/components/LeftSidebar.tsx)**: Config UI orchestrator
 - **[src/components/RightSidebar.tsx](src/components/RightSidebar.tsx)**: HTTP inspector + resizable drag
 - **[src/components/chat/ChatMessage.tsx](src/components/chat/ChatMessage.tsx)**: Markdown rendering + Mermaid modal
-- **[src/components/sidebar/](src/components/sidebar/)**: 8 accordion sections (ProviderSection, StreamSection, etc.)
+- **[src/components/sidebar/](src/components/sidebar/)**: 9 accordion sections (ProviderSection, ThinkingSection, StreamSection, etc.)
 
 ### Type Definitions
 
@@ -381,8 +381,8 @@ Protocole MCP 2025-11-25. Sessions maintenues en mémoire (`sessions: Map<string
 ```
 App
 ├── Header          — provider actif, modèle, stream on/off, lien GitHub
-├── LeftSidebar     — accordéons de configuration (8 sections)
-│   └── sidebar/    — ProviderSection, StreamSection, SamplingSection,
+├── LeftSidebar     — accordéons de configuration (9 sections)
+│   └── sidebar/    — ProviderSection, ThinkingSection, StreamSection, SamplingSection,
 │                     SystemPromptSection, JsonSchemaSection, SkillsSection,
 │                     McpSection, UsageSection (visible seulement si total > 0)
 │                     Accordion.tsx — composant accordéon réutilisable

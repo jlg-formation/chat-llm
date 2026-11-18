@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ProviderSection } from '@/components/sidebar/ProviderSection'
 import { SamplingSection } from '@/components/sidebar/SamplingSection'
+import { ThinkingSection } from '@/components/sidebar/ThinkingSection'
 import { UsageSection } from '@/components/sidebar/UsageSection'
 import { ThinkingBlock } from '@/components/chat/ThinkingBlock'
 import { ChatMessageView } from '@/components/chat/ChatMessage'
@@ -103,8 +104,8 @@ describe('SamplingSection with Anthropic', () => {
 
   it('toggles the thinking display', async () => {
     updateConfig(anthropic())
-    render(<SamplingSection />)
-    await user.click(screen.getByRole('button', { name: 'Sampling' }))
+    render(<ThinkingSection />)
+    await user.click(screen.getByRole('button', { name: 'Thinking' }))
     const toggle = screen.getByRole('switch', {
       name: 'Afficher la réflexion',
     })
@@ -116,8 +117,8 @@ describe('SamplingSection with Anthropic', () => {
 
   it('disables the thinking toggle in OpenAI-compatible mode', async () => {
     updateConfig(anthropic({ apiFormat: 'chat_completions', showThinking: true }))
-    render(<SamplingSection />)
-    await user.click(screen.getByRole('button', { name: 'Sampling' }))
+    render(<ThinkingSection />)
+    await user.click(screen.getByRole('button', { name: 'Thinking' }))
     const toggle = screen.getByRole('switch', {
       name: 'Afficher la réflexion',
     })
@@ -126,8 +127,8 @@ describe('SamplingSection with Anthropic', () => {
   })
 
   it('hides the thinking toggle for other providers', async () => {
-    render(<SamplingSection />)
-    await user.click(screen.getByRole('button', { name: 'Sampling' }))
+    render(<ThinkingSection />)
+    await user.click(screen.getByRole('button', { name: 'Thinking' }))
     expect(screen.queryByRole('switch', { name: 'Afficher la réflexion' })).not.toBeInTheDocument()
   })
 })

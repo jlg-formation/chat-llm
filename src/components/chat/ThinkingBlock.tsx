@@ -4,12 +4,13 @@ import { Brain, ChevronDown, ChevronRight } from 'lucide-react'
 interface Props {
   content: string
   isStreaming?: boolean
+  closedByDefault?: boolean
 }
 
-export function ThinkingBlock({ content, isStreaming }: Props) {
+export function ThinkingBlock({ content, isStreaming, closedByDefault }: Props) {
   const [toggled, setToggled] = useState<boolean | null>(null)
-  // Ouvert pendant la réflexion, sauf choix explicite de l'utilisateur
-  const open = toggled ?? !!isStreaming
+  // Ouvert pendant la réflexion, sauf choix explicite de l'utilisateur ou bloc replié par défaut
+  const open = toggled ?? (!closedByDefault && !!isStreaming)
 
   return (
     <div className="text-xs rounded-lg border border-purple-200 bg-purple-50 overflow-hidden">

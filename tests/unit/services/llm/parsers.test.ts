@@ -39,6 +39,33 @@ describe('safeParseArgs', () => {
 })
 
 describe('streamOpenAIResponses', () => {
+  it('routes reasoning summary deltas to onThinking and keeps them out of the answer', async () => {
+    const tokens: string[] = []
+    const thinking: string[] = []
+    const res = sseResponse(
+      sse(
+        {
+          type: 'response.reasoning_summary_text.delta',
+          delta: 'Je réfléchis',
+        },
+        { type: 'response.reasoning_summary_text.delta', delta: '...' },
+        { type: 'response.output_text.delta', delta: 'Réponse' },
+      ),
+    )
+    const result = await streamOpenAIResponses(
+      res,
+      (t) => tokens.push(t),
+      (t) => thinking.push(t),
+    )
+    expect(tokens).toEqual(['Réponse'])
+    expect(thinking).toEqual(['Je réfléchis', '...'])
+    expect(result).toMatchObject({
+      type: 'text',
+      content: 'Réponse',
+      thinking: 'Je réfléchis...',
+    })
+  })
+
   it('streams text deltas and reads usage and response id', async () => {
     const tokens: string[] = []
     const res = sseResponse(

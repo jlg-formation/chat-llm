@@ -6,6 +6,7 @@ import {
   parseSSEStream,
   toolCall,
   withHosted,
+  withThinking,
 } from "./parsersShared";
 import { ollamaRawArgs, ollamaUsage, parseNdjsonStream } from "./parsersOllama";
 
@@ -14,8 +15,10 @@ export { parseSSEStream, safeParseArgs } from "./parsersShared";
 export async function streamOpenAIResponses(
   response: Response,
   onToken: (t: string) => void,
+  onThinking?: (t: string) => void,
 ): Promise<LLMResult> {
   let fullText = "";
+  let fullThinking = "";
   let responseId = "";
   let usage: TokenUsage | undefined;
   let hosted: HostedActivity | undefined;
@@ -31,6 +34,10 @@ export async function streamOpenAIResponses(
         case "response.output_text.delta":
           fullText += json.delta as string;
           onToken(json.delta as string);
+          break;
+        case "response.reasoning_summary_text.delta":
+          fullThinking += json.delta as string;
+          onThinking?.(json.delta as string);
           break;
         case "response.output_item.added": {
           const item = json.item as Record<string, unknown>;
@@ -71,9 +78,16 @@ export async function streamOpenAIResponses(
       responseId,
       usage,
       ...withHosted(hosted),
+      ...withThinking(fullThinking),
     };
   }
-  return { type: "text", content: fullText, usage, ...withHosted(hosted) };
+  return {
+    type: "text",
+    content: fullText,
+    usage,
+    ...withHosted(hosted),
+    ...withThinking(fullThinking),
+  };
 }
 
 export async function streamChatCompletions(
@@ -183,6 +197,7 @@ export function parseNonStreamingResponse(
     const outputs = obj.output as unknown[];
     const calls: LLMToolCall[] = [];
     let text = "";
+    let thinking = "";
     const usage = extractUsage(obj);
 
     for (const out of outputs ?? []) {
@@ -195,6 +210,10 @@ export function parseNonStreamingResponse(
             o.arguments as string,
           ),
         );
+      } else if (o.type === "reasoning") {
+        for (const s of (o.summary as unknown[]) ?? []) {
+          thinking += (s as Record<string, unknown>).text as string;
+        }
       } else if (o.type === "message") {
         for (const c of (o.content as unknown[]) ?? []) {
           const cObj = c as Record<string, unknown>;
@@ -211,8 +230,15 @@ export function parseNonStreamingResponse(
         responseId,
         usage,
         ...withHosted(hosted),
+        ...withThinking(thinking),
       };
-    return { type: "text", content: text, usage, ...withHosted(hosted) };
+    return {
+      type: "text",
+      content: text,
+      usage,
+      ...withHosted(hosted),
+      ...withThinking(thinking),
+    };
   }
 
   if (isOllama) {

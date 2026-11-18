@@ -90,3 +90,7 @@ export function collectHosted(
 export function withHosted(hosted: HostedActivity | undefined) {
   return hosted ? { hosted } : {};
 }
+
+export function withThinking(thinking: string) {
+  return thinking ? { thinking } : {};
+}
