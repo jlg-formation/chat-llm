@@ -260,7 +260,12 @@
   "gpt-6-astra-law": {
     "pricingPrompt": 0.00001,
     "pricingCompletion": 0.00005,
-    "contextLength": 922000
+    "contextLength": 922000,
+    "longContext": {
+      "threshold": 272000,
+      "pricingPrompt": 0.00002,
+      "pricingCompletion": 0.000075
+    }
   },
   "gpt-6-cyber": {
     "pricingPrompt": 0.00002,
@@ -283,8 +288,8 @@
     }
   },
   "gpt-6-rosalind": {
-    "pricingPrompt": 0.000015,
-    "pricingCompletion": 0.000075,
+    "pricingPrompt": 0.00001,
+    "pricingCompletion": 0.00005,
     "contextLength": 922000,
     "longContext": {
       "threshold": 272000,
@@ -320,6 +325,36 @@
       "threshold": 272000,
       "pricingPrompt": 0.000002,
       "pricingCompletion": 0.0000075
+    }
+  },
+  "gpt-6.2-astra": {
+    "pricingPrompt": 0.000008,
+    "pricingCompletion": 0.00004,
+    "contextLength": 922000,
+    "longContext": {
+      "threshold": 272000,
+      "pricingPrompt": 0.000016,
+      "pricingCompletion": 0.00006
+    }
+  },
+  "gpt-6.2-astra-law": {
+    "pricingPrompt": 0.000008,
+    "pricingCompletion": 0.00004,
+    "contextLength": 922000,
+    "longContext": {
+      "threshold": 272000,
+      "pricingPrompt": 0.000016,
+      "pricingCompletion": 0.00006
+    }
+  },
+  "gpt-6.2-sol": {
+    "pricingPrompt": 0.000002,
+    "pricingCompletion": 0.00001,
+    "contextLength": 922000,
+    "longContext": {
+      "threshold": 272000,
+      "pricingPrompt": 0.000004,
+      "pricingCompletion": 0.000015
     }
   },
   "gpt-audio": {

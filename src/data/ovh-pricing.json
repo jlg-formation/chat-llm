@@ -1,4 +1,39 @@
 {
+  "deepseek-v4-1-flash-1017": {
+    "pricingPrompt": 2.7e-7,
+    "pricingCompletion": 0.00000108,
+    "contextLength": 1024000
+  },
+  "deepseek-v4.1-flash": {
+    "pricingPrompt": 2.7e-7,
+    "pricingCompletion": 0.00000108,
+    "contextLength": 1024000
+  },
+  "DeepSeek-V4.1-Flash": {
+    "pricingPrompt": 2.7e-7,
+    "pricingCompletion": 0.00000108,
+    "contextLength": 1024000
+  },
+  "deepseek-v4.1-flash-1017": {
+    "pricingPrompt": 2.7e-7,
+    "pricingCompletion": 0.00000108,
+    "contextLength": 1024000
+  },
+  "DeepSeek-v4.1-Flash-1017": {
+    "pricingPrompt": 2.7e-7,
+    "pricingCompletion": 0.00000108,
+    "contextLength": 1024000
+  },
+  "DeepSeek-V4.1-Flash-1017": {
+    "pricingPrompt": 2.7e-7,
+    "pricingCompletion": 0.00000108,
+    "contextLength": 1024000
+  },
+  "gemma-4-26b-a4b": {
+    "pricingPrompt": 9e-8,
+    "pricingCompletion": 3.5e-7,
+    "contextLength": 256000
+  },
   "gpt-oss-120b": {
     "pricingPrompt": 8e-8,
     "pricingCompletion": 4e-7,
@@ -8,6 +43,11 @@
     "pricingPrompt": 4e-8,
     "pricingCompletion": 1.5e-7,
     "contextLength": 131000
+  },
+  "laguna-xs-2-1": {
+    "pricingPrompt": 5e-8,
+    "pricingCompletion": 1e-7,
+    "contextLength": 128000
   },
   "llama-3-3-70b-instruct": {
     "pricingPrompt": 6.7e-7,
@@ -37,6 +77,16 @@
   "Mistral-Small-3.2-24B-Instruct-2506": {
     "pricingPrompt": 9e-8,
     "pricingCompletion": 2.8e-7,
+    "contextLength": 128000
+  },
+  "nemotron3-nano-30b": {
+    "pricingPrompt": 5e-8,
+    "pricingCompletion": 2e-7,
+    "contextLength": 256000
+  },
+  "nemotron3-omni-30b": {
+    "pricingPrompt": 1.6e-7,
+    "pricingCompletion": 4.9e-7,
     "contextLength": 128000
   },
   "qwen-2-5-vl-72b-instruct": {
@@ -72,6 +122,16 @@
   "Qwen2.5-VL-72B-Instruct": {
     "pricingPrompt": 9.1e-7,
     "pricingCompletion": 9.1e-7,
+    "contextLength": 32000
+  },
+  "qwen3-6-35b-a3b": {
+    "pricingPrompt": 1.7e-7,
+    "pricingCompletion": 0.00000115,
+    "contextLength": 256000
+  },
+  "qwen3-vl-30b-a3b": {
+    "pricingPrompt": 1.3e-7,
+    "pricingCompletion": 5e-7,
     "contextLength": 32000
   },
   "qwen3.5-397b": {
