@@ -2,7 +2,7 @@
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Accept');
+header('Access-Control-Allow-Headers: Content-Type, Accept, MCP-Protocol-Version, Mcp-Session-Id, Authorization');
 
 $httpMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
