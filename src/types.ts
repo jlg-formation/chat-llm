@@ -12,7 +12,8 @@ export type ApiFormat =
   | "chat_completions"
   | "lmstudio_chat"
   | "ollama_chat"
-  | "anthropic_messages";
+  | "anthropic_messages"
+  | "google_interactions";
 
 export interface LLMConfig {
   provider: Provider;

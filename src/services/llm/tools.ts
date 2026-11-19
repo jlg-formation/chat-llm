@@ -1,5 +1,5 @@
-import type { AppConfig, McpTool } from '../../types'
-import type { SkillRef } from './types'
+import type { AppConfig, McpTool } from "../../types";
+import type { SkillRef } from "./types";
 
 export function buildTools(
   skillRefs: SkillRef[],
@@ -10,86 +10,105 @@ export function buildTools(
   return [
     ...(skillRefs.length > 0 ? [skillTool()] : []),
     ...mcpTools.filter((t) => t.enabled).map(mcpTool),
-  ]
+  ];
 }
 
 // Schéma invalide → ignoré
 export function parseJsonSchema(config: AppConfig): unknown {
-  if (!config.jsonSchema) return undefined
+  if (!config.jsonSchema) return undefined;
   try {
-    return JSON.parse(config.jsonSchema)
+    return JSON.parse(config.jsonSchema);
   } catch {
-    return undefined
+    return undefined;
   }
 }
 
 const SKILL_DESCRIPTION =
-  "Récupère les instructions complètes d'un skill disponible. Appelle cet outil avant de répondre si tu as besoin des détails d'un skill."
+  "Récupère les instructions complètes d'un skill disponible. Appelle cet outil avant de répondre si tu as besoin des détails d'un skill.";
 const SKILL_PARAMS = {
-  type: 'object',
+  type: "object",
   properties: {
-    name: { type: 'string', description: 'Nom exact du skill à récupérer' },
+    name: { type: "string", description: "Nom exact du skill à récupérer" },
   },
-  required: ['name'],
-}
+  required: ["name"],
+};
 
 export function skillToolForResponsesAPI() {
   return {
-    type: 'function',
-    name: 'get_skill_details',
+    type: "function",
+    name: "get_skill_details",
     description: SKILL_DESCRIPTION,
     parameters: SKILL_PARAMS,
     strict: false,
-  }
+  };
 }
 
 export function skillToolForChatCompletions() {
   return {
-    type: 'function',
+    type: "function",
     function: {
-      name: 'get_skill_details',
+      name: "get_skill_details",
       description: SKILL_DESCRIPTION,
       parameters: SKILL_PARAMS,
     },
-  }
+  };
 }
 
 function mcpParameters(tool: McpTool): Record<string, unknown> {
   return (
     (tool.inputSchema as Record<string, unknown>) ?? {
-      type: 'object',
+      type: "object",
       properties: {},
     }
-  )
+  );
 }
 
 export function mcpToolForChatCompletions(tool: McpTool) {
   return {
-    type: 'function',
+    type: "function",
     function: {
       name: tool.name,
       description: tool.description,
       parameters: mcpParameters(tool),
     },
-  }
+  };
 }
 
 export function mcpToolForResponsesAPI(tool: McpTool) {
   return {
-    type: 'function',
+    type: "function",
     name: tool.name,
     description: tool.description,
     parameters: mcpParameters(tool),
     strict: false,
-  }
+  };
+}
+
+// Interactions API : outils à plat (name / description / parameters)
+export function skillToolForInteractions() {
+  return {
+    type: "function",
+    name: "get_skill_details",
+    description: SKILL_DESCRIPTION,
+    parameters: SKILL_PARAMS,
+  };
+}
+
+export function mcpToolForInteractions(tool: McpTool) {
+  return {
+    type: "function",
+    name: tool.name,
+    description: tool.description,
+    parameters: mcpParameters(tool),
+  };
 }
 
 export function skillToolForAnthropic() {
   return {
-    name: 'get_skill_details',
+    name: "get_skill_details",
     description: SKILL_DESCRIPTION,
     input_schema: SKILL_PARAMS,
-  }
+  };
 }
 
 // Anthropic exige `type: "object"` à la racine du schéma.
@@ -97,6 +116,6 @@ export function mcpToolForAnthropic(tool: McpTool) {
   return {
     name: tool.name,
     description: tool.description,
-    input_schema: { type: 'object', ...mcpParameters(tool) },
-  }
+    input_schema: { type: "object", ...mcpParameters(tool) },
+  };
 }

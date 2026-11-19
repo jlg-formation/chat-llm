@@ -1,19 +1,15 @@
-import { Globe, Lock, Radio, Wifi, WifiOff } from "lucide-react";
-import { useConfig } from "../store/configStore";
-import { PROVIDER_DEFAULTS } from "../types";
-import { webSearchActive } from "../services/llm/helpers";
-import {
-  getSpendLimitUsd,
-  isSpendLimitReached,
-  useSpentUsd,
-} from "../store/spendGuard";
-import { GitHubIcon } from "./GitHubIcon";
+import { Globe, Lock, Radio, Wifi, WifiOff } from 'lucide-react'
+import { useConfig } from '../store/configStore'
+import { PROVIDER_DEFAULTS } from '../types'
+import { webSearchActive } from '../services/llm/helpers'
+import { getSpendLimitUsd, isSpendLimitReached, useSpentUsd } from '../store/spendGuard'
+import { GitHubIcon } from './GitHubIcon'
 
-const formatUsd = (usd: number) => `${usd.toFixed(2).replace(".", ",")} $`;
+const formatUsd = (usd: number) => `${usd.toFixed(2).replace('.', ',')} $`
 
 function RestrictedBadge() {
-  const spent = useSpentUsd();
-  if (!isSpendLimitReached()) return null;
+  const spent = useSpentUsd()
+  if (!isSpendLimitReached()) return null
 
   return (
     <div className="relative group">
@@ -27,20 +23,18 @@ function RestrictedBadge() {
         </p>
       </div>
     </div>
-  );
+  )
 }
 
 export function Header() {
-  const [config] = useConfig();
-  const providerLabel = PROVIDER_DEFAULTS[config.llm.provider].label;
+  const [config] = useConfig()
+  const providerLabel = PROVIDER_DEFAULTS[config.llm.provider].label
 
   return (
     <header className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200 shadow-sm shrink-0">
       <div className="flex items-center gap-3">
         <Radio className="w-6 h-6 text-blue-600" />
-        <span className="text-lg font-semibold text-gray-900">
-          Chat Pédagogique IA
-        </span>
+        <span className="text-lg font-semibold text-gray-900">Chat Pédagogique IA</span>
       </div>
 
       <div className="flex items-center gap-4 text-sm text-gray-600">
@@ -48,9 +42,7 @@ export function Header() {
 
         <div className="flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
           <span>{providerLabel}</span>
-          {config.llm.model && (
-            <span className="text-blue-500">/ {config.llm.model}</span>
-          )}
+          {config.llm.model && <span className="text-blue-500">/ {config.llm.model}</span>}
         </div>
 
         {webSearchActive(config) && (
@@ -61,9 +53,7 @@ export function Header() {
 
         <div
           className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
-            config.streamEnabled
-              ? "bg-green-50 text-green-700"
-              : "bg-gray-100 text-gray-600"
+            config.streamEnabled ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'
           }`}
         >
           {config.streamEnabled ? (
@@ -88,5 +78,5 @@ export function Header() {
         </a>
       </div>
     </header>
-  );
+  )
 }

@@ -1,28 +1,20 @@
-import { useState } from "react";
-import { Code, X } from "lucide-react";
-import { useEscapeKey } from "./useEscapeKey";
+import { useState } from 'react'
+import { Code, X } from 'lucide-react'
+import { useEscapeKey } from './useEscapeKey'
 
 // Rendu via img : le navigateur n'exécute pas les scripts d'un SVG chargé ainsi.
 function svgToDataUrl(svg: string): string {
-  const root = svg.match(/<svg\b[^>]*>/i)?.[0] ?? "";
+  const root = svg.match(/<svg\b[^>]*>/i)?.[0] ?? ''
   const src = /\sxmlns=/.test(root)
     ? svg
-    : svg.replace(/<svg\b/i, '<svg xmlns="http://www.w3.org/2000/svg"');
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(src)}`;
+    : svg.replace(/<svg\b/i, '<svg xmlns="http://www.w3.org/2000/svg"')
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(src)}`
 }
 
-function SvgModal({
-  svg,
-  src,
-  onClose,
-}: {
-  svg: string;
-  src: string;
-  onClose: () => void;
-}) {
-  const [showCode, setShowCode] = useState(false);
+function SvgModal({ svg, src, onClose }: { svg: string; src: string; onClose: () => void }) {
+  const [showCode, setShowCode] = useState(false)
 
-  useEscapeKey(onClose);
+  useEscapeKey(onClose)
 
   return (
     <div
@@ -40,7 +32,7 @@ function SvgModal({
             aria-label="Voir le code source"
             aria-pressed={showCode}
             title="Voir le code source"
-            className={`p-1.5 rounded-md hover:bg-gray-100 ${showCode ? "text-blue-600" : "text-gray-500 hover:text-gray-900"}`}
+            className={`p-1.5 rounded-md hover:bg-gray-100 ${showCode ? 'text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
           >
             <Code className="w-4 h-4" />
           </button>
@@ -63,12 +55,12 @@ function SvgModal({
         )}
       </div>
     </div>
-  );
+  )
 }
 
 export function SvgImage({ svg }: { svg: string }) {
-  const [open, setOpen] = useState(false);
-  const src = svgToDataUrl(svg);
+  const [open, setOpen] = useState(false)
+  const src = svgToDataUrl(svg)
 
   return (
     <>
@@ -82,5 +74,5 @@ export function SvgImage({ svg }: { svg: string }) {
       </button>
       {open && <SvgModal svg={svg} src={src} onClose={() => setOpen(false)} />}
     </>
-  );
+  )
 }

@@ -85,8 +85,10 @@ export function Chat() {
         thinkingText += token;
         if (showThinkingBlock) patchAssistant({ thinking: thinkingText });
       };
+      // Formats stateful : l'historique est porté côté serveur via l'identifiant précédent
       const prevId =
-        config.llm.apiFormat === "lmstudio_chat"
+        config.llm.apiFormat === "lmstudio_chat" ||
+        config.llm.apiFormat === "google_interactions"
           ? lmStudioResponseIdRef.current
           : undefined;
 

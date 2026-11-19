@@ -73,6 +73,9 @@ export const usesOllamaNative = (c: AppConfig) =>
 export const usesAnthropicNative = (c: AppConfig) =>
   c.llm.apiFormat === "anthropic_messages";
 
+export const usesGoogleInteractions = (c: AppConfig) =>
+  c.llm.apiFormat === "google_interactions";
+
 export const isAnthropic = (c: AppConfig) => c.llm.provider === "anthropic";
 
 export const isMistral = (c: AppConfig) => c.llm.provider === "mistral";
@@ -84,6 +87,9 @@ export function getEndpoint(config: AppConfig): string {
   // La base Mistral inclut déjà /v1
   if (isMistral(config))
     return `${base}/${config.llm.apiFormat === "responses" ? "responses" : "chat/completions"}`;
+  // Interactions API native : même racine /v1beta que la base OpenAI-compatible (sans /openai)
+  if (usesGoogleInteractions(config))
+    return `${base.replace(/\/openai$/, "")}/interactions${config.streamEnabled ? "?alt=sse" : ""}`;
   // La base Google inclut déjà /v1beta/openai
   if (isGoogle(config)) return `${base}/chat/completions`;
   if (config.llm.apiFormat === "anthropic_messages")
@@ -106,6 +112,10 @@ export function getHeaders(config: AppConfig): Record<string, string> {
     headers["anthropic-dangerous-direct-browser-access"] = "true";
     return headers;
   }
+  if (usesGoogleInteractions(config)) {
+    if (key) headers["x-goog-api-key"] = key;
+    return headers;
+  }
   if (key) {
     headers["Authorization"] = `Bearer ${key}`;
   }
@@ -121,6 +131,8 @@ export function getPedagogicHeaders(
     result["Authorization"] = `Bearer ${sanitizeKey(currentApiKey(config))}`;
   if (headers["x-api-key"])
     result["x-api-key"] = sanitizeKey(currentApiKey(config));
+  if (headers["x-goog-api-key"])
+    result["x-goog-api-key"] = sanitizeKey(currentApiKey(config));
   for (const k of [
     "anthropic-version",
     "anthropic-dangerous-direct-browser-access",

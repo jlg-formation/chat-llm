@@ -1,24 +1,24 @@
-import { useState, useEffect } from "react";
-import mermaid from "mermaid";
-import { useEscapeKey } from "./useEscapeKey";
+import { useState, useEffect } from 'react'
+import mermaid from 'mermaid'
+import { useEscapeKey } from './useEscapeKey'
 
 mermaid.initialize({
   startOnLoad: false,
-  theme: "default",
-  securityLevel: "loose",
-});
+  theme: 'default',
+  securityLevel: 'loose',
+})
 
-let mermaidCounter = 0;
+let mermaidCounter = 0
 
 function expandSvg(svg: string): string {
   // Supprime les attributs width/height fixes pour que le SVG s'étire librement
   return svg
-    .replace(/(<svg[^>]*)\swidth="[^"]*"/i, "$1")
-    .replace(/(<svg[^>]*)\sheight="[^"]*"/i, "$1");
+    .replace(/(<svg[^>]*)\swidth="[^"]*"/i, '$1')
+    .replace(/(<svg[^>]*)\sheight="[^"]*"/i, '$1')
 }
 
 function MermaidModal({ svg, onClose }: { svg: string; onClose: () => void }) {
-  useEscapeKey(onClose);
+  useEscapeKey(onClose)
 
   return (
     <div
@@ -35,38 +35,36 @@ function MermaidModal({ svg, onClose }: { svg: string; onClose: () => void }) {
         />
       </div>
     </div>
-  );
+  )
 }
 
 export function MermaidBlock({ code }: { code: string }) {
-  const [result, setResult] = useState<
-    { svg: string } | { error: true } | null
-  >(null);
-  const [open, setOpen] = useState(false);
+  const [result, setResult] = useState<{ svg: string } | { error: true } | null>(null)
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
     mermaid
       .parse(code)
       .then(() => {
-        const id = `mermaid-${++mermaidCounter}`;
-        return mermaid.render(id, code);
+        const id = `mermaid-${++mermaidCounter}`
+        return mermaid.render(id, code)
       })
       .then(({ svg: rendered }) => {
-        setResult({ svg: rendered });
+        setResult({ svg: rendered })
       })
       .catch((err) => {
-        console.error("[Mermaid render error]", err);
-        setResult({ error: true });
-      });
-  }, [code]);
+        console.error('[Mermaid render error]', err)
+        setResult({ error: true })
+      })
+  }, [code])
 
-  if (!result) return null;
-  if ("error" in result) {
+  if (!result) return null
+  if ('error' in result) {
     return (
       <pre className="bg-gray-50 border border-gray-200 rounded-md p-3 text-xs text-gray-500 overflow-x-auto whitespace-pre-wrap font-mono">
         {code}
       </pre>
-    );
+    )
   }
   return (
     <>
@@ -78,5 +76,5 @@ export function MermaidBlock({ code }: { code: string }) {
       />
       {open && <MermaidModal svg={result.svg} onClose={() => setOpen(false)} />}
     </>
-  );
+  )
 }

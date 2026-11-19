@@ -1,8 +1,10 @@
 import type { AppConfig, ChatMessage, McpTool } from "../../types";
 import type { SkillRef } from "./types";
+import { buildGoogleInteractionsBody } from "./bodyBuildersGoogleInteractions";
 import {
   usesResponsesAPI,
   usesAnthropicNative,
+  usesGoogleInteractions,
   isAnthropic,
   isMistral,
   isGoogle,
@@ -289,6 +291,16 @@ export function buildBody(
       config,
       messages,
       systemPrompt,
+      options?.previousResponseId,
+    );
+  }
+  if (usesGoogleInteractions(config)) {
+    return buildGoogleInteractionsBody(
+      config,
+      messages,
+      systemPrompt,
+      skillRefs,
+      mcpTools,
       options?.previousResponseId,
     );
   }

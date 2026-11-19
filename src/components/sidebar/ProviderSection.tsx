@@ -43,7 +43,8 @@ export function ProviderSection() {
     const keepsCurrentFormat =
       llm.apiFormat === "lmstudio_chat" ||
       llm.apiFormat === "ollama_chat" ||
-      llm.apiFormat === "anthropic_messages"
+      llm.apiFormat === "anthropic_messages" ||
+      llm.apiFormat === "google_interactions"
         ? "responses"
         : llm.apiFormat;
     const defaultFormat: Record<Provider, ApiFormat> = {

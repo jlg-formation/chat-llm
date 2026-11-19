@@ -29,7 +29,18 @@ const FORMAT_OPTIONS: Record<Provider, FormatOption[]> = {
     { ...CHAT_COMPLETIONS, path: "/chat/completions" },
     { ...RESPONSES, path: "/responses" },
   ],
-  google: [{ ...CHAT_COMPLETIONS, path: "/chat/completions" }],
+  google: [
+    {
+      fmt: "google_interactions",
+      path: "/v1beta/interactions",
+      name: "Interactions API (natif)",
+    },
+    {
+      ...CHAT_COMPLETIONS,
+      path: "/chat/completions",
+      name: "OpenAI compatible",
+    },
+  ],
   lmstudio: [
     { fmt: "lmstudio_chat", path: "/api/v1/chat", name: "LM Studio Chat" },
     CHAT_COMPLETIONS,
