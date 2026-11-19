@@ -29,7 +29,7 @@ const DEFAULT_MODEL: Record<Provider, string> = {
   ovh: "gpt-oss-20b",
   lmstudio: "",
   ollama: "",
-  google: "gemini-2.5-flash",
+  google: "gemini-3.8-flash",
 };
 
 export function ProviderSection() {

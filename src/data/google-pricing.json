@@ -1,0 +1,117 @@
+{
+  "gemini-2.5-flash": {
+    "pricingPrompt": 3e-7,
+    "pricingCompletion": 0.0000025,
+    "contextLength": 1048576
+  },
+  "gemini-2.5-flash-lite": {
+    "pricingPrompt": 1e-7,
+    "pricingCompletion": 4e-7,
+    "contextLength": 1048576
+  },
+  "gemini-2.5-pro": {
+    "pricingPrompt": 0.00000125,
+    "pricingCompletion": 0.00001,
+    "contextLength": 1048576,
+    "longContext": {
+      "threshold": 200000,
+      "pricingPrompt": 0.0000025,
+      "pricingCompletion": 0.000015
+    }
+  },
+  "gemini-3-flash-preview": {
+    "pricingPrompt": 5e-7,
+    "pricingCompletion": 0.000003,
+    "contextLength": 1048576
+  },
+  "gemini-3.1-flash-lite": {
+    "pricingPrompt": 2.5e-7,
+    "pricingCompletion": 0.0000015,
+    "contextLength": 1048576
+  },
+  "gemini-3.1-pro-preview": {
+    "pricingPrompt": 0.000002,
+    "pricingCompletion": 0.000012,
+    "contextLength": 1048576,
+    "longContext": {
+      "threshold": 200000,
+      "pricingPrompt": 0.000004,
+      "pricingCompletion": 0.000018
+    }
+  },
+  "gemini-3.1-pro-preview-customtools": {
+    "pricingPrompt": 0.000002,
+    "pricingCompletion": 0.000012,
+    "contextLength": 1048576,
+    "longContext": {
+      "threshold": 200000,
+      "pricingPrompt": 0.000004,
+      "pricingCompletion": 0.000018
+    }
+  },
+  "gemini-3.5-flash": {
+    "pricingPrompt": 0.0000015,
+    "pricingCompletion": 0.000009,
+    "contextLength": 1048576
+  },
+  "gemini-3.5-flash-lite": {
+    "pricingPrompt": 3e-7,
+    "pricingCompletion": 0.0000025,
+    "contextLength": 1048576
+  },
+  "gemini-3.6-flash": {
+    "pricingPrompt": 7.5e-7,
+    "pricingCompletion": 0.00000375,
+    "contextLength": 1048576
+  },
+  "gemini-3.7-flash": {
+    "pricingPrompt": 7.5e-7,
+    "pricingCompletion": 0.00000375,
+    "contextLength": 1048576
+  },
+  "gemini-3.8-flash": {
+    "pricingPrompt": 7.5e-7,
+    "pricingCompletion": 0.00000375,
+    "contextLength": 1048576
+  },
+  "gemini-4-argon": {
+    "pricingPrompt": 0.000002,
+    "pricingCompletion": 0.00001,
+    "contextLength": 1048576
+  },
+  "gemini-4-carbon": {
+    "pricingPrompt": 0.000002,
+    "pricingCompletion": 0.00001,
+    "contextLength": 1048576
+  },
+  "gemini-4-hydrogen": {
+    "pricingPrompt": 0.0000015,
+    "pricingCompletion": 0.0000075,
+    "contextLength": 1048576
+  },
+  "gemini-4-neon": {
+    "pricingPrompt": 0.000003,
+    "pricingCompletion": 0.000015,
+    "contextLength": 1048576
+  },
+  "gemini-flash-latest": {
+    "pricingPrompt": 7.5e-7,
+    "pricingCompletion": 0.00000375,
+    "contextLength": 1048576
+  },
+  "gemini-flash-lite-latest": {
+    "pricingPrompt": 3e-7,
+    "pricingCompletion": 0.0000025,
+    "contextLength": 1048576
+  },
+  "gemini-pro-latest": {
+    "pricingPrompt": 0.000002,
+    "pricingCompletion": 0.000012,
+    "contextLength": 1048576,
+    "longContext": {
+      "threshold": 200000,
+      "pricingPrompt": 0.000004,
+      "pricingCompletion": 0.000018
+    }
+  }
+}

@@ -4,6 +4,7 @@ import openaiPricing from "../data/openai-pricing.json";
 import anthropicPricing from "../data/anthropic-pricing.json";
 import mistralPricing from "../data/mistral-pricing.json";
 import ovhPricing from "../data/ovh-pricing.json";
+import googlePricing from "../data/google-pricing.json";
 
 type PricingEntry = Pick<
   ModelInfo,
@@ -18,6 +19,7 @@ const TABLES: Partial<Record<Provider, PricingTable>> = {
   anthropic: anthropicPricing as PricingTable,
   mistral: mistralPricing as PricingTable,
   ovh: ovhPricing as PricingTable,
+  google: googlePricing as PricingTable,
 };
 
 const ALL_PROVIDERS_TABLE: PricingTable = Object.assign(
@@ -32,9 +34,9 @@ const DEFAULT_MISTRAL_MODEL_IDS = [
 ];
 
 const DEFAULT_GOOGLE_MODEL_IDS = [
-  "gemini-2.5-flash-lite",
-  "gemini-2.5-flash",
-  "gemini-2.5-pro",
+  "gemini-3.5-flash-lite",
+  "gemini-3.8-flash",
+  "gemini-3.1-pro-preview",
 ];
 
 const DEFAULT_ANTHROPIC_MODEL_IDS = [
@@ -99,7 +101,9 @@ export function getDefaultMistralModels(): ModelInfo[] {
   }));
 }
 
-// Pas de table de tarifs Google : prix non affichés.
 export function getDefaultGoogleModels(): ModelInfo[] {
-  return DEFAULT_GOOGLE_MODEL_IDS.map((id) => ({ id }));
+  return DEFAULT_GOOGLE_MODEL_IDS.map((id) => ({
+    id,
+    ...getStaticPricing(id, "google"),
+  }));
 }

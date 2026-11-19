@@ -43,9 +43,10 @@ function authHeaders(
     : { Authorization: `Bearer ${apiKey}` };
 }
 
-// Modèles Gemini de génération de texte (exclut embeddings, images, audio, TTS)
+// Modèles Gemini de génération de texte (exclut embeddings, images, audio, TTS, live, vidéo, agents)
 const GOOGLE_CHAT_ID = /^gemini-/i;
-const GOOGLE_NON_CHAT_ID = /embed|image|tts|audio|live|aqa/i;
+const GOOGLE_NON_CHAT_ID =
+  /embed|image|tts|audio|live|aqa|robotics|omni|genie|decision|transcribe|translate|lyria|veo|imagen|banana|computer|deep-research|learnlm|-exp-/i;
 
 // Garde les modèles texte → texte (images en entrée tolérées) ; exclut audio, OCR, embeddings, modération.
 const MISTRAL_NON_CHAT_ID =
