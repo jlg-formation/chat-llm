@@ -1,6 +1,10 @@
 import type { AppConfig, ChatMessage, McpTool } from "../../types";
 import type { SkillRef } from "./types";
 import {
+  getReasoningEfforts,
+  resolveGoogleThinkingLevel,
+} from "./reasoningCapabilities";
+import {
   buildTools,
   parseJsonSchema,
   skillToolForInteractions,
@@ -80,6 +84,12 @@ export function buildGoogleInteractionsBody(
   if (config.llm.topP !== null) generation.top_p = config.llm.topP;
   if (config.llm.maxTokens !== null)
     generation.max_output_tokens = config.llm.maxTokens;
+  // Réflexion : seuls les modèles de la table de capacités reçoivent les champs
+  if (getReasoningEfforts(config.llm.model)) {
+    const level = resolveGoogleThinkingLevel(config);
+    if (level) generation.thinking_level = level;
+    generation.thinking_summaries = config.llm.showThinking ? "auto" : "none";
+  }
   if (Object.keys(generation).length > 0) body.generation_config = generation;
 
   const tools = buildTools(

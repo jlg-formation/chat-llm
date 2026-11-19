@@ -99,6 +99,91 @@ describe("buildGoogleInteractionsBody", () => {
     );
     expect(body).not.toHaveProperty("previous_interaction_id");
     expect(body).not.toHaveProperty("system_instruction");
-    expect(body.generation_config).toEqual({ temperature: 0.4 });
+    expect(body.generation_config).toEqual({
+      temperature: 0.4,
+      thinking_summaries: "none",
+    });
+  });
+
+  it("sends thinking_level and summaries for a model with thinking levels", () => {
+    const config = makeConfig(
+      {},
+      {
+        apiFormat: "google_interactions",
+        model: "gemini-3.8-flash",
+        showThinking: true,
+        reasoningEffort: "high",
+      },
+    );
+    const body = buildGoogleInteractionsBody(
+      config,
+      [makeMessage({ role: "user", content: "x" })],
+      "",
+      [],
+      [],
+    );
+    expect(body.generation_config).toEqual({
+      thinking_level: "high",
+      thinking_summaries: "auto",
+    });
+  });
+
+  it("omits thinking_level on api default and disables summaries when Thinking is off", () => {
+    const config = makeConfig(
+      {},
+      {
+        apiFormat: "google_interactions",
+        model: "gemini-3.8-flash",
+        showThinking: false,
+        reasoningEffort: null,
+      },
+    );
+    const body = buildGoogleInteractionsBody(
+      config,
+      [makeMessage({ role: "user", content: "x" })],
+      "",
+      [],
+      [],
+    );
+    expect(body.generation_config).toEqual({ thinking_summaries: "none" });
+  });
+
+  it("drops a level unsupported by the model", () => {
+    const config = makeConfig(
+      {},
+      {
+        apiFormat: "google_interactions",
+        model: "gemini-3-pro-preview",
+        reasoningEffort: "minimal",
+      },
+    );
+    const body = buildGoogleInteractionsBody(
+      config,
+      [makeMessage({ role: "user", content: "x" })],
+      "",
+      [],
+      [],
+    );
+    expect(body.generation_config).not.toHaveProperty("thinking_level");
+  });
+
+  it("sends no thinking fields for an unlisted model", () => {
+    const config = makeConfig(
+      {},
+      {
+        apiFormat: "google_interactions",
+        model: "gemini-unknown",
+        showThinking: true,
+        reasoningEffort: "high",
+      },
+    );
+    const body = buildGoogleInteractionsBody(
+      config,
+      [makeMessage({ role: "user", content: "x" })],
+      "",
+      [],
+      [],
+    );
+    expect(body).not.toHaveProperty("generation_config");
   });
 });

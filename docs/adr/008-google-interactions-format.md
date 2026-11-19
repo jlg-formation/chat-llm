@@ -17,6 +17,8 @@ Ajouter le format `google_interactions` en parallèle du format `chat_completion
 - L'authentification utilise l'en-tête `x-goog-api-key`.
 - Le body est construit par `bodyBuildersGoogleInteractions.ts`, et la réponse analysée par `parsersGoogleInteractions.ts` (événements SSE nommés `step.*` / `interaction.completed`, ou tableau `steps` en non-streaming).
 - Le format est stateful : `previous_interaction_id` est porté par `lmStudioResponseIdRef`, avec `store: true`. Seul le tour courant (ou les `function_result`) est envoyé. Ce mécanisme est identique à celui de LM Studio.
+- Réflexion : pour les modèles listés dans la table de `reasoningCapabilities.ts`, le body envoie `generation_config.thinking_level` (niveau choisi, uniquement s'il est supporté par le modèle) et `generation_config.thinking_summaries` (`auto` si « Afficher la réflexion » est actif, sinon `none`). Les modèles non listés ne reçoivent aucun champ de réflexion.
+- Sans choix d'effort (`null`), `thinking_level` n'est pas envoyé : le défaut du modèle s'applique (contrairement à OpenAI, qui envoie `medium`).
 
 ## Raisons
 
