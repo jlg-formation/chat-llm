@@ -31,6 +31,12 @@ const DEFAULT_MISTRAL_MODEL_IDS = [
   "mistral-large-latest",
 ];
 
+const DEFAULT_GOOGLE_MODEL_IDS = [
+  "gemini-2.5-flash-lite",
+  "gemini-2.5-flash",
+  "gemini-2.5-pro",
+];
+
 const DEFAULT_ANTHROPIC_MODEL_IDS = [
   "claude-haiku-5-5",
   "claude-sonnet-5-5",
@@ -91,4 +97,9 @@ export function getDefaultMistralModels(): ModelInfo[] {
     id,
     ...getStaticPricing(id, "mistral"),
   }));
+}
+
+// Pas de table de tarifs Google : prix non affichés.
+export function getDefaultGoogleModels(): ModelInfo[] {
+  return DEFAULT_GOOGLE_MODEL_IDS.map((id) => ({ id }));
 }

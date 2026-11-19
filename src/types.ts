@@ -4,7 +4,8 @@ export type Provider =
   | "mistral"
   | "ovh"
   | "lmstudio"
-  | "ollama";
+  | "ollama"
+  | "google";
 
 export type ApiFormat =
   | "responses"
@@ -169,13 +170,18 @@ export const PROVIDER_DEFAULTS: Record<
     baseUrl: "https://api.anthropic.com",
     needsKey: true,
   },
+  google: {
+    label: "Google",
+    baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
+    needsKey: true,
+  },
   mistral: {
-    label: "Mistral AI",
+    label: "Mistral",
     baseUrl: "https://api.mistral.ai/v1",
     needsKey: true,
   },
   ovh: {
-    label: "OVH AI Endpoints",
+    label: "OVH",
     baseUrl: "https://oai.endpoints.kepler.ai.cloud.ovh.net",
     needsKey: true,
   },
@@ -202,6 +208,7 @@ export const DEFAULT_CONFIG: AppConfig = {
       ovh: "",
       lmstudio: "",
       ollama: "",
+      google: "",
     },
     model: "gpt-6-luna",
     apiFormat: "responses",

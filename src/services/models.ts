@@ -43,6 +43,10 @@ function authHeaders(
     : { Authorization: `Bearer ${apiKey}` };
 }
 
+// Modèles Gemini de génération de texte (exclut embeddings, images, audio, TTS)
+const GOOGLE_CHAT_ID = /^gemini-/i;
+const GOOGLE_NON_CHAT_ID = /embed|image|tts|audio|live|aqa/i;
+
 // Garde les modèles texte → texte (images en entrée tolérées) ; exclut audio, OCR, embeddings, modération.
 const MISTRAL_NON_CHAT_ID =
   /voxtral|ocr|embed|moderation|transcribe|tts|speech|timestral/i;
@@ -101,6 +105,17 @@ export async function fetchModels(
         id: m.id,
         contextLength: m.max_context_length || undefined,
       }));
+  }
+
+  if (provider === "google") {
+    const json = await getJson<{ data?: Array<{ id: string }> }>(
+      `${base}/models`,
+      headers,
+    );
+    return (json.data ?? [])
+      .map((m) => m.id.replace(/^models\//, ""))
+      .filter((id) => GOOGLE_CHAT_ID.test(id) && !GOOGLE_NON_CHAT_ID.test(id))
+      .map((id) => ({ id }));
   }
 
   if (provider === "lmstudio") {

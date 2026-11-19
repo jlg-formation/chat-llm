@@ -15,14 +15,14 @@ L'application est **100 % front-end** — aucun backend. Les clés API sont stoc
 
 ## Providers LLM supportés
 
-| Provider             | API                                             | Endpoint                                              |
-| -------------------- | ----------------------------------------------- | ----------------------------------------------------- |
-| **OpenAI**           | API Responses (dernière version)                | `POST /v1/responses`                                  |
-| **Anthropic**        | API Messages native (ou mode compatible OpenAI) | `POST /v1/messages` (ou `POST /v1/chat/completions`)  |
-| **Mistral AI**       | Chat Completions (ou API Responses)             | `POST /v1/chat/completions` (ou `POST /v1/responses`) |
-| **OVH AI Endpoints** | Chat Completions (compatible OpenAI)            | `POST /v1/chat/completions`                           |
-| **LM Studio**        | Chat Completions (compatible OpenAI)            | `POST /v1/chat/completions`                           |
-| **Ollama**           | API native Ollama                               | `POST /api/chat`                                      |
+| Provider      | API                                             | Endpoint                                              |
+| ------------- | ----------------------------------------------- | ----------------------------------------------------- |
+| **OpenAI**    | API Responses (dernière version)                | `POST /v1/responses`                                  |
+| **Anthropic** | API Messages native (ou mode compatible OpenAI) | `POST /v1/messages` (ou `POST /v1/chat/completions`)  |
+| **Mistral**   | Chat Completions (ou API Responses)             | `POST /v1/chat/completions` (ou `POST /v1/responses`) |
+| **OVH**       | Chat Completions (compatible OpenAI)            | `POST /v1/chat/completions`                           |
+| **LM Studio** | Chat Completions (compatible OpenAI)            | `POST /v1/chat/completions`                           |
+| **Ollama**    | API native Ollama                               | `POST /api/chat`                                      |
 
 ## Skills (spec agentskills.io)
 

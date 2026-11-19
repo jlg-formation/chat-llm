@@ -10,7 +10,7 @@ Les clés API sont disponibles en **variables d'environnement** dans le terminal
 | Variable           | Provider                                |
 | ------------------ | --------------------------------------- |
 | `OPENAI_API_KEY`   | OpenAI                                  |
-| `OVH_API_KEY`      | OVH AI Endpoints                        |
+| `OVH_API_KEY`      | OVH                                     |
 | `LMSTUDIO_API_KEY` | LM Studio (si authentification activée) |
 
 Les tests qui nécessitent un vrai appel réseau (non mocké) doivent vérifier en setup que la variable correspondante est définie, et passer (`test.skip`) si elle est absente.

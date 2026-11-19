@@ -25,6 +25,7 @@ describe("currentApiKey", () => {
           ovh: "k-ovh",
           lmstudio: "",
           ollama: "",
+          google: "",
         },
       },
     );
@@ -146,6 +147,7 @@ describe("getHeaders", () => {
           ovh: "",
           lmstudio: "",
           ollama: "",
+          google: "",
         },
       },
     );
@@ -169,6 +171,7 @@ describe("getPedagogicHeaders", () => {
           ovh: "",
           lmstudio: "",
           ollama: "",
+          google: "",
         },
       },
     );
