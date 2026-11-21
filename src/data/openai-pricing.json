@@ -293,8 +293,8 @@
     "contextLength": 922000,
     "longContext": {
       "threshold": 272000,
-      "pricingPrompt": 0.00003,
-      "pricingCompletion": 0.0001125
+      "pricingPrompt": 0.00002,
+      "pricingCompletion": 0.000075
     }
   },
   "gpt-6-sol": {

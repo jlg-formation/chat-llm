@@ -16,16 +16,7 @@ import type { ModelInfo } from '../../services/models'
 
 import { ApiFormatSelector } from './ApiFormatSelector'
 import { supportsFormat, modelLabel, isOvhChatModel, isOpenAiChatModel } from './modelHelpers'
-
-const DEFAULT_MODEL: Record<Provider, string> = {
-  openai: 'gpt-6-luna',
-  anthropic: 'claude-haiku-5-5',
-  mistral: 'ministral-3b-latest',
-  ovh: 'gpt-oss-20b',
-  lmstudio: '',
-  ollama: '',
-  google: 'gemini-3.8-flash',
-}
+import { DEFAULT_MODEL } from '../../services/llm/providerDefaults'
 
 export function ProviderSection() {
   const [config, update] = useConfig()

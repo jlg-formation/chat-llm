@@ -40,6 +40,8 @@ export interface AppConfig {
     imageModel: string
     imageSize: string
   }
+  // Outil run_subagents (sous-agents), désactivé par défaut
+  subAgentsEnabled: boolean
 }
 
 export interface WebSource {
@@ -211,4 +213,5 @@ export const DEFAULT_CONFIG: AppConfig = {
     imageModel: 'gpt-image-2.6-flare',
     imageSize: '640x1024',
   },
+  subAgentsEnabled: false,
 }

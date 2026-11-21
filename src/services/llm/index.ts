@@ -33,6 +33,7 @@ export async function sendMessage(
   signal?: AbortSignal,
   previousResponseId?: string,
   onThinking?: (token: string) => void,
+  options?: { silent?: boolean },
 ): Promise<LLMResult> {
   const isLmStudioChat = config.llm.apiFormat === 'lmstudio_chat'
   const isAnthropicNative = usesAnthropicNative(config)
@@ -46,8 +47,9 @@ export async function sendMessage(
   const endpoint = getEndpoint(config)
   const headers = getHeaders(config)
 
+  const httpLog = options?.silent ? null : { add: addExchange, update: updateExchange }
   const exchangeId = genId()
-  addExchange({
+  httpLog?.add({
     id: exchangeId,
     timestamp: Date.now(),
     type: 'llm',
@@ -81,7 +83,7 @@ export async function sendMessage(
 
   if (!response.ok) {
     const errText = await response.text()
-    updateExchange(exchangeId, {
+    httpLog?.update(exchangeId, {
       responseStatus: response.status,
       responseHeaders: respHeaders,
       responseBody: errText,
@@ -102,7 +104,7 @@ export async function sendMessage(
             : await streamChatCompletions(response, isOllama, onToken)
 
     const thinking = result.thinking ? { thinking: result.thinking } : {}
-    updateExchange(exchangeId, {
+    httpLog?.update(exchangeId, {
       responseStatus: response.status,
       responseHeaders: respHeaders,
       responseBody:
@@ -120,7 +122,7 @@ export async function sendMessage(
         : isAnthropicNative
           ? parseAnthropicNonStreaming(json)
           : parseNonStreamingResponse(json, isResponsesAPI, isOllama)
-    updateExchange(exchangeId, {
+    httpLog?.update(exchangeId, {
       responseStatus: response.status,
       responseHeaders: respHeaders,
       responseBody: truncateLargeStrings(json),

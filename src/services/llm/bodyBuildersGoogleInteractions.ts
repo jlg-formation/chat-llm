@@ -7,6 +7,7 @@ import {
   skillToolForInteractions,
   mcpToolForInteractions,
 } from './tools'
+import { subAgentTools } from '../subAgents'
 
 type Item = Record<string, unknown>
 
@@ -84,7 +85,10 @@ export function buildGoogleInteractionsBody(
   }
   if (Object.keys(generation).length > 0) body.generation_config = generation
 
-  const tools = buildTools(skillRefs, mcpTools, skillToolForInteractions, mcpToolForInteractions)
+  const tools = [
+    ...buildTools(skillRefs, mcpTools, skillToolForInteractions, mcpToolForInteractions),
+    ...subAgentTools(config, 'google_interactions'),
+  ]
   if (tools.length > 0) body.tools = tools
 
   const schema = parseJsonSchema(config)

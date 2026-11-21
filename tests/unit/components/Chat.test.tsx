@@ -173,9 +173,12 @@ describe('Chat tool calls', () => {
     render(<Chat />)
     await sendText('Calcule')
     expect(await screen.findByText('Fini')).toBeInTheDocument()
-    expect(mockCallTool).toHaveBeenCalledWith(expect.objectContaining({ id: 's1' }), 'calc', {
-      x: 1,
-    })
+    expect(mockCallTool).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 's1' }),
+      'calc',
+      { x: 1 },
+      false,
+    )
     expect(screen.getByText('calc')).toBeInTheDocument()
 
     await user.click(screen.getByText('Résultat outil').closest('button')!)

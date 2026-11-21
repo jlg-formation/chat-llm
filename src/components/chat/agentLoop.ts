@@ -7,6 +7,7 @@ import { loadSkills, getSkillContent, parseSkillFrontmatter } from '../../store/
 import { addUsage, addImageUsage } from '../../store/usageStore'
 import { addSpend, estimateCallCostUsd } from '../../store/spendGuard'
 import { buildToolMessages } from './toolMessages'
+import { RUN_SUBAGENTS_TOOL, parseRunSubAgentsArgs, runSubAgents } from '../../services/subAgents'
 
 export const MAX_TOOL_ITERATIONS = 100
 
@@ -40,12 +41,13 @@ export async function buildSystemAndSkills(
 export async function resolveToolCall(
   call: LLMToolCall,
   mcpServers: AppConfig['mcpServers'],
+  silent = false,
 ): Promise<string> {
   if (call.name !== 'get_skill_details') {
     for (const server of mcpServers) {
       if (!server.enabled) continue
       const tool = server.tools.find((t) => t.name === call.name && t.enabled)
-      if (tool) return callMcpTool(server, call.name, call.args as Record<string, unknown>)
+      if (tool) return callMcpTool(server, call.name, call.args as Record<string, unknown>, silent)
     }
   }
 
@@ -56,6 +58,41 @@ export async function resolveToolCall(
   )
   if (!skill) return `Skill "${skillName}" non trouvé.`
   return getSkillContent(skill)
+}
+
+/** Exécute run_subagents : chaque sous-agent est une boucle agentique sans prompt système ni historique. */
+export async function runSubAgentsCall(
+  args: Record<string, unknown>,
+  config: AppConfig,
+  skillRefs: SkillRef[],
+  signal: AbortSignal,
+): Promise<string> {
+  const parsed = parseRunSubAgentsArgs(args)
+  if (typeof parsed === 'string') return JSON.stringify({ error: parsed })
+
+  const results = await runSubAgents(
+    parsed,
+    config,
+    async (subConfig, prompt, subSignal) => {
+      const outcome = await runAgentLoop({
+        config: subConfig,
+        systemPrompt: '',
+        skillRefs,
+        messages: [{ id: genId(), role: 'user', content: prompt }],
+        prevId: undefined,
+        signal: subSignal,
+        onContent: () => {},
+        onThinking: () => {},
+        onToolMessages: () => {},
+        onResetAssistant: () => {},
+        onResponseId: () => {},
+        silent: true,
+      })
+      return outcome.finalContent
+    },
+    signal,
+  )
+  return JSON.stringify(results)
 }
 
 export interface AgentLoopParams {
@@ -71,6 +108,8 @@ export interface AgentLoopParams {
   onToolMessages: (msgs: ChatMessageType[]) => void
   onResetAssistant: () => void
   onResponseId: (id: string) => void
+  /** Pas de journalisation HTTP (sous-agents) */
+  silent?: boolean
 }
 
 export interface AgentLoopResult {
@@ -107,6 +146,7 @@ export async function runAgentLoop(p: AgentLoopParams): Promise<AgentLoopResult>
       signal,
       p.prevId,
       p.onThinking,
+      { silent: p.silent },
     )
     if (res.usage) addUsage(res.usage)
     addSpend(estimateCallCostUsd(config, res.usage))
@@ -154,7 +194,10 @@ export async function runAgentLoop(p: AgentLoopParams): Promise<AgentLoopResult>
     const toolResults = await Promise.all(
       result.calls.map(async (call) => ({
         call,
-        content: await resolveToolCall(call, config.mcpServers),
+        content:
+          call.name === RUN_SUBAGENTS_TOOL
+            ? await runSubAgentsCall(call.args, config, skillRefs, signal)
+            : await resolveToolCall(call, config.mcpServers, p.silent),
       })),
     )
 

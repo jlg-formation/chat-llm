@@ -3,6 +3,7 @@ import type { SkillRef } from './types'
 import { safeParseArgs } from './parsers'
 import { skillToolForAnthropic, mcpToolForAnthropic, buildTools, parseJsonSchema } from './tools'
 import { webSearchActive } from './helpers'
+import { subAgentTools } from '../subAgents'
 
 /** Anthropic impose max_tokens ; valeur utilisée quand l'utilisateur n'en fixe pas. */
 export const ANTHROPIC_DEFAULT_MAX_TOKENS = 4096
@@ -104,6 +105,7 @@ export function buildAnthropicBody(
     skillToolForAnthropic,
     mcpToolForAnthropic,
   )
+  tools.push(...subAgentTools(config, 'anthropic_messages'))
   if (webSearchActive(config)) tools.push({ type: 'web_search_20250305', name: 'web_search' })
   if (tools.length > 0) {
     body.tools = tools

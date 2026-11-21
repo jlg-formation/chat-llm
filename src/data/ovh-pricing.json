@@ -89,6 +89,36 @@
     "pricingCompletion": 4.9e-7,
     "contextLength": 128000
   },
+  "olala-v1-0-mini-7a1b": {
+    "pricingPrompt": 0,
+    "pricingCompletion": 0,
+    "contextLength": 32000
+  },
+  "olala-v1-0-summarise": {
+    "pricingPrompt": 0,
+    "pricingCompletion": 0,
+    "contextLength": 62000
+  },
+  "olala-v1-0-translate": {
+    "pricingPrompt": 0,
+    "pricingCompletion": 0,
+    "contextLength": 8000
+  },
+  "olala-v1.0-mini-7a1b": {
+    "pricingPrompt": 0,
+    "pricingCompletion": 0,
+    "contextLength": 32000
+  },
+  "olala-v1.0-summarise": {
+    "pricingPrompt": 0,
+    "pricingCompletion": 0,
+    "contextLength": 62000
+  },
+  "olala-v1.0-translate": {
+    "pricingPrompt": 0,
+    "pricingCompletion": 0,
+    "contextLength": 8000
+  },
   "qwen-2-5-vl-72b-instruct": {
     "pricingPrompt": 9.1e-7,
     "pricingCompletion": 9.1e-7,

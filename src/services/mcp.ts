@@ -53,11 +53,13 @@ async function mcpFetch(
   session: McpSession | undefined,
   body: unknown,
   readBody: (resp: Response) => Promise<Record<string, unknown> | null>,
+  silent = false,
 ): Promise<{ resp: Response; json: Record<string, unknown> | null }> {
   const url = conn.url.replace(/\/$/, '')
   const exchangeId = genId()
   const reqHeaders = buildHeaders(session, conn.token)
-  addExchange({
+  const httpLog = silent ? null : { add: addExchange, update: updateExchange }
+  httpLog?.add({
     id: exchangeId,
     timestamp: Date.now(),
     type: 'mcp',
@@ -76,7 +78,7 @@ async function mcpFetch(
       signal: controller.signal,
     })
     const json = await readBody(resp)
-    updateExchange(exchangeId, {
+    httpLog?.update(exchangeId, {
       responseStatus: resp.status,
       responseHeaders: {
         'content-type': resp.headers.get('content-type') ?? '',
@@ -86,11 +88,11 @@ async function mcpFetch(
     return { resp, json }
   } catch (err) {
     if (!controller.signal.aborted) {
-      updateExchange(exchangeId, { error: (err as Error).message })
+      httpLog?.update(exchangeId, { error: (err as Error).message })
       throw err
     }
     const message = `MCP timeout (${MCP_TIMEOUT_MS} ms)`
-    updateExchange(exchangeId, { error: message })
+    httpLog?.update(exchangeId, { error: message })
     throw new Error(message, { cause: err })
   } finally {
     clearTimeout(timer)
@@ -101,21 +103,33 @@ async function mcpPost(
   conn: McpConnection,
   body: unknown,
   session?: McpSession,
+  silent = false,
 ): Promise<{
   status: number
   json: Record<string, unknown>
   headers: Headers
 }> {
   const requestId = (body as { id?: number }).id
-  const { resp, json } = await mcpFetch(conn, 'POST', session, body, async (resp) => {
-    // 202/204 — notifications JSON-RPC sans corps de réponse
-    if (resp.status === 202 || resp.status === 204 || resp.headers.get('content-length') === '0') {
-      return null
-    }
-    return (resp.headers.get('content-type') ?? '').includes('text/event-stream')
-      ? await readSSEResponse(resp.body!, requestId)
-      : ((await resp.json()) as Record<string, unknown>)
-  })
+  const { resp, json } = await mcpFetch(
+    conn,
+    'POST',
+    session,
+    body,
+    async (resp) => {
+      // 202/204 — notifications JSON-RPC sans corps de réponse
+      if (
+        resp.status === 202 ||
+        resp.status === 204 ||
+        resp.headers.get('content-length') === '0'
+      ) {
+        return null
+      }
+      return (resp.headers.get('content-type') ?? '').includes('text/event-stream')
+        ? await readSSEResponse(resp.body!, requestId)
+        : ((await resp.json()) as Record<string, unknown>)
+    },
+    silent,
+  )
   return { status: resp.status, json: json ?? {}, headers: resp.headers }
 }
 
@@ -143,11 +157,13 @@ async function mcpJsonRpc(
   method: string,
   params: unknown,
   session?: McpSession,
+  silent = false,
 ): Promise<unknown> {
   const { status, json } = await mcpPost(
     conn,
     { jsonrpc: '2.0', id: nextRpcId(), method, params },
     session,
+    silent,
   )
   if (status === 404 && session) {
     // Session expirée — forcer une ré-initialisation au prochain appel
@@ -159,20 +175,25 @@ async function mcpJsonRpc(
   return json.result
 }
 
-async function mcpInitialize(conn: McpConnection): Promise<McpSession> {
+async function mcpInitialize(conn: McpConnection, silent = false): Promise<McpSession> {
   const existing = getSession(conn.url)
   if (existing) return existing
 
-  const { json, headers } = await mcpPost(conn, {
-    jsonrpc: '2.0',
-    id: nextRpcId(),
-    method: 'initialize',
-    params: {
-      protocolVersion: '2025-11-25',
-      clientInfo: { name: 'Chat Pédagogique IA', version: '1.0.0' },
-      capabilities: {},
+  const { json, headers } = await mcpPost(
+    conn,
+    {
+      jsonrpc: '2.0',
+      id: nextRpcId(),
+      method: 'initialize',
+      params: {
+        protocolVersion: '2025-11-25',
+        clientInfo: { name: 'Chat Pédagogique IA', version: '1.0.0' },
+        capabilities: {},
+      },
     },
-  })
+    undefined,
+    silent,
+  )
 
   if (json.error) throw new Error(`MCP initialize error: ${JSON.stringify(json.error)}`)
 
@@ -184,7 +205,7 @@ async function mcpInitialize(conn: McpConnection): Promise<McpSession> {
   sessions.set(conn.url, session)
 
   // Notification initialized
-  await mcpPost(conn, { jsonrpc: '2.0', method: 'notifications/initialized' }, session)
+  await mcpPost(conn, { jsonrpc: '2.0', method: 'notifications/initialized' }, session, silent)
 
   return session
 }
@@ -226,13 +247,15 @@ export async function callMcpTool(
   conn: McpConnection,
   toolName: string,
   args: Record<string, unknown>,
+  silent = false,
 ): Promise<string> {
-  const session = await mcpInitialize(conn)
+  const session = await mcpInitialize(conn, silent)
   const result = (await mcpJsonRpc(
     conn,
     'tools/call',
     { name: toolName, arguments: args },
     session,
+    silent,
   )) as Record<string, unknown>
   const content = result.content
   if (Array.isArray(content)) {

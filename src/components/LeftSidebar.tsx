@@ -8,6 +8,7 @@ import { JsonSchemaSection } from './sidebar/JsonSchemaSection'
 import { SkillsSection } from './sidebar/SkillsSection'
 import { McpSection } from './sidebar/McpSection'
 import { HostedToolsSection } from './sidebar/HostedToolsSection'
+import { BuiltinToolsSection } from './sidebar/BuiltinToolsSection'
 import { SamplingSection } from './sidebar/SamplingSection'
 import { UsageSection } from './sidebar/UsageSection'
 import { getConfig, updateConfig } from '../store/configStore'
@@ -70,6 +71,7 @@ export function LeftSidebar() {
       <SystemPromptSection />
       <JsonSchemaSection />
       <HostedToolsSection />
+      <BuiltinToolsSection />
       <SkillsSection key={`skills-${resetKey}`} />
       <McpSection key={`mcp-${resetKey}`} />
       <UsageSection />

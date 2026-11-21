@@ -24,6 +24,7 @@ import {
   buildTools,
   parseJsonSchema,
 } from './tools'
+import { subAgentTools } from '../subAgents'
 
 export { buildLmStudioChatBody }
 
@@ -94,12 +95,10 @@ export function buildChatCompletionsBody(
     isMistral(config) || isGoogle(config) ? 'max_tokens' : 'max_completion_tokens',
   )
 
-  const allTools = buildTools(
-    skillRefs,
-    mcpTools,
-    skillToolForChatCompletions,
-    mcpToolForChatCompletions,
-  )
+  const allTools = [
+    ...buildTools(skillRefs, mcpTools, skillToolForChatCompletions, mcpToolForChatCompletions),
+    ...subAgentTools(config, 'chat_completions'),
+  ]
   if (allTools.length > 0) {
     body.tools = allTools
     body.tool_choice = 'auto'
@@ -185,6 +184,7 @@ export function buildOpenAIResponsesBody(
     })
   const allTools = [
     ...buildTools(skillRefs, mcpTools, skillToolForResponsesAPI, mcpToolForResponsesAPI),
+    ...subAgentTools(config, 'responses'),
     ...hostedTools,
   ]
   if (allTools.length > 0) body.tools = allTools
